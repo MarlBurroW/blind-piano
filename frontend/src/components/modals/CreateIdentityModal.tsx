@@ -6,34 +6,50 @@ import { Avatar } from "../Avatar";
 import { v4 as uuidv4 } from "uuid";
 import TextField from "../form/fields/TextField";
 import * as Yup from "yup";
+import { useLocalStorage } from "usehooks-ts";
 
 import {
   uniqueNamesGenerator,
   adjectives,
   animals,
-  starWars,
 } from "unique-names-generator";
 import { IIdentity } from "../../types";
 import { Button } from "../form/Button";
 
 interface Props {
   isOpen: boolean;
-  onIdentityCreated: (identity: any) => void;
+  mandatory?: boolean;
+  onIdentityValidated: (identity: IIdentity) => void;
+  onClose?: () => void;
+  defaultIdentity?: IIdentity | null;
 }
 
-export function CreateIdentityModal({ isOpen, onIdentityCreated }: Props) {
+export function CreateIdentityModal({
+  isOpen,
+  onIdentityValidated,
+  onClose,
+  defaultIdentity,
+}: Props) {
   const { t } = useTranslation();
 
-  const defaultAvatarSeed = uuidv4();
+  const [storedNickname, setStoredNickname] = useLocalStorage<string | null>(
+    "nickname",
+    null
+  );
+  const [storedAvatarSeed, setStoredAvatarSeed] = useLocalStorage<
+    string | null
+  >("avatarSeed", null);
 
   const identityForm = useFormik<IIdentity>({
     initialValues: {
-      nickname: uniqueNamesGenerator({
-        separator: "",
-        style: "capital",
-        dictionaries: [adjectives, animals],
-      }),
-      avatarSeed: defaultAvatarSeed,
+      nickname: storedNickname
+        ? storedNickname
+        : uniqueNamesGenerator({
+            separator: " ",
+            style: "capital",
+            dictionaries: [adjectives, animals],
+          }),
+      avatarSeed: storedAvatarSeed ? storedAvatarSeed : uuidv4(),
     },
     validationSchema: Yup.object({
       nickname: Yup.string()
@@ -43,20 +59,33 @@ export function CreateIdentityModal({ isOpen, onIdentityCreated }: Props) {
         .trim(),
       avatarSeed: Yup.string().uuid().required(),
     }),
-    onSubmit: (values) => {
-      onIdentityCreated(values);
+    onSubmit: (identity) => {
+      onIdentityValidated(identity);
+      setStoredNickname(identity.nickname);
+      setStoredAvatarSeed(identity.avatarSeed);
     },
   });
 
-  function randomizeSize(e) {
+  function randomizeSeed(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
 
     identityForm.setFieldValue("avatarSeed", uuidv4());
   }
 
+  useEffect(() => {
+    if (isOpen && defaultIdentity) {
+      identityForm.setFieldValue("avatarSeed", defaultIdentity.avatarSeed);
+      identityForm.setFieldValue("nickname", defaultIdentity.nickname);
+    }
+  }, [isOpen, defaultIdentity]);
+
   return (
     <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-10" onClose={() => {}}>
+      <Dialog
+        as="div"
+        className="relative z-10"
+        onClose={onClose ? onClose : () => {}}
+      >
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -101,7 +130,8 @@ export function CreateIdentityModal({ isOpen, onIdentityCreated }: Props) {
                         <Button
                           size="sm"
                           style="secondary"
-                          onClick={randomizeSize}
+                          type="button"
+                          onClick={randomizeSeed}
                           fullWidth={false}
                           className="w-32 mx-auto"
                         >
@@ -124,7 +154,7 @@ export function CreateIdentityModal({ isOpen, onIdentityCreated }: Props) {
                       type="submit"
                       disabled={!identityForm.isValid}
                     >
-                      {t("create_identity_modal.join_game")}
+                      {t("create_identity_modal.validate_identity")}
                     </Button>
                   </form>
                 </FormikProvider>

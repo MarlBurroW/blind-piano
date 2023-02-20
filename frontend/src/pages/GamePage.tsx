@@ -1,116 +1,64 @@
-import client from "../services/colyseus";
-import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
-import useAppStore from "../stores/app";
-import useGameStore from "../stores/game";
+import { useCallback, useContext } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
 import { CreateIdentityModal } from "../components/modals/CreateIdentityModal";
 import { IIdentity } from "../types";
-import { PlayerItem } from "../components/PlayerItem";
+import { PlayerList } from "../components/PlayerList";
+import { GameContext } from "../components/context/GameContext";
+import { PageTransition } from "../PageTransition";
+import { Chat } from "../components/Chat";
 
 export default function GamePage() {
-  const { roomId } = useParams<{ roomId: string }>();
-
-  const { players, storeGameState, gameRoom, storeGameRoom } = useGameStore(
-    (state) => state
-  );
-  const { me } = useGameStore((state) => state.computed);
-
-  const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const [isIdentityModalOpen, setIdentityModalOpen] = useState<any>(false);
+  const { me, isIdentityModalOpen, setState, gameRoom, leaveGame } =
+    useContext(GameContext);
 
-  function onIdentityCreated(identity: IIdentity) {
-    setIdentityModalOpen(false);
-    gameRoom?.send("create-identity", identity);
-  }
-
-  useEffect(() => {
-    async function initGameRoom() {
-      if (!gameRoom) {
-        if (roomId) {
-          try {
-            const room = await client.joinById(roomId);
-            storeGameRoom(room);
-          } catch (err) {
-            toast.error(t("client_error_messages.join_failed"));
-            navigate("/");
-          }
-        } else {
-          navigate("/");
-        }
-      } else {
-        storeGameRoom(gameRoom);
-      }
-    }
-    initGameRoom();
-  }, []);
-
-  function handleStateChange(state: any) {
-    storeGameState(state);
-  }
-
-  useEffect(() => {
-    if (gameRoom) {
-      gameRoom.onMessage("create-identity", () => {
-        setIdentityModalOpen(true);
+  const handleIdentityValidated = useCallback(
+    (identity: IIdentity) => {
+      setState((draft) => {
+        draft.isIdentityModalOpen = false;
       });
 
-      gameRoom.onMessage("player-joined", (player) => {
-        toast.info(
-          t("notification_messages.player_joined", {
-            nickname: player.nickname,
-          })
-        );
-      });
+      gameRoom?.send("update-identity", identity);
+    },
+    [gameRoom, isIdentityModalOpen]
+  );
 
-      gameRoom.onMessage("player-left", (player) => {
-        toast.info(
-          t("notification_messages.player_left", {
-            nickname: player.nickname,
-          })
-        );
-      });
-
-      gameRoom.onMessage("new-leader", (player) => {
-        if (player.id === gameRoom.sessionId) {
-          toast.info(t("notification_messages.you_are_new_leader"));
-        } else {
-          toast.info(
-            t("notification_messages.new_leader", {
-              nickname: player.nickname,
-            })
-          );
-        }
-      });
-
-      gameRoom.onStateChange.once(handleStateChange);
-      gameRoom.onStateChange(handleStateChange);
-    }
-  }, [gameRoom]);
+  // On game room change, listen to events
 
   return (
-    <div className="flex p-10 w-full">
-      <div className="w-96  p-5 shadow-xl rounded-2xl text-center bg-base-200 dark:bg-base-800">
-        <div className="font-bold text-2xl mb-5">{t("generic.players")}</div>
-        {players.map((player) => {
-          return (
-            <PlayerItem
-              key={player.id}
-              className="mb-2"
-              player={player}
-            ></PlayerItem>
-          );
-        })}
+    <PageTransition>
+      <div className="flex w-full h-full px-5 py-5">
+        <div className="w-96 p-5 shadow-xl flex flex-col rounded-2xl text-center  bg-base-200 dark:bg-base-800">
+          <div className="font-bold text-2xl mb-5">{t("generic.players")}</div>
+          <div className="grow">
+            <PlayerList />
+          </div>
+
+          <button onClick={() => leaveGame()}>Back</button>
+        </div>
+        <div className="grow flex flex-col justify-center items-center"></div>
+
+        <div className="w-96 p-5 flex flex-col shadow-xl rounded-2xl text-center bg-base-200 dark:bg-base-800">
+          <div className="font-bold shrink text-2xl mb-5">
+            {t("generic.chat")}
+          </div>
+          <Chat />
+        </div>
       </div>
 
       <CreateIdentityModal
-        isOpen={isIdentityModalOpen}
-        onIdentityCreated={onIdentityCreated}
+        isOpen={isIdentityModalOpen || !!!me}
+        onIdentityValidated={handleIdentityValidated}
+        defaultIdentity={me ? me : null}
+        onClose={() =>
+          me
+            ? setState((draft) => {
+                draft.isIdentityModalOpen = false;
+              })
+            : null
+        }
       />
-    </div>
+    </PageTransition>
   );
 }

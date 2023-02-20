@@ -3,7 +3,7 @@ interface Props {
   disabled?: boolean;
   type?: "button" | "submit" | "reset";
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
-  style?: "primary" | "secondary";
+  style?: "primary" | "secondary" | "danger";
   size?: "sm" | "md" | "lg";
   fullWidth?: boolean;
   className?: string;
@@ -33,7 +33,12 @@ export function Button({
     },
     secondary: {
       base: `font-semibold  uppercase transition-all rounded-md  hover:tracking-widest active:bg-gradient-to-b duration-150`,
-      active: `border-primary-700 border-2 text-primary-700 bg-primary-200 dark:bg-base-800 dark:border-primary-500 dark:text-primary-500 `,
+      active: `border-primary-700 border-2 text-primary-700 bg-transparent dark:bg-transparent dark:border-primary-500 dark:text-primary-500 `,
+      disabled: `dark:bg-base-700 dark:border-base-900 bg-base-400 border-base-500 opacity-50 pointer-events-none`,
+    },
+    danger: {
+      base: `font-semibold text-white uppercase transition-all rounded-md  hover:tracking-widest active:bg-gradient-to-b  border-b-4  duration-150`,
+      active: `bg-gradient-to-t from-red-500 to-red-600 border-red-900`,
       disabled: `dark:bg-base-700 dark:border-base-900 bg-base-400 border-base-500 opacity-50 pointer-events-none`,
     },
   };

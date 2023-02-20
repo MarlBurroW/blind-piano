@@ -33,17 +33,27 @@ export default {
     client_error_messages: {
       game_not_found: "Partie introuvable",
       join_failed: "Impossible de rejoindre cette partie",
+      disconnected_from_server: "Vous avez été déconnecté du serveur",
     },
     create_identity_modal: {
-      title: "Créez votre identité",
+      title: "Mon identité",
       randomize_avatar: "Aléatoire",
       nickname_placeholder: "Comment voulez-vous être appelé?",
-      join_game: "Rejoindre la partie",
+      validate_identity: "Valider mon identité",
     },
     generic: {
       nickname: "Pseudo",
       or: "ou",
       players: "Joueurs",
+      leader: "Chef de partie",
+      you: "Vous",
+      kick: "Expulser",
+      promote_game_leader: "Promouvoir chef de partie",
+      edit_my_identity: "Modifier mon identité",
+      chat: "Chat",
+    },
+    chat: {
+      input_placeholder: "Tapez votre message ici",
     },
     validation_rules: {
       max_char: "{{max}} caractères maximum",
@@ -56,6 +66,8 @@ export default {
       player_left: "{{nickname}} a quitté la partie",
       new_leader: "{{nickname}} est le nouveau chef de partie",
       you_are_new_leader: "Vous êtes le nouveau chef de partie",
+      player_kicked: "{{nickname}} a été expulsé de la partie",
+      you_were_kicked: "Vous avez été expulsé de la partie",
     },
   },
 };

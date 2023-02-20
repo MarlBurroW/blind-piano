@@ -8,3 +8,9 @@ export interface IPlayerSchema {
   avatarSeed: string;
   id: string;
 }
+
+export interface IMessage {
+  message: string;
+  player?: Player;
+  id: string;
+}

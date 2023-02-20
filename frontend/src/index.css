@@ -11,7 +11,6 @@ body,
 }
 
 .gradient-background {
-  height: 100%;
   background: linear-gradient(62deg, #3f0576, #e73c7e);
   animation: gradient 5s ease infinite;
   background-size: 200% 200%;
@@ -147,4 +146,9 @@ body,
     opacity: 0;
     border-radius: 50%;
   }
+}
+
+.Toastify__toast-icon {
+  width: 60px;
+  height: 60px;
 }

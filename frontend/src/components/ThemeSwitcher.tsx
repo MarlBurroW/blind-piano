@@ -3,10 +3,16 @@ import React, { Fragment } from "react";
 import { Listbox, Transition } from "@headlessui/react";
 import { MoonIcon, SunIcon } from "@heroicons/react/20/solid";
 import { useAppStore } from "../stores/app";
+import { useLocalStorage } from "usehooks-ts";
 
 export function ThemeSwitcher({ className }: { className?: string }) {
   const { t } = useTranslation();
   const { theme, storeTheme } = useAppStore((state) => state);
+
+  const [storedTheme, setStoredTheme] = useLocalStorage<string>(
+    "theme",
+    "light"
+  );
 
   const themeOptions: Array<{
     value: string;
@@ -31,7 +37,10 @@ export function ThemeSwitcher({ className }: { className?: string }) {
     <div className={className}>
       <Listbox
         value={selectedOption?.value}
-        onChange={(theme) => storeTheme(theme)}
+        onChange={(theme) => {
+          storeTheme(theme);
+          setStoredTheme(theme);
+        }}
       >
         <div className="relative ">
           <Listbox.Button className="relative flex text-3xl text-white rounded-md">

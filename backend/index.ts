@@ -10,9 +10,13 @@ const app = express();
 app.use(express.static("public"));
 app.use(express.json());
 app.use("/colyseus", monitor());
+
 const gameServer = new Server({
   server: createServer(app),
 });
+
+
+
 
 gameServer.listen(port);
 

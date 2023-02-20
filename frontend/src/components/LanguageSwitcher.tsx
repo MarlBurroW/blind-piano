@@ -31,7 +31,9 @@ export function LanguageSwitcher({ className }: { className?: string }) {
     <div className={className}>
       <Listbox
         value={selectedOption?.value}
-        onChange={(lang) => i18n.changeLanguage(lang)}
+        onChange={(lang) => {
+          i18n.changeLanguage(lang);
+        }}
       >
         <div className="relative">
           <Listbox.Button className=" relative rounded-md flex relative text-3xl">

@@ -9,7 +9,7 @@ import { Room, RoomAvailable } from "colyseus.js";
 import { useEffect } from "react";
 import { useImmer } from "use-immer";
 import { useNavigate } from "react-router-dom";
-import { useAppStore } from "../stores/app";
+
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import serverErrorHandler from "../services/serverErrorHandler";
@@ -22,7 +22,11 @@ import {
 import { Button } from "../components/form/Button";
 
 import { RoomItem } from "../components/RoomItem";
-import { CSSTransition, TransitionGroup } from "react-transition-group";
+
+import MidiKeyboardSVG from "../assets/midi-keyboard.svg";
+import { motion, AnimatePresence } from "framer-motion";
+import { PageTransition } from "../PageTransition";
+import { useAppStore } from "../stores/app";
 
 export default function LobbyPage() {
   interface LobbyPageState {
@@ -36,7 +40,8 @@ export default function LobbyPage() {
     rooms: [],
   });
 
-  const storeGameRoom = useAppStore((state) => state.storeRoom);
+  const { storeGameRoom } = useAppStore((state) => state);
+
   const { t } = useTranslation();
 
   const visibilityOptions: Array<{ value: string; label: string }> = [
@@ -61,8 +66,6 @@ export default function LobbyPage() {
         })
         .then((room) => {
           toast.success(t("success_messages.game_created"));
-
-          console.log("ROOM CREATED", room);
 
           state.lobbyRoom?.leave();
 
@@ -89,35 +92,6 @@ export default function LobbyPage() {
       client
         .joinOrCreate("lobby")
         .then((lobby) => {
-          lobby.onMessage("rooms", (rooms) => {
-            console.log("ROOMS UPDATED");
-            setState((draft) => {
-              draft.rooms = rooms;
-            });
-          });
-
-          lobby.onMessage("+", ([roomId, room]) => {
-            console.log("ROOM ADDED");
-            setState((draft) => {
-              // Create or update a room in draft.rooms array, with roomId as the key
-              const index = draft.rooms.findIndex(
-                (r) => r.roomId === room.roomId
-              );
-              if (index === -1) {
-                draft.rooms.push(room);
-              } else {
-                draft.rooms[index] = room;
-              }
-            });
-          });
-
-          lobby.onMessage("-", (roomId) => {
-            setState((draft) => {
-              // Remove a room from draft.rooms array, with roomId as the key
-              draft.rooms = draft.rooms.filter((r) => r.roomId !== roomId);
-            });
-          });
-
           setState((draft) => {
             draft.lobbyRoom = lobby;
           });
@@ -127,55 +101,95 @@ export default function LobbyPage() {
         });
     };
     init();
+
+    return () => {
+      state.lobbyRoom?.leave();
+    };
   }, []);
 
+  useEffect(() => {
+    state.lobbyRoom?.onMessage("rooms", (rooms) => {
+      console.log("ROOMS UPDATED", rooms);
+      setState((draft) => {
+        draft.rooms = rooms;
+      });
+    });
+
+    state.lobbyRoom?.onMessage("+", ([roomId, room]) => {
+      console.log("ROOM ADDED");
+      setState((draft) => {
+        // Create or update a room in draft.rooms array, with roomId as the key
+        const index = draft.rooms.findIndex((r) => r.roomId === room.roomId);
+        if (index === -1) {
+          draft.rooms.push(room);
+        } else {
+          draft.rooms[index] = room;
+        }
+      });
+    });
+
+    state.lobbyRoom?.onMessage("-", (roomId) => {
+      setState((draft) => {
+        // Remove a room from draft.rooms array, with roomId as the key
+        draft.rooms = draft.rooms.filter((r) => r.roomId !== roomId);
+      });
+    });
+  }, [state.lobbyRoom]);
+
   return (
-    <div className="self-center max-w-7xl mx-auto grow flex gap-x-7">
-      <div className="w-full  p-10 shadow-xl rounded-2xl  bg-base-200 dark:bg-base-800 ">
-        <div className="mb-10 text-3xl font-black text-center ">
-          {t("lobby_page.create_game")}
+    <PageTransition>
+      <div className="self-center max-w-7xl mx-auto grow flex  gap-x-7">
+        <div className="w-full  p-10 shadow-xl rounded-2xl  bg-base-200 dark:bg-base-800 ">
+          <div className="mb-10 text-3xl font-black text-center ">
+            {t("lobby_page.create_game")}
+          </div>
+
+          <FormikProvider value={createGameForm}>
+            <form onSubmit={createGameForm.handleSubmit}>
+              <TextField
+                label={t("lobby_page.game_name")}
+                placeholder={t("lobby_page.game_name")}
+                name="gameName"
+              ></TextField>
+              <SelectField
+                label={t("lobby_page.visibility")}
+                name="visibility"
+                options={visibilityOptions}
+              ></SelectField>
+              <Button fullWidth disabled={!createGameForm.isValid}>
+                {t("lobby_page.create_game")}
+              </Button>
+            </form>
+          </FormikProvider>
         </div>
 
-        <FormikProvider value={createGameForm}>
-          <form onSubmit={createGameForm.handleSubmit}>
-            <TextField
-              label={t("lobby_page.game_name")}
-              placeholder={t("lobby_page.game_name")}
-              name="gameName"
-            ></TextField>
-            <SelectField
-              label={t("lobby_page.visibility")}
-              name="visibility"
-              options={visibilityOptions}
-            ></SelectField>
-            <Button fullWidth disabled={!createGameForm.isValid}>
-              {t("lobby_page.create_game")}
-            </Button>
-          </form>
-        </FormikProvider>
-      </div>
-
-      <div className="w-full p-10 shadow-xl rounded-2xl  bg-base-200 dark:bg-base-800 ">
-        <div className="mb-10  text-3xl font-black text-center">
-          {t("lobby_page.join_game")}
-        </div>
-        <div className="">
-          <TransitionGroup component={null}>
-            {state.rooms.map((room) => {
-              return (
-                <CSSTransition key={room.roomId} timeout={300} classNames="pop">
-                  <RoomItem room={room} className="mb-2"></RoomItem>
-                </CSSTransition>
-              );
-            })}
-          </TransitionGroup>
-          {state.rooms.length === 0 && (
-            <div className="text-center text-opacity-50 text-base-content">
-              {t("lobby_page.no_games")}
-            </div>
-          )}
+        <div className="w-full p-10 shadow-xl rounded-2xl  bg-base-200 dark:bg-base-800 ">
+          <div className="mb-10  text-3xl font-black text-center">
+            {t("lobby_page.join_game")}
+          </div>
+          <div className="">
+            <AnimatePresence>
+              {state.rooms.map((room) => {
+                return (
+                  <motion.div
+                    key={room.roomId}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0 }}
+                  >
+                    <RoomItem room={room} className="mb-2"></RoomItem>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+            {state.rooms.length === 0 && (
+              <div className="text-center text-opacity-50 text-base-content">
+                {t("lobby_page.no_games")}
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </PageTransition>
   );
 }
