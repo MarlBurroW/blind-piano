@@ -3,13 +3,15 @@ import React, { useEffect, useCallback, useMemo, useRef } from "react";
 import { useNavigate, useParams, useLocation, Link } from "react-router-dom";
 import { Game } from "../../../../backend/schemas/Game";
 import { Player } from "../../../../backend/schemas/Player";
+import { Message } from "../../../../backend/schemas/Message";
 import { useImmer, DraftFunction } from "use-immer";
 import { Room } from "colyseus.js";
-import { toast } from "react-toastify";
+import toast from "react-hot-toast";
+
 import client from "../../services/colyseus";
 import { useTranslation } from "react-i18next";
 import { useAppStore } from "../../stores/app";
-import { IMessage } from "../../types";
+
 import {
   onPlayerJoined,
   onPlayerKicked,
@@ -21,7 +23,6 @@ import sfx from "../../services/sfx";
 type State = {
   gameState: Game | null;
   isIdentityModalOpen: boolean;
-  messages: Array<IMessage>;
 };
 
 interface IGameContext {
@@ -33,7 +34,7 @@ interface IGameContext {
   leader: Player | null;
   isLeader: boolean;
   isIdentityModalOpen: boolean;
-  messages: Array<IMessage>;
+  messages: Array<Message>;
 }
 
 const initialContextValues = {
@@ -51,7 +52,6 @@ const initialContextValues = {
 const initialState = {
   gameState: null,
   isIdentityModalOpen: false,
-  messages: [],
 };
 
 export const GameContext =
@@ -83,7 +83,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
   // Extract state
 
-  const { gameState, isIdentityModalOpen, messages } = state;
+  const { gameState, isIdentityModalOpen } = state;
 
   // Callbacks handlers
 
@@ -186,18 +186,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       });
 
       gameRoom.onMessage("chat-message", (message) => {
-        if (message.player?.id !== meRef.current?.id) {
-          sfx.playSound("chat-message");
-        }
-
-        setState((draft) => {
-          console.log("new message", message);
-
-          if (draft.messages.length > 20) {
-            draft.messages.shift();
-          }
-          draft.messages.push(message);
-        });
+        sfx.playSound("chat-message");
       });
     }
 
@@ -217,7 +206,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         me,
         leader,
         isLeader,
-        messages,
+        messages: gameState ? gameState.messages : [],
       }}
     >
       {children}

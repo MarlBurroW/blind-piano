@@ -11,7 +11,7 @@ import { useImmer } from "use-immer";
 import { useNavigate } from "react-router-dom";
 
 import { useTranslation } from "react-i18next";
-import { toast } from "react-toastify";
+import toast from "react-hot-toast";
 import serverErrorHandler from "../services/serverErrorHandler";
 import {
   uniqueNamesGenerator,
@@ -138,9 +138,9 @@ export default function LobbyPage() {
 
   return (
     <PageTransition>
-      <div className="self-center max-w-7xl mx-auto grow flex  gap-x-7">
-        <div className="w-full  p-10 shadow-xl rounded-2xl  bg-base-200 dark:bg-base-800 ">
-          <div className="mb-10 text-3xl font-black text-center ">
+      <div className="self-center max-w-7xl mx-auto  flex  h-full items-center  gap-x-7">
+        <div className="w-full   p-10 shadow-2xl rounded-3xl bg-gradient-to-b from-shade-400 to-shade-600">
+          <div className="mb-10 text-white text-5xl  font-black text-center ">
             {t("lobby_page.create_game")}
           </div>
 
@@ -151,11 +151,13 @@ export default function LobbyPage() {
                 placeholder={t("lobby_page.game_name")}
                 name="gameName"
               ></TextField>
-              <SelectField
-                label={t("lobby_page.visibility")}
-                name="visibility"
-                options={visibilityOptions}
-              ></SelectField>
+              <div className="mb-10">
+                <SelectField
+                  label={t("lobby_page.visibility")}
+                  name="visibility"
+                  options={visibilityOptions}
+                ></SelectField>
+              </div>
               <Button fullWidth disabled={!createGameForm.isValid}>
                 {t("lobby_page.create_game")}
               </Button>
@@ -163,7 +165,7 @@ export default function LobbyPage() {
           </FormikProvider>
         </div>
 
-        <div className="w-full p-10 shadow-xl rounded-2xl  bg-base-200 dark:bg-base-800 ">
+        <div className="w-full   p-10 shadow-2xl rounded-3xl bg-gradient-to-b from-shade-400 to-shade-600">
           <div className="mb-10  text-3xl font-black text-center">
             {t("lobby_page.join_game")}
           </div>

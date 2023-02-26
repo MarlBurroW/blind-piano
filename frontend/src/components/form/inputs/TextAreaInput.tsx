@@ -26,7 +26,7 @@ export const TextAreaInput = ({
       placeholder={placeholder}
       onChange={onChange}
       disabled={disabled}
-      className={`${className} resize-none w-full bg-base-100 dark:ring-primary-500  dark:bg-base-700 py-3 px-5 outline-none ring-primary-700 focus:outline-none focus:ring rounded-lg ${
+      className={`${className} resize-none w-full bg-base-100 py-3 px-5 outline-none ring-primary-700 focus:outline-none focus:ring rounded-lg ${
         error ? "ring-red-400 outline-red-400" : ""
       }`}
     />

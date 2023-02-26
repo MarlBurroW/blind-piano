@@ -83,7 +83,7 @@ export function CreateIdentityModal({
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog
         as="div"
-        className="relative z-10"
+        className="relative z-10 text-white"
         onClose={onClose ? onClose : () => {}}
       >
         <Transition.Child
@@ -98,8 +98,8 @@ export function CreateIdentityModal({
           <div className="fixed inset-0 bg-black bg-opacity-25" />
         </Transition.Child>
 
-        <div className="fixed inset-0 overflow-y-auto dark:text-slate-300 text-slate-700">
-          <div className="flex min-h-full items-center justify-center p-4 text-center">
+        <div className="fixed inset-0 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4 text-center ">
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-300"
@@ -109,7 +109,7 @@ export function CreateIdentityModal({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-base-200 dark:bg-base-800 p-10 text-left align-middle shadow-xl transition-all">
+              <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden  p-10 text-left align-middle  transition-all  shadow-2xl rounded-3xl bg-gradient-to-b from-shade-400 to-shade-600">
                 <FormikProvider value={identityForm}>
                   <form onSubmit={identityForm.handleSubmit}>
                     <Dialog.Title className="text-lg font-medium  text-center mb-10 ">

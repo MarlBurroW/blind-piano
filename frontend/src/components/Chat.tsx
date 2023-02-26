@@ -6,12 +6,13 @@ import { GameContext } from "../components/context/GameContext";
 import { ChatMessage } from "./ChatMessage";
 import { AnimatePresence, AnimateSharedLayout, motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
+import { AiOutlineSend } from "react-icons/ai";
 
 export function Chat() {
   const [message, setMessage] = useState<string>("");
 
   const { sendChatMessage } = useGameActions();
-  const { messages } = useContext(GameContext);
+  const { messages, me } = useContext(GameContext);
   const { t } = useTranslation();
 
   const scrollRef = useRef<HTMLDivElement>();
@@ -23,7 +24,13 @@ export function Chat() {
         behavior: "smooth",
       });
     }
-  }, [messages]);
+  }, [messages[messages.length - 1]?.id]);
+
+  const sendMessage = useCallback(() => {
+    if (message.length === 0) return;
+    sendChatMessage(message);
+    setMessage("");
+  }, [message]);
 
   const onEnterPress = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -33,8 +40,7 @@ export function Chat() {
         if (message.length === 0) return;
 
         console.log("Enter pressed");
-        sendChatMessage(message);
-        setMessage("");
+        sendMessage();
       }
     },
     [message]
@@ -44,31 +50,40 @@ export function Chat() {
     <>
       <div
         ref={scrollRef}
-        className="overflow-y-scroll h-full dark:bg-base-900 bg-base-300 mb-5 rounded-lg p-4"
+        className="overflow-y-scroll h-full bg-gradient-to-b from-shade-600 to-shade-600 mb-5 rounded-3xl p-4"
       >
         <AnimateSharedLayout mode="wait">
           {messages.map((message) => (
             <motion.div
               layout
               key={message.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 50 }}
             >
-              <ChatMessage message={message}></ChatMessage>
+              <ChatMessage me={me ? me : null} message={message}></ChatMessage>
             </motion.div>
           ))}
         </AnimateSharedLayout>
       </div>
       <div className="shrink">
-        <TextareaAutosize
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          maxRows={4}
-          onKeyDown={onEnterPress}
-          placeholder={t("chat.input_placeholder")}
-          className="resize-none w-full bg-base-100 dark:ring-primary-500  dark:bg-base-700 py-3 px-5 outline-none ring-primary-700 focus:outline-none focus:ring rounded-lg"
-        ></TextareaAutosize>
+        <div className="flex">
+          <TextareaAutosize
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            maxRows={4}
+            onKeyDown={onEnterPress}
+            placeholder={t("chat.input_placeholder")}
+            className="resize-none mr-2 w-full bg-shade-200  py-3 px-5 outline-none  ring-primary-300 focus:outline-none focus:ring rounded-l-3xl "
+          ></TextareaAutosize>
+
+          <button
+            className="px-5 py-3 transition-all bg-gradient-to-b from-primary-400 via-primary-500 to-primary-600 rounded-r-3xl duration-300  bg-size-200 bg-pos-0 hover:bg-pos-100`"
+            onClick={sendMessage}
+          >
+            <AiOutlineSend className="text-2xl" />
+          </button>
+        </div>
       </div>
     </>
   );

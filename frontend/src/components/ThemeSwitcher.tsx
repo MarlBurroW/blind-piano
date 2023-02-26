@@ -54,10 +54,10 @@ export function ThemeSwitcher({ className }: { className?: string }) {
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <Listbox.Options className="absolute bg-base-300 dark:bg-base-800 right-0 z-10 mt-3 rounded-md shadow-lg bg-base-300 w-3xl">
+            <Listbox.Options className="absolute bg-base-300 right-0 z-10 mt-3 rounded-md shadow-lg bg-base-300 w-3xl">
               {themeOptions.map((option) => (
                 <Listbox.Option
-                  className="flex px-4 py-2 cursor-pointer dark:hover:bg-base-700 hover:bg-base-100"
+                  className="flex px-4 py-2 cursor-pointer  hover:bg-base-100"
                   key={option.value}
                   value={option.value}
                 >

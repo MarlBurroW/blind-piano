@@ -6,9 +6,12 @@ import { Player } from "../schemas/Player";
 import { IIdentity } from "../types";
 import kleur from "kleur";
 import { v4 as uuidv4 } from "uuid";
+import { off } from "process";
+import Message from "../schemas/Message";
 
 export class GameRoom extends Room<Game> {
   maxClients = 8;
+  maxMessages = 20;
   autoDispose: false = false;
   emptyRoomTimeoutTime: number = 1000 * 5;
   emptyRoomTimeout: null | ReturnType<typeof setTimeout> = null;
@@ -36,13 +39,17 @@ export class GameRoom extends Room<Game> {
 
     this.setState(new Game());
 
-    this.onMessage("chat-message", async (client, message) => {
+    if (validatedOptions.name) {
+      this.state.name = validatedOptions.name;
+    }
+
+    this.onMessage("chat-message", async (client, messageContent) => {
       const player = this.state.players.get(client.sessionId);
 
       const messageSchema = string().required().min(1).max(1024).trim();
 
       try {
-        await messageSchema.validate(message);
+        await messageSchema.validate(messageContent);
       } catch (err) {
         return;
       }
@@ -51,13 +58,21 @@ export class GameRoom extends Room<Game> {
         return;
       }
 
-      this.broadcast("chat-message", {
-        id: uuidv4(),
-        message,
-        player,
-      });
+      const message = new Message();
 
-      this.log(kleur.bold().magenta(`Message: ${message}`), {
+      message.player = player;
+      message.message = messageContent;
+      message.id = uuidv4();
+
+      this.state.messages.push(message);
+
+      this.broadcast("chat-message", message, { except: client });
+
+      if (this.state.messages.length > this.maxMessages) {
+        this.state.messages.shift();
+      }
+
+      this.log(kleur.bold().magenta(`Message: ${message.message}`), {
         player,
       });
     });

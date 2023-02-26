@@ -36,12 +36,10 @@ export function PlayerItem({
         <>
           <Popover.Button
             className={` ${
-              isMe ? "border-primary-700 dark:border-primary-500" : ""
+              isMe ? "border-primary-400" : ""
             } p-3 flex w-full items-center relative ${
-              open
-                ? "ring-2 ring-primary-700 dark:ring-primary-500"
-                : "dark:bg-base-900"
-            }  cursor-pointer bg-base-100 dark:bg-base-900 border-primary-700 rounded-md shadow-md`}
+              open ? "ring-4 ring-primary-400 " : ""
+            }  cursor-pointer bg-gradient-to-b from-shade-200 to-shade-300  rounded-3xl shadow-md`}
           >
             <Avatar
               background={true}
@@ -52,9 +50,9 @@ export function PlayerItem({
             ></Avatar>
 
             {isMe && (
-              <div className="absolute top-0 right-0 overflow-hidden rounded-tr-md rounded-bl-md flex">
+              <div className="absolute top-0 right-0 overflow-hidden rounded-tr-3xl rounded-bl-3xl flex">
                 {isMe && (
-                  <div className="text-xs   bg-primary-700 dark:bg-primary-500 py-1 uppercase px-4 text-white ">
+                  <div className="text-xs   bg-secondary-400  py-1 uppercase px-8 text-white ">
                     {t("generic.you")}
                   </div>
                 )}
@@ -66,7 +64,7 @@ export function PlayerItem({
 
               <div className="flex gap-2">
                 {isLeader && (
-                  <div className="text-xs bg-primary-700 dark:bg-primary-500 px-3 py-1 text-white rounded-md flex">
+                  <div className="text-xs border-2 border-secondary-400 text-secondary-400 px-3 py-1 text-white rounded-md flex">
                     <TbCrown className="mr-2 text-lg" />
                     {t("generic.leader")}
                   </div>
@@ -83,10 +81,10 @@ export function PlayerItem({
             leaveFrom="transform scale-100 opacity-100 translate-x-full"
             leaveTo="transform scale-0 opacity-0 translate-x-0"
           >
-            <Popover.Panel className="absolute w-80 drop-shadow-md rounded-md overflow-hidden  z-10 top-0 -right-9 bg-base-100 dark:bg-base-900 transform ">
+            <Popover.Panel className="absolute w-80 drop-shadow-md rounded-md overflow-hidden  z-10 top-0 -right-9 bg-gradient-to-b from-shade-200 to-shade-300 transform ">
               {isMe && (
                 <div
-                  className="px-5 py-4 cursor-pointer  hover:bg-base-200 flex justify-start dark:hover:bg-base-800"
+                  className="px-5 py-4 cursor-pointer  hover:bg-primary-400 flex justify-start "
                   onClick={() =>
                     setState((draft) => {
                       draft.isIdentityModalOpen = true;
@@ -100,14 +98,14 @@ export function PlayerItem({
               {meIsLeader && !isMe && (
                 <>
                   <div
-                    className="px-5  py-4 cursor-pointer  hover:bg-base-200 dark:hover:bg-base-800 flex items-center justify-start"
+                    className="px-5  py-4 cursor-pointer  hover:bg-primary-400  flex items-center justify-start"
                     onClick={() => promoteGameLeader(player.id)}
                   >
                     <TbCrown className="text-2xl mr-4" />{" "}
                     {t("generic.promote_game_leader")}
                   </div>
                   <div
-                    className="px-5 py-4 cursor-pointer text-red-600 dark:text-red-400 hover:bg-base-200 flex justify-start dark:hover:bg-base-800"
+                    className="px-5 py-4 cursor-pointer text-red-300  hover:bg-primary-400 flex justify-start "
                     onClick={() => kickPlayer(player.id)}
                   >
                     <RxExit className="text-2xl mr-4"></RxExit>{" "}

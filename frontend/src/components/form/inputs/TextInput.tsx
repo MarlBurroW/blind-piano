@@ -29,7 +29,7 @@ export const TextInput = ({
       placeholder={placeholder}
       onChange={onChange}
       disabled={disabled}
-      className={`${className} w-full bg-base-100 dark:ring-primary-500  dark:bg-base-700 mb-2 py-3 px-5 outline-none ring-primary-700 focus:outline-none focus:ring rounded-lg ${
+      className={`${className} w-full bg-shade-200 mb-2 py-3 px-5 outline-none  ring-primary-300 focus:outline-none focus:ring rounded-3xl ${
         error ? "ring-red-400 outline-red-400" : ""
       }`}
     />
