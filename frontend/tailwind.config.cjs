@@ -30,7 +30,7 @@ module.exports = {
           900: "#1D0A48",
         },
 
-        secondary: colors.teal,
+        secondary: colors.cyan,
 
         shade: {
           DEFAULT: "#35325A",

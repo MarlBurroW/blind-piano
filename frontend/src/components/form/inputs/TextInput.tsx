@@ -9,6 +9,7 @@ interface Props {
   error?: boolean;
   disabled?: boolean;
   className?: string;
+  style?: "primary" | "secondary";
 }
 
 export const TextInput = ({
@@ -20,7 +21,13 @@ export const TextInput = ({
   disabled,
   error = false,
   className,
+  style = "primary",
 }: Props) => {
+  const styles = {
+    primary: "ring-primary-300",
+    secondary: "ring-secondary-400",
+  };
+
   return (
     <input
       type={type}
@@ -29,7 +36,9 @@ export const TextInput = ({
       placeholder={placeholder}
       onChange={onChange}
       disabled={disabled}
-      className={`${className} w-full bg-shade-200 mb-2 py-3 px-5 outline-none  ring-primary-300 focus:outline-none focus:ring rounded-3xl ${
+      className={`${className} ${
+        styles[style]
+      } w-full bg-shade-200 mb-2 py-4 px-5 outline-none   focus:outline-none focus:ring rounded-3xl ${
         error ? "ring-red-400 outline-red-400" : ""
       }`}
     />

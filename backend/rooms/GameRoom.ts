@@ -119,6 +119,30 @@ export class GameRoom extends Room<Game> {
       this.electNewLeaderIfNecessary();
     });
 
+    this.onMessage("noteon", async (client, note) => {
+      const player = this.state.players.get(client.sessionId);
+
+      if (player) {
+        note.playerId = player.id;
+        note.color = player.color;
+        this.broadcast("noteon", note, { except: client });
+      }
+
+      this.log(kleur.bold().cyan(`Note On: ${note.number}`), { player });
+    });
+
+    this.onMessage("noteoff", async (client, note) => {
+      const player = this.state.players.get(client.sessionId);
+
+      if (player) {
+        note.playerId = player.id;
+        note.color = player.color;
+        this.broadcast("noteoff", note, { except: client });
+      }
+
+      this.log(kleur.bold().cyan(`Note Off: ${note.number}`), { player });
+    });
+
     this.onMessage("kick-player", (client, playerId) => {
       const player = this.state.players.get(playerId);
       const author = this.state.players.get(client.sessionId);
@@ -193,6 +217,7 @@ export class GameRoom extends Room<Game> {
     player.nickname = identity.nickname;
     player.avatarSeed = identity.avatarSeed;
     player.id = client.sessionId;
+    player.color = this.getAvailableColor();
 
     this.state.players.set(client.sessionId, player);
 
@@ -241,6 +266,39 @@ export class GameRoom extends Room<Game> {
         this.disconnect();
       }, this.emptyRoomTimeoutTime);
     }
+  }
+
+  getAvailableColor() {
+    const colors = [
+      "#ef4444",
+      "#f97316",
+      "#eab308",
+      "#84cc16",
+      "#22c55e",
+      "#14b8a6",
+      "#0ea5e9",
+      "#6366f1",
+      "#ec4899",
+    ];
+
+    // Randomize order
+
+    for (let i = colors.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [colors[i], colors[j]] = [colors[j], colors[i]];
+    }
+
+    const usedColors = Array.from(this.state.players.values()).map(
+      (p) => p.color
+    );
+
+    const availableColors = colors.filter((c) => !usedColors.includes(c));
+
+    if (availableColors.length > 0) {
+      return availableColors[0];
+    }
+
+    return colors[0];
   }
 
   log(

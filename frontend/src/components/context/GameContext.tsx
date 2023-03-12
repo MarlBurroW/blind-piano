@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback, useMemo, useRef } from "react";
 
-import { useNavigate, useParams, useLocation, Link } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Game } from "../../../../backend/schemas/Game";
 import { Player } from "../../../../backend/schemas/Player";
 import { Message } from "../../../../backend/schemas/Message";

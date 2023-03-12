@@ -15,6 +15,7 @@ interface Props<ValueType> {
   onChange?: (value: any) => void;
   error?: boolean;
   disabled?: boolean;
+  style?: "primary" | "secondary";
 }
 
 export const SelectInput = ({
@@ -23,6 +24,7 @@ export const SelectInput = ({
   error,
   onChange,
   disabled,
+  style = "primary",
 }: Props<any>) => {
   const [selectedOption, setSelectedOption] = useState<Option<any>>(options[0]);
 
@@ -33,6 +35,17 @@ export const SelectInput = ({
       setSelectedOption(defaultOption);
     }
   }, [value]);
+
+  const styles = {
+    primary: {
+      button: "ring-primary-300",
+      activeOption: "bg-primary-400",
+    },
+    secondary: {
+      button: "ring-secondary-400",
+      activeOption: "bg-secondary-400",
+    },
+  };
 
   return (
     <Listbox
@@ -46,7 +59,9 @@ export const SelectInput = ({
       {({ open }) => (
         <div className={`relative mt-1 rounded-lg`}>
           <Listbox.Button
-            className={`relative text-left ring-primary-300 focus:ring w-full bg-shade-200  py-3 px-5 rounded-3xl ${
+            className={`relative text-left ${
+              styles[style].button
+            } focus:ring w-full bg-shade-200  py-4 px-5 rounded-3xl ${
               open ? "drop-shadow-lg rounded-b-none" : ""
             }  ${error ? "input-error " : ""}`}
           >
@@ -64,13 +79,13 @@ export const SelectInput = ({
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <Listbox.Options className="absolute z-10 w-full overflow-auto text-base border-none rounded-b-3xl drop-shadow-lg border-primary-700  max-h-60 bg-base-100 sm:text-sm">
+            <Listbox.Options className="absolute z-20 w-full overflow-auto text-base border-none rounded-b-3xl drop-shadow-lg border-primary-700  max-h-60 bg-base-100 sm:text-sm">
               {options.map((option, optionIdx) => (
                 <Listbox.Option
                   key={optionIdx}
                   className={({ active }) =>
                     `relative cursor-pointer select-none py-3 pl-10 pr-4 bg-shade-200 ${
-                      active ? "bg-primary-400 text-white" : ""
+                      active ? `${styles[style].activeOption} text-white` : ""
                     }`
                   }
                   value={option}

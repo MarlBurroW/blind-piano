@@ -21,6 +21,7 @@ export default {
       join_game: "Rejoindre une partie",
       game_name: "Nom de la partie",
       visibility: "Visibilité",
+      made_by: "Réalisé avec ❤️ par",
     },
 
     success_messages: {
@@ -34,6 +35,8 @@ export default {
       game_not_found: "Partie introuvable",
       join_failed: "Impossible de rejoindre cette partie",
       disconnected_from_server: "Vous avez été déconnecté du serveur",
+      webmidi_failed:
+        "WebMidi n'a pas pu être activé. Veuillez vérifier les paramètres de votre navigateur et recharger la page.",
     },
     create_identity_modal: {
       title: "Mon identité",
@@ -51,6 +54,8 @@ export default {
       promote_game_leader: "Promouvoir chef de partie",
       edit_my_identity: "Modifier mon identité",
       chat: "Chat",
+      select_midi_device: "Sélectionner un périphérique MIDI",
+      invite_friends: "Inviter des amis",
     },
     chat: {
       input_placeholder: "Tapez votre message ici",
@@ -68,6 +73,8 @@ export default {
       you_are_new_leader: "Vous êtes le nouveau chef de partie",
       player_kicked: "{{nickname}} a été expulsé de la partie",
       you_were_kicked: "Vous avez été expulsé de la partie",
+      webmidi_enabled: "WebMidi activé avec succès",
+      link_copied: "Lien copié dans le presse-papier",
     },
   },
 };

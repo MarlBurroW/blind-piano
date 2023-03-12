@@ -2,13 +2,15 @@ import { useCallback, useContext } from "react";
 import { useTranslation } from "react-i18next";
 import { CreateIdentityModal } from "../components/modals/CreateIdentityModal";
 import { IIdentity } from "../types";
-import { PlayerList } from "../components/PlayerList";
+
 import { GameContext } from "../components/context/GameContext";
 import { PageTransition } from "../PageTransition";
-import { Chat } from "../components/Chat";
-import { RxExit } from "react-icons/rx";
-import { Button } from "../components/form/Button";
 import { useCopyToClipboard } from "usehooks-ts";
+
+import { Keyboard } from "../components/Keyboard";
+import { GamePanel } from "../components/GamePanel";
+import { RightPanel } from "../components/RightPanel";
+import { LeftPanel } from "../components/LeftPanel";
 
 export default function GamePage() {
   const { t } = useTranslation();
@@ -33,43 +35,17 @@ export default function GamePage() {
 
   return (
     <PageTransition>
-      <div className="flex w-full h-full  py-5 px-5">
-        <div className="w-96 p-5 shadow-2xl rounded-3xl bg-gradient-to-b from-shade-400 to-shade-600">
-          <div className="font-bold text-2xl mb-5 text-center">
-            {t("generic.players")}
-          </div>
-          <div className="grow">
-            <PlayerList />
-          </div>
+      <div className="flex h-full max-h-[calc(100vh-80px)] py-5 px-5">
+        <div className="h-full w-96 shrink-0">
+          <LeftPanel></LeftPanel>
         </div>
-        <div className="grow flex flex-col items-center px-4">
-          <div className="w-full h-full overflow-hidden text-center shadow-2xl rounded-3xl bg-gradient-to-b from-shade-400 to-shade-500 mb-4">
-            <div className="flex justify-between items-center p-5 bg-shade-600">
-              <div>
-                <span className="font-bold mr-4">
-                  {gameRoom ? gameRoom.state.name : ""}
-                </span>
-
-                <Button onClick={() => copy("A")} size="sm" style="primary">
-                  Copy link
-                </Button>
-
-                <p>Copied value: {value ?? "Nothing is copied yet!"}</p>
-              </div>
-
-              <button onClick={() => leaveGame()}>
-                <RxExit />
-              </button>
-            </div>
-          </div>
-          <div className="w-full h-full p-5  h-[500px] text-center shadow-2xl rounded-3xl bg-gradient-to-b from-shade-400 to-shade-600"></div>
+        <div className="grow flex flex-col items-center px-4 overflow-x-auto">
+          <GamePanel></GamePanel>
+          <Keyboard></Keyboard>
         </div>
 
-        <div className="w-96 p-5 flex flex-col  shadow-2xl rounded-3xl bg-gradient-to-b from-shade-400 to-shade-600">
-          <div className="font-bold shrink text-2xl mb-5 text-center">
-            {t("generic.chat")}
-          </div>
-          <Chat />
+        <div className="shrink-0 h-full w-96">
+          <RightPanel></RightPanel>
         </div>
       </div>
 

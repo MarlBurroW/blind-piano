@@ -50,7 +50,7 @@ export function Chat() {
     <>
       <div
         ref={scrollRef}
-        className="overflow-y-scroll h-full bg-gradient-to-b from-shade-600 to-shade-600 mb-5 rounded-3xl p-4"
+        className="overflow-y-scroll overflow-x-hidden h-full  bg-gradient-to-b from-shade-600 to-shade-700   p-4"
       >
         <AnimateSharedLayout mode="wait">
           {messages.map((message) => (
@@ -74,11 +74,11 @@ export function Chat() {
             maxRows={4}
             onKeyDown={onEnterPress}
             placeholder={t("chat.input_placeholder")}
-            className="resize-none mr-2 w-full bg-shade-200  py-3 px-5 outline-none  ring-primary-300 focus:outline-none focus:ring rounded-l-3xl "
+            className="resize-none  w-full bg-shade-200  py-4 px-5 outline-none   focus:outline-none  rounded-bl-3xl "
           ></TextareaAutosize>
 
           <button
-            className="px-5 py-3 transition-all bg-gradient-to-b from-primary-400 via-primary-500 to-primary-600 rounded-r-3xl duration-300  bg-size-200 bg-pos-0 hover:bg-pos-100`"
+            className="px-5 py-4 transition-all bg-gradient-to-b from-primary-400 via-primary-500 to-primary-600 rounded-br-3xl duration-300  bg-size-200 bg-pos-0 hover:bg-pos-100`"
             onClick={sendMessage}
           >
             <AiOutlineSend className="text-2xl" />

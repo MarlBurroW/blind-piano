@@ -26,12 +26,12 @@ export function ChatMessage({
       <div
         className={`p-3 ${
           isMe
-            ? "text-left  bg-gradient-to-b from-primary-400 to-primary-500  "
-            : "text-left  bg-gradient-to-b from-shade-300 to-shade-400 "
+            ? "text-left  bg-gradient-to-b from-secondary-400 to-secondary-500 text-white"
+            : "text-left  bg-gradient-to-b from-primary-400 to-primary-500 text-white text-opacity-70 "
         }  items-start rounded-2xl flex flex-col`}
       >
-        <div className={`font-bold`}>{message.player?.nickname}</div>
-        <div className="whitespace-pre-wrap font-thin text-white text-opacity-70 overflow-hidden break-all">
+        <div className={`font-normal`}>{message.player?.nickname}</div>
+        <div className="whitespace-pre-wrap font-light  overflow-hidden break-all">
           {message.message}
         </div>
       </div>

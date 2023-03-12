@@ -20,6 +20,7 @@ export default {
       game_name: "Game name",
       visibility: "Visibility",
       no_games: "No games in progress",
+      made_by: "Made with ❤️ by",
     },
     success_messages: {
       game_created: "Game created successfully",
@@ -32,9 +33,11 @@ export default {
       game_not_found: "Game not found",
       join_failed: "Unable to join this game",
       disconnected_from_server: "You have been disconnected from the server",
+      webmidi_failed:
+        "WebMidi could not be enabled. Please check your browser settings and reload the page.",
     },
     create_identity_modal: {
-      title: "Mu identity",
+      title: "My identity",
       randomize_avatar: "Randomize",
       nickname_placeholder: "How you want to be called?",
       validate_identity: "Validate my identity",
@@ -49,6 +52,8 @@ export default {
       promote_game_leader: "Promote game leader",
       edit_my_identity: "Edit my identity",
       chat: "Chat",
+      select_midi_device: "Select a MIDI device",
+      invite_friends: "Invite friends",
     },
     chat: {
       input_placeholder: "Type your message here",
@@ -67,6 +72,8 @@ export default {
       you_are_new_leader: "You are the new game leader",
       player_kicked: "{{nickname}} was kicked from the game",
       you_were_kicked: "You were kicked from the game",
+      webmidi_enabled: "WebMidi successfully enabled",
+      link_copied: "Link copied to clipboard",
     },
   },
 };

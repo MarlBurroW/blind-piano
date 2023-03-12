@@ -23,10 +23,11 @@ import { Button } from "../components/form/Button";
 
 import { RoomItem } from "../components/RoomItem";
 
-import MidiKeyboardSVG from "../assets/midi-keyboard.svg";
+import Logo from "../assets/midi-keyboard.png";
 import { motion, AnimatePresence } from "framer-motion";
 import { PageTransition } from "../PageTransition";
 import { useAppStore } from "../stores/app";
+import { Panel } from "../components/Panel";
 
 export default function LobbyPage() {
   interface LobbyPageState {
@@ -138,58 +139,77 @@ export default function LobbyPage() {
 
   return (
     <PageTransition>
-      <div className="self-center max-w-7xl mx-auto  flex  h-full items-center  gap-x-7">
-        <div className="w-full   p-10 shadow-2xl rounded-3xl bg-gradient-to-b from-shade-400 to-shade-600">
-          <div className="mb-10 text-white text-5xl  font-black text-center ">
-            {t("lobby_page.create_game")}
-          </div>
+      <div className="self-center pt-10 max-w-7xl mx-auto justify-center flex-col h-full  items-center  gap-x-7">
+        <div className="flex flex-col items-center w-full">
+          <img className="h-44 lg:h-48 2xl:h-64 mb-10" src={Logo}></img>
 
-          <FormikProvider value={createGameForm}>
-            <form onSubmit={createGameForm.handleSubmit}>
-              <TextField
-                label={t("lobby_page.game_name")}
-                placeholder={t("lobby_page.game_name")}
-                name="gameName"
-              ></TextField>
-              <div className="mb-10">
-                <SelectField
-                  label={t("lobby_page.visibility")}
-                  name="visibility"
-                  options={visibilityOptions}
-                ></SelectField>
-              </div>
-              <Button fullWidth disabled={!createGameForm.isValid}>
-                {t("lobby_page.create_game")}
-              </Button>
-            </form>
-          </FormikProvider>
+          <h1 className=" font-thin uppercase text-transparent text-7xl lg:text-8xl 2xl:text-9xl bg-clip-text bg-gradient-to-r from-secondary-400 to-primary-400">
+            Blind Piano
+          </h1>
+          <div className=" mb-10 text-2xl font-thin">
+            {t("lobby_page.made_by")} <strong>MarlburroW</strong>
+          </div>
         </div>
 
-        <div className="w-full   p-10 shadow-2xl rounded-3xl bg-gradient-to-b from-shade-400 to-shade-600">
-          <div className="mb-10  text-3xl font-black text-center">
-            {t("lobby_page.join_game")}
-          </div>
-          <div className="">
-            <AnimatePresence>
-              {state.rooms.map((room) => {
-                return (
-                  <motion.div
-                    key={room.roomId}
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    exit={{ scale: 0 }}
-                  >
-                    <RoomItem room={room} className="mb-2"></RoomItem>
-                  </motion.div>
-                );
-              })}
-            </AnimatePresence>
-            {state.rooms.length === 0 && (
-              <div className="text-center text-opacity-50 text-base-content">
-                {t("lobby_page.no_games")}
-              </div>
-            )}
-          </div>
+        <div className="flex gap-x-6">
+          <Panel padding={10} style="secondary" neon>
+            <div className="mb-10 text-white text-5xl  font-normal text-center ">
+              {t("lobby_page.create_game")}
+            </div>
+
+            <FormikProvider value={createGameForm}>
+              <form onSubmit={createGameForm.handleSubmit}>
+                <TextField
+                  style="secondary"
+                  label={t("lobby_page.game_name")}
+                  placeholder={t("lobby_page.game_name")}
+                  name="gameName"
+                ></TextField>
+                <div className="mb-10">
+                  <SelectField
+                    style="secondary"
+                    label={t("lobby_page.visibility")}
+                    name="visibility"
+                    options={visibilityOptions}
+                  ></SelectField>
+                </div>
+                <Button
+                  style="secondary"
+                  fullWidth
+                  disabled={!createGameForm.isValid}
+                >
+                  {t("lobby_page.create_game")}
+                </Button>
+              </form>
+            </FormikProvider>
+          </Panel>
+
+          <Panel padding={10} style="primary" neon>
+            <div className="mb-10   text-5xl font-normal text-center">
+              {t("lobby_page.join_game")}
+            </div>
+            <div className="">
+              <AnimatePresence>
+                {state.rooms.map((room) => {
+                  return (
+                    <motion.div
+                      key={room.roomId}
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      exit={{ scale: 0 }}
+                    >
+                      <RoomItem room={room} className="mb-2"></RoomItem>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+              {state.rooms.length === 0 && (
+                <div className="text-center text-opacity-50 text-base-content">
+                  {t("lobby_page.no_games")}
+                </div>
+              )}
+            </div>
+          </Panel>
         </div>
       </div>
     </PageTransition>

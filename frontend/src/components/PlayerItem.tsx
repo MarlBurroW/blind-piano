@@ -35,11 +35,12 @@ export function PlayerItem({
       {({ open }) => (
         <>
           <Popover.Button
+            style={{ borderColor: player.color }}
             className={` ${
               isMe ? "border-primary-400" : ""
             } p-3 flex w-full items-center relative ${
               open ? "ring-4 ring-primary-400 " : ""
-            }  cursor-pointer bg-gradient-to-b from-shade-200 to-shade-300  rounded-3xl shadow-md`}
+            } border-l-4 cursor-pointer bg-gradient-to-b from-shade-200 to-shade-300  rounded-3xl shadow-md`}
           >
             <Avatar
               background={true}

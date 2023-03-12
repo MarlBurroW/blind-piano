@@ -14,3 +14,10 @@ export interface IMessage {
   player?: Player;
   id: string;
 }
+
+export interface IPlayerNote {
+  number: number;
+  attack?: number;
+  playerId: string;
+  color: string;
+}

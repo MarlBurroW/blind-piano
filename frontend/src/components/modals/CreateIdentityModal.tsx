@@ -15,6 +15,7 @@ import {
 } from "unique-names-generator";
 import { IIdentity } from "../../types";
 import { Button } from "../form/Button";
+import { Panel } from "../Panel";
 
 interface Props {
   isOpen: boolean;
@@ -95,7 +96,7 @@ export function CreateIdentityModal({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black bg-opacity-25" />
+          <div className="fixed inset-0 bg-black bg-opacity-75" />
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-y-auto">
@@ -109,55 +110,57 @@ export function CreateIdentityModal({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden  p-10 text-left align-middle  transition-all  shadow-2xl rounded-3xl bg-gradient-to-b from-shade-400 to-shade-600">
-                <FormikProvider value={identityForm}>
-                  <form onSubmit={identityForm.handleSubmit}>
-                    <Dialog.Title className="text-lg font-medium  text-center mb-10 ">
-                      <div className="text-5xl font-black">
-                        {t("create_identity_modal.title")}
+              <Dialog.Panel className="w-full max-w-2xl">
+                <Panel style="primary" neon className="text-left " padding={10}>
+                  <FormikProvider value={identityForm}>
+                    <form onSubmit={identityForm.handleSubmit}>
+                      <Dialog.Title className="text-lg font-medium  text-center mb-10 ">
+                        <div className="text-5xl font-black">
+                          {t("create_identity_modal.title")}
+                        </div>
+                      </Dialog.Title>
+
+                      <div className="w-full p10">
+                        <div className="p-10 flex justify-center flex-col">
+                          <Avatar
+                            className="mb-5 w-8xl block mx-auto"
+                            circle={true}
+                            background={true}
+                            seed={identityForm.values.avatarSeed}
+                            size={320}
+                          />
+                          <Button
+                            size="sm"
+                            style="secondary"
+                            type="button"
+                            onClick={randomizeSeed}
+                            fullWidth={false}
+                            className="w-32 mx-auto"
+                          >
+                            {t("create_identity_modal.randomize_avatar")}
+                          </Button>
+                        </div>
+
+                        <TextField
+                          className="input-lg text-center"
+                          label={t("generic.nickname")}
+                          placeholder={t(
+                            "create_identity_modal.nickname_placeholder"
+                          )}
+                          name="nickname"
+                        ></TextField>
                       </div>
-                    </Dialog.Title>
 
-                    <div className="w-full p10">
-                      <div className="p-10 flex justify-center flex-col">
-                        <Avatar
-                          className="mb-5 w-8xl block mx-auto"
-                          circle={true}
-                          background={true}
-                          seed={identityForm.values.avatarSeed}
-                          size={320}
-                        />
-                        <Button
-                          size="sm"
-                          style="secondary"
-                          type="button"
-                          onClick={randomizeSeed}
-                          fullWidth={false}
-                          className="w-32 mx-auto"
-                        >
-                          {t("create_identity_modal.randomize_avatar")}
-                        </Button>
-                      </div>
-
-                      <TextField
-                        className="input-lg text-center"
-                        label={t("generic.nickname")}
-                        placeholder={t(
-                          "create_identity_modal.nickname_placeholder"
-                        )}
-                        name="nickname"
-                      ></TextField>
-                    </div>
-
-                    <Button
-                      fullWidth
-                      type="submit"
-                      disabled={!identityForm.isValid}
-                    >
-                      {t("create_identity_modal.validate_identity")}
-                    </Button>
-                  </form>
-                </FormikProvider>
+                      <Button
+                        fullWidth
+                        type="submit"
+                        disabled={!identityForm.isValid}
+                      >
+                        {t("create_identity_modal.validate_identity")}
+                      </Button>
+                    </form>
+                  </FormikProvider>
+                </Panel>
               </Dialog.Panel>
             </Transition.Child>
           </div>
