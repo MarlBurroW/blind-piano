@@ -5,30 +5,31 @@ import {
   useMemo,
   useState,
   forwardRef,
+  useEffect,
+  useRef,
   useImperativeHandle,
   useCallback,
 } from "react";
 import { IPlayerNote } from "../types";
 import { useImmer } from "use-immer";
-import { Player } from "../../../backend/schemas/Player";
-import SimpleBar from "simplebar-react";
 
 interface Props {
-  onKeyDown: (note: Note) => void;
-  onKeyUp: (note: Note) => void;
-  me: Player | null;
+  onKeyDown?: (note: Note) => void;
+  onKeyUp?: (note: Note) => void;
 }
 
 export interface KeyboardKeysRef {
-  setKeyState(note: IPlayerNote | Note, state: boolean): void;
+  setKeyState(note: IPlayerNote, state: boolean): void;
 }
 
 type State = {
   keys: Array<{ active: { [key: string]: string } }>;
 };
 
+const KEYS_NUMBER = 128;
+
 const initialState = {
-  keys: Array.from(Array(128)).map((k) => {
+  keys: Array.from(Array(KEYS_NUMBER)).map((k) => {
     return {
       active: {},
     };
@@ -36,24 +37,29 @@ const initialState = {
 };
 
 export const KeyboardKeys = forwardRef<KeyboardKeysRef | null, Props>(
-  ({ onKeyDown, onKeyUp, me }: Props, ref) => {
+  ({ onKeyDown, onKeyUp }: Props, ref) => {
     const notes = useMemo(() => {
-      const midiNoteCodes = Array.from(Array(128).keys());
+      const midiNoteCodes = Array.from(Array(KEYS_NUMBER).keys());
       return Utilities.buildNoteArray(midiNoteCodes);
     }, []);
 
     const [state, setState] = useImmer<State>(initialState);
+    const isMouseDownRef = useRef(false);
+    const [isMouseDown, setIsMouseDown] = useState(false);
+
+    useEffect(() => {
+      isMouseDownRef.current = isMouseDown;
+    }, [isMouseDown]);
+
+    useEffect(() => {
+      console.log("isMouseDown changed");
+    }, [isMouseDown]);
+
+    console.log("render keyboardKeys");
 
     const setKeyState = useMemo(() => {
-      return (note: IPlayerNote | Note, state: boolean) => {
-        const { playerId, color } =
-          "playerId" in note && "color" in note
-            ? note
-            : { playerId: me?.id, color: me?.color };
-
-        if (!playerId || !color) {
-          return;
-        }
+      return (note: IPlayerNote, state: boolean) => {
+        const { playerId, color } = note;
 
         setState((draft) => {
           const activePlayers = draft.keys[note.number].active;
@@ -64,43 +70,25 @@ export const KeyboardKeys = forwardRef<KeyboardKeysRef | null, Props>(
           }
         });
       };
-    }, [me, setState]);
+    }, [setState]);
 
     const onInternalKeyDown = useCallback(
-      (note: Note) => {
-        if (me) {
-          setKeyState(
-            { playerId: me.id, number: note.number, color: me.color },
-            true
-          );
-        }
+      (note: Note, gliss?: boolean) => {
+        if (gliss && !isMouseDownRef.current) return;
 
-        onKeyDown(note);
+        onKeyDown ? onKeyDown(note) : null;
       },
-      [me, onKeyDown]
+      [onKeyDown]
     );
 
     const onInternalKeyUp = useCallback(
-      (note: Note) => {
-        // Call onKeyUp only if the state of the key state for me.playerId has a value
+      (note: Note, gliss?: boolean) => {
+        if (gliss && !isMouseDownRef.current) return;
 
-        if (me) {
-          setKeyState(
-            { playerId: me.id, number: note.number, color: me.color },
-            false
-          );
-        }
-
-        if (me && !state.keys[note.number].active[me.id]) {
-          return;
-        }
-
-        onKeyUp(note);
+        onKeyUp ? onKeyUp(note) : null;
       },
-      [me, state, onKeyUp]
+      [onKeyUp]
     );
-
-    const [isMouseDown, setIsMouseDown] = useState(false);
 
     useImperativeHandle(ref, () => {
       return {
@@ -109,29 +97,27 @@ export const KeyboardKeys = forwardRef<KeyboardKeysRef | null, Props>(
     });
 
     return (
-      <div className="rounded-xl overflow-hidden">
-        <SimpleBar
-          onMouseLeave={() => setIsMouseDown(false)}
-          onMouseDown={() => setIsMouseDown(true)}
-          onMouseUp={() => setIsMouseDown(false)}
-          autoHide={false}
-          className="  h-64 "
-        >
-          <div className="flex transition-all   h-64 select-none pb-[2.5rem]">
-            {notes.map((note) => {
-              return (
-                <KeyboardKey
-                  key={note.number}
-                  onKeyDown={onInternalKeyDown}
-                  onKeyUp={onInternalKeyUp}
-                  gliss={isMouseDown}
-                  note={note}
-                  state={state.keys[note.number]}
-                ></KeyboardKey>
-              );
-            })}
-          </div>
-        </SimpleBar>
+      <div
+        onMouseLeave={() => setIsMouseDown(false)}
+        onMouseDown={() => setIsMouseDown(true)}
+        onMouseUp={() => setIsMouseDown(false)}
+        className="rounded-xl"
+      >
+        <div className="flex transition-all   h-[20em] select-none pb-[2.5em]">
+          {notes.map((note) => {
+            return (
+              <KeyboardKey
+                key={note.number}
+                onMouseDown={onInternalKeyDown}
+                onMouseUp={onInternalKeyUp}
+                onMouseEnter={onInternalKeyDown}
+                onMouseLeave={onInternalKeyUp}
+                note={note}
+                state={state.keys[note.number]}
+              ></KeyboardKey>
+            );
+          })}
+        </div>
       </div>
     );
   }

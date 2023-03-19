@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import i18n from "../services/i18n";
 import { Fragment } from "react";
 import { Listbox, Transition } from "@headlessui/react";
-import { GB, FR, FlagComponent } from "country-flag-icons/react/3x2";
+import { GB, FR, DE, ES, FlagComponent } from "country-flag-icons/react/3x2";
 
 export function LanguageSwitcher({ className }: { className?: string }) {
   const { t } = useTranslation();
@@ -21,6 +21,16 @@ export function LanguageSwitcher({ className }: { className?: string }) {
       value: "en",
       label: t("languages.en"),
       flag: GB,
+    },
+    {
+      value: "de",
+      label: t("languages.de"),
+      flag: DE,
+    },
+    {
+      value: "es",
+      label: t("languages.es"),
+      flag: ES,
     },
   ];
 

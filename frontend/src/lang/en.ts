@@ -5,6 +5,8 @@ export default {
     languages: {
       en: "English",
       fr: "French",
+      de: "German",
+      es: "Spanish",
     },
     themes: {
       dark: "Dark",

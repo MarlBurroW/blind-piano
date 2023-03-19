@@ -6,6 +6,8 @@ export default {
     languages: {
       en: "Anglais",
       fr: "Français",
+      de: "Allemand",
+      es: "Espagnol",
     },
     themes: {
       dark: "Sombe",

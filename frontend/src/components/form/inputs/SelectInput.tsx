@@ -34,7 +34,7 @@ export const SelectInput = ({
     if (defaultOption) {
       setSelectedOption(defaultOption);
     }
-  }, [value]);
+  }, [value, options]);
 
   const styles = {
     primary: {

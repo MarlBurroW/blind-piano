@@ -1,12 +1,14 @@
-import { useCallback, useState, useMemo } from "react";
+import { useCallback, useState, useMemo, memo, useEffect } from "react";
 import type { Note } from "webmidi";
-
+import _ from "lodash";
 interface Props {
   note: Note;
-  gliss: boolean;
-  onKeyDown: (note: Note) => void;
-  onKeyUp: (note: Note) => void;
+
   state: { active: { [key: string]: string } };
+  onMouseDown: (note: Note, gliss?: boolean) => void;
+  onMouseUp: (note: Note, gliss?: boolean) => void;
+  onMouseEnter: (note: Note, gliss?: boolean) => void;
+  onMouseLeave: (note: Note, gliss?: boolean) => void;
 }
 
 function hasAccidentalAfter(note: Note) {
@@ -19,68 +21,59 @@ function hasAccidentalAfter(note: Note) {
   }
 }
 
-export function KeyboardKey({
-  note,
-  gliss = false,
-  onKeyDown,
-  onKeyUp,
-  state,
-}: Props) {
-  const onPlayNoteInput = useCallback(() => {
-    onKeyDown(note);
-  }, [state, onKeyDown]);
+const noteClasses = {
+  normal:
+    "shadow-inner shadow-gray-400 bg-gradient-to-b from-slate-300 to-slate-100 w-[4em] h-full  relative",
+  accidental:
+    "bg-gradient-to-b from-slate-800 to-slate-900 w-[2em] h-2/3 relative left-[1em] z-10 rounded-b-md",
+};
 
-  const onStopNoteInput = useCallback(() => {
-    onKeyUp(note);
-  }, [state, onKeyUp]);
-
-  const noteClasses = {
-    normal:
-      "  shadow-inner shadow-gray-400 bg-gradient-to-b from-slate-300 to-slate-100 w-[4rem] h-full  relative",
-    accidental:
-      "bg-gradient-to-b from-slate-800 to-slate-900 w-[2rem] h-2/3 relative left-[1rem] z-10 rounded-b-md",
-  };
-
-  const gradient = useMemo(() => {
-    const colors = Object.values(state.active);
-    if (colors.length === 1) {
-      return `linear-gradient(to bottom, ${colors[0]} 0%, ${colors[0]} 100%)`;
-    }
-    const stops = [];
-    let segment = 100 / (colors.length - 1);
-
-    for (let i = 0; i < colors.length; i++) {
-      // détermine le pourcentage équivalent à ce segment.
-      const stop = `${segment * i}%`;
-
-      if (i == 0) {
-        stops.push(`${colors[0]} ${stop}`);
-      } else if (i == colors.length - 1) {
-        stops.push(`${colors[colors.length - 1]} ${stop}`);
+export const KeyboardKey = memo(
+  ({
+    note,
+    state,
+    onMouseDown,
+    onMouseUp,
+    onMouseEnter,
+    onMouseLeave,
+  }: Props) => {
+    const gradient = useMemo(() => {
+      const colors = Object.values(state.active);
+      if (colors.length === 1) {
+        return `linear-gradient(to bottom, ${colors[0]} 0%, ${colors[0]} 100%)`;
       } else {
-        stops.push(`${colors[i]} ${stop}`);
-        stops.push(`${colors[i]} ${stop}"`);
-      }
-    }
+        let stops = "";
+        const stopPercent = 100 / (colors.length - 1);
 
-    return `linear-gradient(to bottom, ${stops.join(", ")})`;
-  }, [state.active]);
+        for (let i = 0; i < colors.length; i++) {
+          // détermine le pourcentage équivalent à ce segment.
+          const stop = `${i * stopPercent}%`;
+          stops += `${colors[i]} ${stop},`;
+        }
 
-  return (
-    <div
-      style={
-        Object.keys(state.active).length > 0 ? { background: gradient } : {}
+        return `linear-gradient(to bottom, ${stops.slice(0, -1)})`;
       }
-      onMouseDown={onPlayNoteInput}
-      onMouseUp={onStopNoteInput}
-      onMouseLeave={onStopNoteInput}
-      onMouseEnter={gliss ? onPlayNoteInput : () => {}}
-      className={`${
-        note.accidental ? noteClasses.accidental : noteClasses.normal
-      } ${
-        hasAccidentalAfter(note) ? "-mr-[2rem]" : ""
-      } shrink-0 cursor-pointer relative select-none transition-all flex flex-col justify-end`}
-    ></div>
-  );
-}
+    }, [state.active]);
+
+    return (
+      <div
+        onMouseDown={() => onMouseDown(note, false)}
+        onMouseUp={() => onMouseUp(note, false)}
+        onMouseEnter={() => onMouseEnter(note, true)}
+        onMouseLeave={() => onMouseLeave(note, true)}
+        style={
+          Object.keys(state.active).length > 0 ? { background: gradient } : {}
+        }
+        className={`${
+          note.accidental ? noteClasses.accidental : noteClasses.normal
+        } ${
+          hasAccidentalAfter(note) ? "-mr-[2em]" : ""
+        } shrink-0 cursor-pointer relative select-none flex flex-col justify-end`}
+      ></div>
+    );
+  },
+  (prev, next) => {
+    return _.isEqual(prev.state.active, next.state.active);
+  }
+);
 export default KeyboardKey;
