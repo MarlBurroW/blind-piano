@@ -1,6 +1,8 @@
 import { Panel } from "../components/Panel";
 import { MidiContext } from "./context/MidiContext";
 import { GameContext } from "./context/GameContext";
+import Draggable, { DraggableEvent, DraggableData } from "react-draggable";
+
 import {
   useContext,
   useEffect,
@@ -8,6 +10,7 @@ import {
   useRef,
   useCallback,
   memo,
+  useState,
 } from "react";
 import SelectInput from "../components/form/inputs/SelectInput";
 import { useTranslation } from "react-i18next";
@@ -39,6 +42,70 @@ export function Keyboard() {
 
   const keyboardKeysRef = useRef<KeyboardKeysRef>(null);
   const previewKeyboardKeysRef = useRef<KeyboardKeysRef>(null);
+  const scrollbarRef = useRef<HTMLDivElement | null>(null);
+
+  const previewContainerRef = useRef<HTMLDivElement | null>(null);
+
+  interface ScrollState {
+    visiblePercentage: number;
+    leftPercentage: number;
+    scrollPercentage: number;
+    previewContainerWidth: number;
+    previewContainerLeft: number;
+    previewSliderWidth: number;
+    containerWidth: number;
+  }
+
+  const [scrollState, setScrollState] = useState<ScrollState>({
+    visiblePercentage: 0,
+    leftPercentage: 0,
+    scrollPercentage: 0,
+    previewContainerWidth: 0,
+    previewContainerLeft: 0,
+    previewSliderWidth: 0,
+    containerWidth: 0,
+  });
+
+  function updateScrollState() {
+    const target = scrollbarRef.current;
+
+    const leftPercentage = target
+      ? (target.scrollLeft / target.scrollWidth) * 100
+      : 0;
+    const previewContainerWidth = previewContainerRef.current?.clientWidth || 0;
+    const previewContainerLeft = (leftPercentage / 100) * previewContainerWidth;
+    const visiblePercentage = target
+      ? (target?.clientWidth / target?.scrollWidth) * 100
+      : 0;
+    const scrollPercentage = target
+      ? (target.scrollLeft / (target.scrollWidth - target.clientWidth)) * 100
+      : 0;
+
+    const previewSliderWidth =
+      previewContainerWidth * (visiblePercentage / 100);
+
+    const containerWidth = target?.scrollWidth || 0;
+
+    setScrollState({
+      previewContainerWidth,
+      previewContainerLeft,
+      containerWidth,
+      visiblePercentage,
+      leftPercentage,
+      scrollPercentage,
+      previewSliderWidth,
+    });
+  }
+
+  useEffect(() => {
+    scrollbarRef.current?.addEventListener("scroll", updateScrollState);
+    window.addEventListener("resize", updateScrollState);
+    updateScrollState();
+    return () => {
+      window.removeEventListener("resize", updateScrollState);
+      scrollbarRef.current?.removeEventListener("scroll", updateScrollState);
+    };
+  }, []);
 
   // Note received from other players
 
@@ -68,10 +135,6 @@ export function Keyboard() {
       }
     };
   }, [gameRoom, keyboardKeysRef.current, previewKeyboardKeysRef.current]);
-
-  useEffect(() => {
-    console.log("me or gameroom changed");
-  }, [me, gameRoom]);
 
   // Note received from virtual keyboard
 
@@ -111,8 +174,6 @@ export function Keyboard() {
     },
     [gameRoom, me]
   );
-
-  // Note received from midi keyboard
 
   useEffect(() => {
     selectedDevice?.addListener("noteon", (e) => {
@@ -162,6 +223,16 @@ export function Keyboard() {
 
   const MemoizedKeyboardKeys = memo(KeyboardKeys);
 
+  function onDrag(event: DraggableEvent, data: DraggableData) {
+    const scrollLeftPercentage =
+      (data.x / scrollState.previewContainerWidth) * 100;
+
+    const scrollLeft =
+      (scrollLeftPercentage / 100) * scrollState.containerWidth;
+
+    scrollbarRef.current?.scrollTo(scrollLeft, 0);
+  }
+
   return (
     <Panel>
       <div className="flex flex-col h-full">
@@ -173,18 +244,44 @@ export function Keyboard() {
             options={deviceOptions}
           ></SelectInput>
         </div>
-        <div className="text-[0.2rem] flex justify-center overflow-hidden">
-          <MemoizedKeyboardKeys
-            ref={previewKeyboardKeysRef}
-          ></MemoizedKeyboardKeys>
+        <div className="text-[0.2rem] flex  overflow-hidden mb-2">
+          <div className="relative" ref={previewContainerRef}>
+            <Draggable
+              axis="x"
+              bounds="parent"
+              onDrag={onDrag}
+              position={{
+                x: scrollState.previewContainerLeft,
+                y: 0,
+              }}
+              defaultPosition={{ x: 0, y: 0 }}
+            >
+              <div
+                style={{
+                  width: `${scrollState.visiblePercentage}%`,
+                }}
+                className="absolute  bg-primary-500 h-full cursor-ew-resize top-0 z-[2] bg-opacity-50  border-primary-200"
+              ></div>
+            </Draggable>
+
+            <div className="z-0 relative">
+              <MemoizedKeyboardKeys
+                ref={previewKeyboardKeysRef}
+              ></MemoizedKeyboardKeys>
+            </div>
+          </div>
         </div>
-        <SimpleBar autoHide={false} className=" h-[20em] ">
+
+        <div
+          ref={scrollbarRef}
+          className="h-[20em] overflow-x-scroll overflow-y-hidden relative"
+        >
           <MemoizedKeyboardKeys
             ref={keyboardKeysRef}
             onKeyUp={handleOnKeyUp}
             onKeyDown={handleOnKeyDown}
           ></MemoizedKeyboardKeys>
-        </SimpleBar>
+        </div>
       </div>
     </Panel>
   );

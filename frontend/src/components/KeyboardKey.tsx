@@ -9,6 +9,7 @@ interface Props {
   onMouseUp: (note: Note, gliss?: boolean) => void;
   onMouseEnter: (note: Note, gliss?: boolean) => void;
   onMouseLeave: (note: Note, gliss?: boolean) => void;
+  latestNote: boolean;
 }
 
 function hasAccidentalAfter(note: Note) {
@@ -36,6 +37,7 @@ export const KeyboardKey = memo(
     onMouseUp,
     onMouseEnter,
     onMouseLeave,
+    latestNote,
   }: Props) => {
     const gradient = useMemo(() => {
       const colors = Object.values(state.active);
@@ -67,7 +69,7 @@ export const KeyboardKey = memo(
         className={`${
           note.accidental ? noteClasses.accidental : noteClasses.normal
         } ${
-          hasAccidentalAfter(note) ? "-mr-[2em]" : ""
+          hasAccidentalAfter(note) && !latestNote ? "-mr-[2em]" : ""
         } shrink-0 cursor-pointer relative select-none flex flex-col justify-end`}
       ></div>
     );
