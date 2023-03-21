@@ -70,12 +70,6 @@ export const KeyboardKeys = forwardRef<KeyboardKeysRef | null, Props>(
       isMouseDownRef.current = isMouseDown;
     }, [isMouseDown]);
 
-    useEffect(() => {
-      console.log("isMouseDown changed");
-    }, [isMouseDown]);
-
-    console.log("render keyboardKeys");
-
     const setKeyState = useMemo(() => {
       return (note: IPlayerNote, state: boolean) => {
         const { playerId, color } = note;

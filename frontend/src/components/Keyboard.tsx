@@ -22,7 +22,8 @@ import { IPlayerNote } from "../types";
 import SimpleBar from "simplebar-react";
 
 export function Keyboard() {
-  const { devices, selectedDevice, selectDevice } = useContext(MidiContext);
+  const { devices, selectedDevice, selectDevice, midiBus$ } =
+    useContext(MidiContext);
   const { gameRoom, me } = useContext(GameContext);
 
   const { t, i18n } = useTranslation();
@@ -54,6 +55,7 @@ export function Keyboard() {
     previewContainerLeft: number;
     previewSliderWidth: number;
     containerWidth: number;
+    clipPathPolygon: string;
   }
 
   const [scrollState, setScrollState] = useState<ScrollState>({
@@ -64,6 +66,7 @@ export function Keyboard() {
     previewContainerLeft: 0,
     previewSliderWidth: 0,
     containerWidth: 0,
+    clipPathPolygon: "0 0, 0 0, 0 0, 0 0",
   });
 
   function updateScrollState() {
@@ -86,6 +89,17 @@ export function Keyboard() {
 
     const containerWidth = target?.scrollWidth || 0;
 
+    const clipPathPolygon = `polygon(
+      0% 0%,
+      100% 0%,
+      100% 100%,
+      ${leftPercentage + visiblePercentage}% 100%,
+      ${leftPercentage + visiblePercentage}% 0%,
+      ${leftPercentage}% 0%,
+      ${leftPercentage}% 100%,
+      0% 100%
+    )`;
+
     setScrollState({
       previewContainerWidth,
       previewContainerLeft,
@@ -94,6 +108,7 @@ export function Keyboard() {
       leftPercentage,
       scrollPercentage,
       previewSliderWidth,
+      clipPathPolygon,
     });
   }
 
@@ -149,7 +164,7 @@ export function Keyboard() {
           playerId: me.id,
           color: me.color,
         };
-
+        midiBus$?.emit("noteon", playerNote);
         keyboardKeysRef.current?.setKeyState(playerNote, true);
         previewKeyboardKeysRef.current?.setKeyState(playerNote, true);
       }
@@ -168,6 +183,7 @@ export function Keyboard() {
           playerId: me.id,
           color: me.color,
         };
+        midiBus$?.emit("noteoff", playerNote);
         keyboardKeysRef.current?.setKeyState(playerNote, false);
         previewKeyboardKeysRef.current?.setKeyState(playerNote, false);
       }
@@ -189,6 +205,7 @@ export function Keyboard() {
           playerId: me.id,
           color: me.color,
         };
+        midiBus$?.emit("noteon", playerNote);
         keyboardKeysRef.current?.setKeyState(playerNote, true);
         previewKeyboardKeysRef.current?.setKeyState(playerNote, true);
       }
@@ -204,6 +221,7 @@ export function Keyboard() {
           playerId: me.id,
           color: me.color,
         };
+        midiBus$?.emit("noteoff", playerNote);
         keyboardKeysRef.current?.setKeyState(playerNote, false);
         previewKeyboardKeysRef.current?.setKeyState(playerNote, false);
       }
@@ -260,9 +278,15 @@ export function Keyboard() {
                 style={{
                   width: `${scrollState.visiblePercentage}%`,
                 }}
-                className="absolute  bg-primary-500 h-full cursor-ew-resize top-0 z-[2] bg-opacity-50  border-primary-200"
+                className="absolute z-[4]  h-full cursor-ew-resize top-0"
               ></div>
             </Draggable>
+            <div
+              style={{
+                clipPath: scrollState.clipPathPolygon,
+              }}
+              className="overlay absolute  top-0 left-0 right-0 bottom-0 w-full h-full bg-gray-800 bg-opacity-50 z-[3]"
+            ></div>
 
             <div className="z-0 relative">
               <MemoizedKeyboardKeys

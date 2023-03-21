@@ -6,16 +6,20 @@ import { useImmer, DraftFunction } from "use-immer";
 import { WebMidi } from "webmidi";
 import type { Input } from "webmidi";
 import _ from "lodash";
+
+import EventEmitter from "eventemitter3";
 interface IMidiContext {
   devices: Array<Input>;
   selectedDevice: Input | null;
   selectDevice: (device: Input | null) => void;
+  midiBus$: EventEmitter | null;
 }
 
 const initialContextValues = {
   devices: [],
   selectedDevice: null,
   selectDevice: () => {},
+  midiBus$: null,
 };
 
 type State = {
@@ -37,6 +41,8 @@ export function MidiProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useImmer<State>(initialState);
 
   const { devices, selectedDevice } = state;
+
+  const midiBusRef = useRef(new EventEmitter());
 
   const selectDevice = useCallback((device: Input | null) => {
     if (selectedDevice) {
@@ -81,7 +87,14 @@ export function MidiProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <MidiContext.Provider value={{ devices, selectedDevice, selectDevice }}>
+    <MidiContext.Provider
+      value={{
+        devices,
+        midiBus$: midiBusRef.current,
+        selectedDevice,
+        selectDevice,
+      }}
+    >
       {children}
     </MidiContext.Provider>
   );

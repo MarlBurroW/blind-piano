@@ -88,7 +88,6 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   // Callbacks handlers
 
   const handleStateChange = (gameState: Game) => {
-    console.log("STATE CHANGE", gameState);
     setState((draft) => {
       draft.gameState = gameState.clone();
     });
@@ -139,7 +138,6 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   }, [gameRoom]);
 
   useEffect(() => {
-    console.log("PROVIDER MOUNTED");
     async function initGameRoom() {
       if (!gameRoom) {
         if (roomId) {
@@ -158,9 +156,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
     initGameRoom();
 
-    return () => {
-      console.log("PROVIDER UNMOUNTED");
-    };
+    return () => {};
   }, []);
 
   // Detect when new room is created, and bind the state change handler
@@ -181,7 +177,6 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         leaveGame();
       });
       gameRoom.onMessage("new-leader", (player) => {
-        console.log("new-leader");
         onNewLeader(player, meRef.current);
       });
 

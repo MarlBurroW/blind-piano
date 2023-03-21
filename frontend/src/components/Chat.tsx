@@ -39,7 +39,6 @@ export function Chat() {
 
         if (message.length === 0) return;
 
-        console.log("Enter pressed");
         sendMessage();
       }
     },

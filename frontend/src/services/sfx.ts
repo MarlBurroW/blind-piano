@@ -30,7 +30,6 @@ const sounds = [
 ];
 
 sounds.forEach((sound) => {
-  console.log(baseSfxUrl + sound.src);
   sfx.addSound(sound.key, baseSfxUrl + sound.src);
 });
 

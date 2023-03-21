@@ -24,7 +24,6 @@ export function onPlayerKicked(player: Player, gameRoom: Room) {
   );
 }
 export function onPlayerJoined(player: Player, gameRoom: Room) {
-  console.log("PLAYER JOINED", player);
   sfx.playSound("player-joined");
   toast.custom(
     <div className="flex">
@@ -36,7 +35,6 @@ export function onPlayerJoined(player: Player, gameRoom: Room) {
 }
 
 export function onPlayerLeft(player: Player) {
-  console.log("PLAYER LEFT", player);
   sfx.playSound("player-left");
   toast.success(
     i18n.t("notification_messages.player_left", {
@@ -46,7 +44,6 @@ export function onPlayerLeft(player: Player) {
 }
 
 export function onNewLeader(player: Player, me: Player | null) {
-  console.log("NEW LEADER", player, me);
   if (player.id === me?.id) {
     toast.success(i18n.t("notification_messages.you_are_new_leader"));
     sfx.playSound("you-are-promoted");

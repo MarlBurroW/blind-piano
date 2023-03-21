@@ -110,14 +110,12 @@ export default function LobbyPage() {
 
   useEffect(() => {
     state.lobbyRoom?.onMessage("rooms", (rooms) => {
-      console.log("ROOMS UPDATED", rooms);
       setState((draft) => {
         draft.rooms = rooms;
       });
     });
 
     state.lobbyRoom?.onMessage("+", ([roomId, room]) => {
-      console.log("ROOM ADDED");
       setState((draft) => {
         // Create or update a room in draft.rooms array, with roomId as the key
         const index = draft.rooms.findIndex((r) => r.roomId === room.roomId);
