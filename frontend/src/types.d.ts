@@ -17,7 +17,24 @@ export interface IMessage {
 
 export interface IPlayerNote {
   number: number;
-  attack?: number;
+  name: string;
+  velocity: number;
   playerId: string;
   color: string;
+}
+
+export interface IInstrument {
+  getIdentifier(): string;
+  load: () => Promise<void>;
+  setAudioContext: (audioContext: AudioContext) => void;
+  playNote: (note: IPlayerNote) => void;
+  stopNote: (note: IPlayerNote) => void;
+  dispose: () => void;
+}
+
+export interface IInstrumentItem {
+  type: string;
+  identifier: string;
+  name: string;
+  options: any;
 }

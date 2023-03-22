@@ -9,9 +9,11 @@ import {
   useRef,
   useImperativeHandle,
   useCallback,
+  memo,
 } from "react";
 import { IPlayerNote } from "../types";
 import { useImmer } from "use-immer";
+import _ from "lodash";
 
 const KEY_START = 21;
 const KEY_END = 108;
@@ -20,6 +22,7 @@ type TColor = string;
 
 type State = {
   keys: IKeysState;
+  updateCount: number;
 };
 interface Props {
   onKeyDown?: (note: Note) => void;
@@ -47,6 +50,7 @@ for (let i = KEY_START; i <= KEY_END; i++) {
 
 const initialState = {
   keys: keysState,
+  updateCount: 0,
 };
 
 function range(start: number, end: number) {
@@ -76,6 +80,8 @@ export const KeyboardKeys = forwardRef<KeyboardKeysRef | null, Props>(
 
         setState((draft) => {
           if (!draft.keys[note.number]) return;
+
+          draft.updateCount += 1;
 
           const activePlayers = draft.keys[note.number].active;
           if (state) {
@@ -111,6 +117,23 @@ export const KeyboardKeys = forwardRef<KeyboardKeysRef | null, Props>(
       };
     });
 
+    const MemoizedKeys = useMemo(() => {
+      return notes.map((note, index) => {
+        return (
+          <KeyboardKey
+            key={note.number}
+            onMouseDown={onInternalKeyDown}
+            onMouseUp={onInternalKeyUp}
+            onMouseEnter={onInternalKeyDown}
+            onMouseLeave={onInternalKeyUp}
+            latestNote={index == notes.length - 1}
+            note={note}
+            state={state.keys[note.number]}
+          ></KeyboardKey>
+        );
+      });
+    }, [state.updateCount, onInternalKeyDown, onInternalKeyUp]);
+
     return (
       <div
         onMouseLeave={() => setIsMouseDown(false)}
@@ -119,20 +142,7 @@ export const KeyboardKeys = forwardRef<KeyboardKeysRef | null, Props>(
         className="rounded-xl"
       >
         <div className="flex transition-all   h-[20em] select-none ">
-          {notes.map((note, index) => {
-            return (
-              <KeyboardKey
-                key={note.number}
-                onMouseDown={onInternalKeyDown}
-                onMouseUp={onInternalKeyUp}
-                onMouseEnter={onInternalKeyDown}
-                onMouseLeave={onInternalKeyUp}
-                latestNote={index == notes.length - 1}
-                note={note}
-                state={state.keys[note.number]}
-              ></KeyboardKey>
-            );
-          })}
+          {MemoizedKeys}
         </div>
       </div>
     );

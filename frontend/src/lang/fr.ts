@@ -46,6 +46,9 @@ export default {
       nickname_placeholder: "Comment voulez-vous être appelé?",
       validate_identity: "Valider mon identité",
     },
+    select_instrument_modal: {
+      title: "Mon instrument",
+    },
     generic: {
       nickname: "Pseudo",
       or: "ou",

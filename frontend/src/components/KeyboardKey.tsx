@@ -3,7 +3,6 @@ import type { Note } from "webmidi";
 import _ from "lodash";
 interface Props {
   note: Note;
-
   state: { active: { [key: string]: string } };
   onMouseDown: (note: Note, gliss?: boolean) => void;
   onMouseUp: (note: Note, gliss?: boolean) => void;
@@ -73,9 +72,7 @@ export const KeyboardKey = memo(
         } shrink-0 cursor-pointer relative select-none flex flex-col justify-end`}
       ></div>
     );
-  },
-  (prev, next) => {
-    return _.isEqual(prev.state.active, next.state.active);
   }
 );
+
 export default KeyboardKey;

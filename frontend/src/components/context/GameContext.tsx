@@ -1,4 +1,10 @@
-import React, { useEffect, useCallback, useMemo, useRef } from "react";
+import React, {
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+  useContext,
+} from "react";
 
 import { useNavigate, useParams } from "react-router-dom";
 import { Game } from "../../../../backend/schemas/Game";
@@ -11,6 +17,7 @@ import toast from "react-hot-toast";
 import client from "../../services/colyseus";
 import { useTranslation } from "react-i18next";
 import { useAppStore } from "../../stores/app";
+import { MidiContext } from "./MidiContext";
 
 import {
   onPlayerJoined,
@@ -19,6 +26,7 @@ import {
   onNewLeader,
 } from "../../handlers/GameHandlers";
 import sfx from "../../services/sfx";
+import { IPlayerNote } from "../../types";
 
 type State = {
   gameState: Game | null;
@@ -58,6 +66,10 @@ export const GameContext =
   React.createContext<IGameContext>(initialContextValues);
 
 export function GameProvider({ children }: { children: React.ReactNode }) {
+  // Context
+
+  const { midiBus$ } = useContext(MidiContext);
+
   // Navigation
 
   const navigate = useNavigate();
@@ -183,12 +195,20 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       gameRoom.onMessage("chat-message", (message) => {
         sfx.playSound("chat-message");
       });
+
+      gameRoom.onMessage("noteon", (note: IPlayerNote) => {
+        midiBus$?.emit("noteon", note);
+      });
+
+      gameRoom.onMessage("noteoff", (note: IPlayerNote) => {
+        midiBus$?.emit("noteoff", note);
+      });
     }
 
     return () => {
       gameRoom?.removeAllListeners();
     };
-  }, [gameRoom]);
+  }, [gameRoom, midiBus$]);
 
   return (
     <GameContext.Provider

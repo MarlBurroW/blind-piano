@@ -1,6 +1,7 @@
 import { Panel } from "../components/Panel";
 import { MidiContext } from "./context/MidiContext";
 import { GameContext } from "./context/GameContext";
+import { getInstrumentItemFromIdentifier } from "./context/AudioContext";
 import Draggable, { DraggableEvent, DraggableData } from "react-draggable";
 
 import {
@@ -18,13 +19,18 @@ import type { Input } from "webmidi";
 
 import type { Note } from "webmidi";
 import { KeyboardKeys, KeyboardKeysRef } from "./KeyboardKeys";
-import { IPlayerNote } from "../types";
-import SimpleBar from "simplebar-react";
+import { IPlayerNote, IInstrumentItem } from "../types";
+
+import { SelectInstrumentModal } from "./modals/SelectInstrumentModal";
+import { Button } from "./form/Button";
 
 export function Keyboard() {
   const { devices, selectedDevice, selectDevice, midiBus$ } =
     useContext(MidiContext);
   const { gameRoom, me } = useContext(GameContext);
+
+  const [selectInstrumentModalOpen, setSelectIntrumentModalOpen] =
+    useState(false);
 
   const { t, i18n } = useTranslation();
 
@@ -122,51 +128,48 @@ export function Keyboard() {
     };
   }, []);
 
-  // Note received from other players
+  // Note received from the players MIDI BUS
 
   useEffect(() => {
-    const unbindNoteOnCallback = gameRoom?.onMessage(
-      "noteon",
-      (note: IPlayerNote) => {
-        keyboardKeysRef.current?.setKeyState(note, true);
-        previewKeyboardKeysRef.current?.setKeyState(note, true);
-      }
-    );
+    function noteOn(note: IPlayerNote) {
+      keyboardKeysRef.current?.setKeyState(note, true);
+      previewKeyboardKeysRef.current?.setKeyState(note, true);
+    }
 
-    const unbindNoteOffCallback = gameRoom?.onMessage(
-      "noteoff",
-      (note: IPlayerNote) => {
-        keyboardKeysRef.current?.setKeyState(note, false);
-        previewKeyboardKeysRef.current?.setKeyState(note, false);
-      }
-    );
+    function noteOff(note: IPlayerNote) {
+      keyboardKeysRef.current?.setKeyState(note, false);
+      previewKeyboardKeysRef.current?.setKeyState(note, false);
+    }
+
+    midiBus$?.on("noteon", noteOn);
+    midiBus$?.on("noteoff", noteOff);
 
     return () => {
-      if (unbindNoteOnCallback) {
-        unbindNoteOnCallback();
-      }
-      if (unbindNoteOffCallback) {
-        unbindNoteOffCallback();
-      }
+      midiBus$?.off("noteon", noteOn);
+      midiBus$?.off("noteoff", noteOff);
     };
-  }, [gameRoom, keyboardKeysRef.current, previewKeyboardKeysRef.current]);
+  }, [midiBus$, keyboardKeysRef.current, previewKeyboardKeysRef.current]);
 
   // Note received from virtual keyboard
 
   const handleOnKeyDown = useCallback(
     (note: Note) => {
-      gameRoom?.send("noteon", { number: note.number, attack: note.attack });
-
+      gameRoom?.send("noteon", {
+        number: note.number,
+        attack: note.attack,
+        release: note.release,
+        name: note.identifier,
+      });
+      console.log(note);
       if (me) {
-        const playerNote = {
+        const playerNote: IPlayerNote = {
           number: note.number,
-          attack: note.attack,
+          velocity: 1,
+          name: note.identifier,
           playerId: me.id,
           color: me.color,
         };
         midiBus$?.emit("noteon", playerNote);
-        keyboardKeysRef.current?.setKeyState(playerNote, true);
-        previewKeyboardKeysRef.current?.setKeyState(playerNote, true);
       }
     },
     [gameRoom, me]
@@ -174,56 +177,67 @@ export function Keyboard() {
 
   const handleOnKeyUp = useCallback(
     (note: Note) => {
-      gameRoom?.send("noteoff", { number: note.number });
+      gameRoom?.send("noteoff", {
+        number: note.number,
+        release: note.release,
+        name: note.identifier,
+      });
 
       if (me) {
-        const playerNote = {
+        const playerNote: IPlayerNote = {
           number: note.number,
-          attack: note.attack,
+          velocity: 0,
+          name: note.identifier,
           playerId: me.id,
           color: me.color,
         };
         midiBus$?.emit("noteoff", playerNote);
-        keyboardKeysRef.current?.setKeyState(playerNote, false);
-        previewKeyboardKeysRef.current?.setKeyState(playerNote, false);
       }
     },
     [gameRoom, me]
   );
 
+  const currentInstrumentItem: IInstrumentItem | null = useMemo(() => {
+    return me ? getInstrumentItemFromIdentifier(me.instrument) : null;
+  }, [me?.instrument]);
+
   useEffect(() => {
     selectedDevice?.addListener("noteon", (e) => {
       gameRoom?.send("noteon", {
         number: e.note.number,
-        attack: e.note.attack,
+        name: e.note.identifier,
+        velocity: e.velocity,
       });
 
+      console.log(e);
+
       if (me) {
-        const playerNote = {
+        const playerNote: IPlayerNote = {
           number: e.note.number,
-          attack: e.note.attack,
+          velocity: e.velocity,
+          name: e.note.identifier,
           playerId: me.id,
           color: me.color,
         };
         midiBus$?.emit("noteon", playerNote);
-        keyboardKeysRef.current?.setKeyState(playerNote, true);
-        previewKeyboardKeysRef.current?.setKeyState(playerNote, true);
       }
     });
 
     selectedDevice?.addListener("noteoff", (e) => {
-      gameRoom?.send("noteoff", { number: e.note.number });
+      gameRoom?.send("noteoff", {
+        number: e.note.number,
+        name: e.note.identifier,
+      });
 
       if (me) {
-        const playerNote = {
+        const playerNote: IPlayerNote = {
           number: e.note.number,
-          attack: e.note.attack,
+          velocity: e.velocity,
+          name: e.note.identifier,
           playerId: me.id,
           color: me.color,
         };
         midiBus$?.emit("noteoff", playerNote);
-        keyboardKeysRef.current?.setKeyState(playerNote, false);
-        previewKeyboardKeysRef.current?.setKeyState(playerNote, false);
       }
     });
 
@@ -239,8 +253,6 @@ export function Keyboard() {
     me,
   ]);
 
-  const MemoizedKeyboardKeys = memo(KeyboardKeys);
-
   function onDrag(event: DraggableEvent, data: DraggableData) {
     const scrollLeftPercentage =
       (data.x / scrollState.previewContainerWidth) * 100;
@@ -251,47 +263,98 @@ export function Keyboard() {
     scrollbarRef.current?.scrollTo(scrollLeft, 0);
   }
 
+  const overlayRef = useRef<HTMLDivElement>(null);
+
+  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (overlayRef.current) {
+      const containerRect = overlayRef.current.getBoundingClientRect();
+      const containerStartX = containerRect.left;
+      const clickX = e.clientX;
+      const positionInLength =
+        ((clickX - containerStartX) / containerRect.width) * 100;
+
+      const scrollPosition =
+        (positionInLength / 100) * scrollState.containerWidth -
+        ((scrollState.visiblePercentage / 100) * scrollState.containerWidth) /
+          2;
+
+      scrollbarRef.current?.scrollTo({
+        left: scrollPosition,
+        top: 0,
+        behavior: "smooth",
+      });
+
+      updateScrollState();
+    }
+  };
+
+  const handleInstrumentChange = useCallback(
+    (instrumentIdentifier: string) => {
+      gameRoom?.send("setInstrument", instrumentIdentifier);
+    },
+    [gameRoom]
+  );
+
   return (
     <Panel>
       <div className="flex flex-col h-full">
-        <div className="mb-4">
-          <SelectInput
-            onChange={selectDevice}
-            value={selectedDevice}
-            style="secondary"
-            options={deviceOptions}
-          ></SelectInput>
-        </div>
-        <div className="text-[0.2rem] flex  overflow-hidden mb-2">
-          <div className="relative" ref={previewContainerRef}>
-            <Draggable
-              axis="x"
-              bounds="parent"
-              onDrag={onDrag}
-              position={{
-                x: scrollState.previewContainerLeft,
-                y: 0,
-              }}
-              defaultPosition={{ x: 0, y: 0 }}
-            >
-              <div
-                style={{
-                  width: `${scrollState.visiblePercentage}%`,
-                }}
-                className="absolute z-[4]  h-full cursor-ew-resize top-0"
-              ></div>
-            </Draggable>
-            <div
-              style={{
-                clipPath: scrollState.clipPathPolygon,
-              }}
-              className="overlay absolute  top-0 left-0 right-0 bottom-0 w-full h-full bg-gray-800 bg-opacity-50 z-[3]"
-            ></div>
+        <div className="flex w-full mb-2 gap-8">
+          <div className="w-[20rem]">
+            <SelectInput
+              onChange={selectDevice}
+              value={selectedDevice}
+              style="secondary"
+              options={deviceOptions}
+            ></SelectInput>
+          </div>
+          <div className="w-[20rem]">
+            {me ? (
+              <Button
+                size="md"
+                style="secondary"
+                type="button"
+                fullWidth={false}
+                className="mx-auto"
+                onClick={() => setSelectIntrumentModalOpen(true)}
+              >
+                {currentInstrumentItem ? currentInstrumentItem.name : "Select"}
+              </Button>
+            ) : (
+              ""
+            )}
+          </div>
 
-            <div className="z-0 relative">
-              <MemoizedKeyboardKeys
-                ref={previewKeyboardKeysRef}
-              ></MemoizedKeyboardKeys>
+          <div className="text-[0.2rem]">
+            <div className="relative" ref={previewContainerRef}>
+              <Draggable
+                axis="x"
+                bounds="parent"
+                onDrag={onDrag}
+                position={{
+                  x: scrollState.previewContainerLeft,
+                  y: 0,
+                }}
+                defaultPosition={{ x: 0, y: 0 }}
+              >
+                <div
+                  style={{
+                    width: `${scrollState.visiblePercentage}%`,
+                  }}
+                  className="absolute z-[4] h-full cursor-ew-resize top-0  hover:ring-4 ring-secondary-500"
+                ></div>
+              </Draggable>
+              <div
+                onClick={handleOverlayClick}
+                ref={overlayRef}
+                style={{
+                  clipPath: scrollState.clipPathPolygon,
+                }}
+                className="overlay absolute   top-0 left-0 right-0 bottom-0 w-full h-full bg-gray-800 bg-opacity-50 z-[3]"
+              ></div>
+
+              <div className="z-0 relative pointer-events-none">
+                <KeyboardKeys ref={previewKeyboardKeysRef}></KeyboardKeys>
+              </div>
             </div>
           </div>
         </div>
@@ -300,13 +363,17 @@ export function Keyboard() {
           ref={scrollbarRef}
           className="h-[20em] overflow-x-scroll overflow-y-hidden relative"
         >
-          <MemoizedKeyboardKeys
+          <KeyboardKeys
             ref={keyboardKeysRef}
             onKeyUp={handleOnKeyUp}
             onKeyDown={handleOnKeyDown}
-          ></MemoizedKeyboardKeys>
+          ></KeyboardKeys>
         </div>
       </div>
+      <SelectInstrumentModal
+        isOpen={selectInstrumentModalOpen}
+        onClose={() => setSelectIntrumentModalOpen(false)}
+      ></SelectInstrumentModal>
     </Panel>
   );
 }
