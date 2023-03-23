@@ -57,7 +57,7 @@ export const SelectInput = ({
       }}
     >
       {({ open }) => (
-        <div className={`relative mt-1 rounded-lg`}>
+        <div className={`relative rounded-lg`}>
           <Listbox.Button
             className={`relative text-left ${
               styles[style].button

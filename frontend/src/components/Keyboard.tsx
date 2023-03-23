@@ -1,8 +1,10 @@
 import { Panel } from "../components/Panel";
 import { MidiContext } from "./context/MidiContext";
 import { GameContext } from "./context/GameContext";
+import { AudioContext } from "./context/AudioContext";
 import { getInstrumentItemFromIdentifier } from "./context/AudioContext";
 import Draggable, { DraggableEvent, DraggableData } from "react-draggable";
+import { ChevronUpDownIcon } from "@heroicons/react/20/solid";
 
 import {
   useContext,
@@ -28,6 +30,8 @@ export function Keyboard() {
   const { devices, selectedDevice, selectDevice, midiBus$ } =
     useContext(MidiContext);
   const { gameRoom, me } = useContext(GameContext);
+
+  const { currentInstrumentItem } = useContext(AudioContext);
 
   const [selectInstrumentModalOpen, setSelectIntrumentModalOpen] =
     useState(false);
@@ -197,10 +201,6 @@ export function Keyboard() {
     [gameRoom, me]
   );
 
-  const currentInstrumentItem: IInstrumentItem | null = useMemo(() => {
-    return me ? getInstrumentItemFromIdentifier(me.instrument) : null;
-  }, [me?.instrument]);
-
   useEffect(() => {
     selectedDevice?.addListener("noteon", (e) => {
       gameRoom?.send("noteon", {
@@ -298,7 +298,7 @@ export function Keyboard() {
   return (
     <Panel>
       <div className="flex flex-col h-full">
-        <div className="flex w-full mb-2 gap-8">
+        <div className="flex w-full mb-2 gap-8  items-center">
           <div className="w-[20rem]">
             <SelectInput
               onChange={selectDevice}
@@ -309,16 +309,16 @@ export function Keyboard() {
           </div>
           <div className="w-[20rem]">
             {me ? (
-              <Button
-                size="md"
-                style="secondary"
-                type="button"
-                fullWidth={false}
-                className="mx-auto"
+              <div
+                className="w-full flex mt-1 whitespace-nowrap justify-between cursor-pointer bg-shade-200 mb-2 py-4 px-5 outline-none   focus:outline-none focus:ring rounded-3xl "
                 onClick={() => setSelectIntrumentModalOpen(true)}
               >
-                {currentInstrumentItem ? currentInstrumentItem.name : "Select"}
-              </Button>
+                {currentInstrumentItem ? currentInstrumentItem.name : "Select"}{" "}
+                <ChevronUpDownIcon
+                  className="w-5 h-5 text-gray-400"
+                  aria-hidden="true"
+                />
+              </div>
             ) : (
               ""
             )}

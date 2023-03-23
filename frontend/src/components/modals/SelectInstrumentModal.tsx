@@ -1,23 +1,24 @@
 import { Dialog, Transition } from "@headlessui/react";
-import { Fragment, useContext, useMemo } from "react";
+import {
+  Fragment,
+  useContext,
+  useMemo,
+  useState,
+  useCallback,
+  useRef,
+} from "react";
 import { useTranslation } from "react-i18next";
 
 import { GameContext } from "../context/GameContext";
+import { AudioContext } from "../context/AudioContext";
 import { getInstrumentItemFromIdentifier } from "../context/AudioContext";
 
 import { Button } from "../form/Button";
 import { Panel } from "../Panel";
 import { IInstrumentItem } from "../../types";
-import {
-  SFPInstrument,
-  instrumentsItems as SFPInstrumentsItems,
-} from "../../classes/SFPInstrument";
-import {
-  WAFInstrument,
-  instrumentsItems as WAFInstrumentItems,
-} from "../../classes/WAFInstrument";
 
-const instrumentItems = [...SFPInstrumentsItems, ...WAFInstrumentItems];
+import TextInput from "../form/inputs/TextInput";
+import { debounce } from "lodash";
 
 interface Props {
   isOpen: boolean;
@@ -28,10 +29,35 @@ export function SelectInstrumentModal({ isOpen, onClose }: Props) {
   const { t } = useTranslation();
 
   const { gameRoom, me } = useContext(GameContext);
+  const { playersInstruments, instrumentItems } = useContext(AudioContext);
 
   const currentInstrumentItem: IInstrumentItem | null = useMemo(() => {
     return me ? getInstrumentItemFromIdentifier(me.instrument) : null;
   }, [me?.instrument]);
+
+  const [search, setSearch] = useState("");
+  const [inputValue, setInputValue] = useState("");
+
+  const debouncedSearch = useRef(debounce(setSearch, 300)).current;
+
+  const handleSearchChange = useCallback(
+    (e) => {
+      const search = e.target.value;
+      debouncedSearch(search);
+      setInputValue(search);
+    },
+    [debouncedSearch]
+  );
+
+  const filteredInstrumentItems = useMemo(() => {
+    if (search === "") {
+      return instrumentItems;
+    }
+
+    return instrumentItems.filter((instrumentItem) => {
+      return instrumentItem.name.toLowerCase().includes(search.toLowerCase());
+    });
+  }, [search]);
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -71,21 +97,23 @@ export function SelectInstrumentModal({ isOpen, onClose }: Props) {
                     </div>
                   </Dialog.Title>
 
-                  <div className="overflow-y-scroll h-80 bg-shade-700 px-4 py-4 rounded-2xl">
-                    {instrumentItems.map((instrument) => (
+                  <TextInput
+                    value={inputValue}
+                    className="mb-5"
+                    placeholder={t("select_instrument_modal.search_instrument")}
+                    onChange={handleSearchChange}
+                  ></TextInput>
+
+                  <div className="overflow-y-scroll h-[40rem] bg-shade-700 rounded-2xl">
+                    {filteredInstrumentItems.map((instrument) => (
                       <div
                         key={instrument.identifier}
-                        className={`${
-                          currentInstrumentItem?.identifier ===
-                          instrument.identifier
-                            ? "bg-secondary-500"
-                            : "bg-shade-300"
-                        } px-2 py-2 mb-4 rounded-md ${
-                          currentInstrumentItem?.identifier ===
-                          instrument.identifier
-                            ? "hover:bg-secondary-400"
-                            : "hover:bg-shade-200"
-                        } cursor-pointer`}
+                        className={`cursor-pointer  ${
+                          instrument.identifier ===
+                          currentInstrumentItem?.identifier
+                            ? "bg-secondary-500 font-normal hover:bg-secondary-400"
+                            : "font-thin hover:bg-shade-300"
+                        } border-b-[1px] border-shade-300 py-4 px-4`}
                         onClick={() => {
                           gameRoom?.send(
                             "setInstrument",

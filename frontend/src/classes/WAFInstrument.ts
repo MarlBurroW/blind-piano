@@ -91,12 +91,13 @@ function getInstrumentItems() {
   const player = new WebAudioFontPlayer();
   const instrumentKeys = player.loader.instrumentKeys();
 
-  const instrumentItems = [];
+  let instrumentItems = [];
 
   for (var i = 0; i < instrumentKeys.length; i++) {
     instrumentItems.push(player.loader.instrumentInfo(i));
   }
-  return instrumentItems.map((instrumentItem, index) => {
+
+  instrumentItems = instrumentItems.map((instrumentItem, index) => {
     return {
       type: "WAFInstrument",
       identifier: `WAFInstrument@${instrumentItem.variable}`,
@@ -107,6 +108,15 @@ function getInstrumentItems() {
       },
     };
   });
+
+  // Remove duplicates
+
+  instrumentItems = instrumentItems.filter(
+    (item, index, self) =>
+      index === self.findIndex((t) => t.identifier === item.identifier)
+  );
+
+  return instrumentItems;
 }
 
 console.log(getInstrumentItems());

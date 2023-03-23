@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef } from "react";
+import React, { useContext, useEffect, useRef, useMemo } from "react";
 import { GameContext } from "./GameContext";
 import { MidiContext } from "./MidiContext";
 import { IPlayerNote, IInstrumentItem, IInstrument } from "../../types";
@@ -14,11 +14,21 @@ import {
 
 import { useImmer } from "use-immer";
 
-interface IAudioContext {}
+interface IAudioContext {
+  instrumentItems: Array<IInstrumentItem>;
+  currentInstrumentItem: IInstrumentItem | null;
+  playersInstruments: {
+    [playerId: string]: IInstrument;
+  };
+}
 
 const instrumentItems = [...SFPInstrumentsItems, ...WAFInstrumentItems];
 
-const initialContextValues = {};
+const initialContextValues = {
+  instrumentItems,
+  currentInstrumentItem: null,
+  playersInstruments: {},
+};
 
 type State = {
   playersInstruments: {
@@ -47,12 +57,16 @@ export function getInstrumentItemFromIdentifier(
 }
 
 export function AudioProvider({ children }: { children: React.ReactNode }) {
-  const { players } = useContext(GameContext);
+  const { players, me } = useContext(GameContext);
   const { midiBus$ } = useContext(MidiContext);
 
   const [state, setState] = useImmer<State>(initialState);
 
   const stateRef = useRef(state);
+
+  const currentInstrumentItem: IInstrumentItem | null = useMemo(() => {
+    return me ? getInstrumentItemFromIdentifier(me.instrument) : null;
+  }, [me?.instrument]);
 
   useEffect(() => {
     stateRef.current = state;
@@ -110,10 +124,6 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       ) {
         continue;
       } else {
-        if (playerInstrument) {
-          playerInstrument.dispose();
-        }
-
         const instrument = createInstrument(player.instrument);
 
         if (instrument) {
@@ -123,11 +133,25 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
             setState((draft) => {
               draft.playersInstruments[player.id] = instrument;
             });
+
+            if (playerInstrument) {
+              playerInstrument.dispose();
+            }
           });
         }
       }
     }
   }, [players]);
 
-  return <AudioContext.Provider value={{}}>{children}</AudioContext.Provider>;
+  return (
+    <AudioContext.Provider
+      value={{
+        playersInstruments: state.playersInstruments,
+        currentInstrumentItem,
+        instrumentItems: instrumentItems,
+      }}
+    >
+      {children}
+    </AudioContext.Provider>
+  );
 }

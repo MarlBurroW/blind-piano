@@ -48,6 +48,7 @@ export default {
     },
     select_instrument_modal: {
       title: "Mon instrument",
+      search_instrument: "Rechercher un instrument",
     },
     generic: {
       nickname: "Pseudo",
