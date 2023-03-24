@@ -4,6 +4,7 @@ export class WAFInstrument implements IInstrument {
   name: string = "WAFInstrument";
   identifier: string = "";
   audioContext: AudioContext | null = null;
+  outputNode: AudioNode | null = null;
   player: WebAudioFontPlayer | null = null;
   url: string;
   variable: string;
@@ -18,10 +19,13 @@ export class WAFInstrument implements IInstrument {
     this.url = instrumentItem.options.url;
     this.variable = instrumentItem.options.variable;
     this.instrument = null;
+    this.audioContext = null;
+    this.outputNode = null;
   }
 
-  setAudioContext(audioContext: AudioContext) {
-    this.audioContext = audioContext;
+  setOutputNode(outputNode: AudioNode) {
+    this.audioContext = outputNode.context as AudioContext;
+    this.outputNode = outputNode;
   }
 
   getIdentifier(): string {
@@ -33,15 +37,16 @@ export class WAFInstrument implements IInstrument {
   }
 
   playNote(note: IPlayerNote) {
-    if (this.instrument) {
+    if (this.instrument && this.outputNode) {
+      const normalizedVelocity = note.velocity * 0.5;
       const playedNote = this.player?.queueWaveTable(
         this.audioContext,
-        this.audioContext?.destination,
+        this.outputNode,
         this.instrument,
         0,
         note.number,
         10,
-        note.velocity
+        normalizedVelocity
       );
 
       this.playedNotes[note.name] = playedNote;
@@ -101,7 +106,7 @@ function getInstrumentItems() {
     return {
       type: "WAFInstrument",
       identifier: `WAFInstrument@${instrumentItem.variable}`,
-      name: index + ". " + instrumentItem.title,
+      name: "(WAF) " + instrumentItem.title,
       options: {
         url: instrumentItem.url,
         variable: instrumentItem.variable,
@@ -118,7 +123,5 @@ function getInstrumentItems() {
 
   return instrumentItems;
 }
-
-console.log(getInstrumentItems());
 
 export const instrumentsItems: IInstrumentItem[] = getInstrumentItems();

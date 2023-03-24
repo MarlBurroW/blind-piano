@@ -29,11 +29,8 @@ export function SelectInstrumentModal({ isOpen, onClose }: Props) {
   const { t } = useTranslation();
 
   const { gameRoom, me } = useContext(GameContext);
-  const { playersInstruments, instrumentItems } = useContext(AudioContext);
-
-  const currentInstrumentItem: IInstrumentItem | null = useMemo(() => {
-    return me ? getInstrumentItemFromIdentifier(me.instrument) : null;
-  }, [me?.instrument]);
+  const { playersInstruments, currentInstrumentItem, instrumentItems } =
+    useContext(AudioContext);
 
   const [search, setSearch] = useState("");
   const [inputValue, setInputValue] = useState("");

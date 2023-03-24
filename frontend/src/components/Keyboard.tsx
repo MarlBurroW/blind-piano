@@ -4,7 +4,10 @@ import { GameContext } from "./context/GameContext";
 import { AudioContext } from "./context/AudioContext";
 import { getInstrumentItemFromIdentifier } from "./context/AudioContext";
 import Draggable, { DraggableEvent, DraggableData } from "react-draggable";
-import { ChevronUpDownIcon } from "@heroicons/react/20/solid";
+import {
+  ChevronUpDownIcon,
+  AdjustmentsHorizontalIcon,
+} from "@heroicons/react/20/solid";
 
 import {
   useContext,
@@ -24,6 +27,7 @@ import { KeyboardKeys, KeyboardKeysRef } from "./KeyboardKeys";
 import { IPlayerNote, IInstrumentItem } from "../types";
 
 import { SelectInstrumentModal } from "./modals/SelectInstrumentModal";
+import { MixerModal } from "./modals/MixerModal";
 import { Button } from "./form/Button";
 
 export function Keyboard() {
@@ -35,6 +39,8 @@ export function Keyboard() {
 
   const [selectInstrumentModalOpen, setSelectIntrumentModalOpen] =
     useState(false);
+
+  const [mixerModalOpen, setMixerModalOpen] = useState(false);
 
   const { t, i18n } = useTranslation();
 
@@ -323,8 +329,9 @@ export function Keyboard() {
               ""
             )}
           </div>
+          <div className="flex-grow"></div>
 
-          <div className="text-[0.2rem]">
+          <div className="">
             <div className="relative" ref={previewContainerRef}>
               <Draggable
                 axis="x"
@@ -352,11 +359,15 @@ export function Keyboard() {
                 className="overlay absolute   top-0 left-0 right-0 bottom-0 w-full h-full bg-gray-800 bg-opacity-50 z-[3]"
               ></div>
 
-              <div className="z-0 relative pointer-events-none">
+              <div className="z-0 relative pointer-events-none text-[0.15rem]">
                 <KeyboardKeys ref={previewKeyboardKeysRef}></KeyboardKeys>
               </div>
             </div>
           </div>
+          <AdjustmentsHorizontalIcon
+            onClick={() => setMixerModalOpen(true)}
+            className="h-10 w-10 cursor-pointer"
+          ></AdjustmentsHorizontalIcon>
         </div>
 
         <div
@@ -374,6 +385,10 @@ export function Keyboard() {
         isOpen={selectInstrumentModalOpen}
         onClose={() => setSelectIntrumentModalOpen(false)}
       ></SelectInstrumentModal>
+      <MixerModal
+        isOpen={mixerModalOpen}
+        onClose={() => setMixerModalOpen(false)}
+      ></MixerModal>
     </Panel>
   );
 }

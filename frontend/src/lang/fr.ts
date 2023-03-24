@@ -50,6 +50,9 @@ export default {
       title: "Mon instrument",
       search_instrument: "Rechercher un instrument",
     },
+    mixer_modal: {
+      title: "Mixeur",
+    },
     generic: {
       nickname: "Pseudo",
       or: "ou",

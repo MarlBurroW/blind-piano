@@ -26,7 +26,7 @@ export interface IPlayerNote {
 export interface IInstrument {
   getIdentifier(): string;
   load: () => Promise<void>;
-  setAudioContext: (audioContext: AudioContext) => void;
+  setOutputNode: (outputNode: AudioNode) => void;
   playNote: (note: IPlayerNote) => void;
   stopNote: (note: IPlayerNote) => void;
   dispose: () => void;

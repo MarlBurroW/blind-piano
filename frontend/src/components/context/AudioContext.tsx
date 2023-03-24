@@ -1,4 +1,11 @@
-import React, { useContext, useEffect, useRef, useMemo } from "react";
+import React, {
+  useContext,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+  useState,
+} from "react";
 import { GameContext } from "./GameContext";
 import { MidiContext } from "./MidiContext";
 import { IPlayerNote, IInstrumentItem, IInstrument } from "../../types";
@@ -20,31 +27,56 @@ interface IAudioContext {
   playersInstruments: {
     [playerId: string]: IInstrument;
   };
+  masterAudioContext: AudioContext | null;
+  setMasterVolume: (value: number) => void;
+  masterVolume: number;
+  playersVolumes: {
+    [playerId: string]: number;
+  };
+  setPlayerVolume: (playerId: string, value: number) => void;
 }
 
-const instrumentItems = [...SFPInstrumentsItems, ...WAFInstrumentItems];
+const instrumentItems = [...SFPInstrumentsItems, ...WAFInstrumentItems].map(
+  (instrumentItem, index) => {
+    instrumentItem.name = `${index}. ${instrumentItem.name}`;
+    return instrumentItem;
+  }
+);
+
+const DEFAULT_MASTER_VOLUME = 1;
+const DEFAULT_PLAYER_VOLUME = 1;
 
 const initialContextValues = {
   instrumentItems,
   currentInstrumentItem: null,
   playersInstruments: {},
+  masterAudioContext: null,
+  setMasterVolume: (value: number) => {},
+  masterVolume: DEFAULT_MASTER_VOLUME,
+  playersVolumes: {},
+  setPlayerVolume: (playerId: string, value: number) => {},
 };
 
 type State = {
   playersInstruments: {
     [playerId: string]: IInstrument;
   };
+  playersGainNodes: {
+    [playerId: string]: GainNode;
+  };
+  playersGainValues: {
+    [playerId: string]: number;
+  };
 };
 
 const initialState = {
   playersInstruments: {},
+  playersGainNodes: {},
+  playersGainValues: {},
 };
 
 export const AudioContext =
   React.createContext<IAudioContext>(initialContextValues);
-
-// créer un contexte AudioContext
-var audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
 export function getInstrumentItemFromIdentifier(
   instrumentIdentifier: string
@@ -64,6 +96,19 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 
   const stateRef = useRef(state);
 
+  const [masterGainValue, setMasterGainValue] = useState<number>(
+    DEFAULT_MASTER_VOLUME
+  );
+
+  const setPlayerVolume = useCallback(
+    (playerId: string, value: number) => {
+      setState((draft) => {
+        draft.playersGainValues[playerId] = value;
+      });
+    },
+    [setState]
+  );
+
   const currentInstrumentItem: IInstrumentItem | null = useMemo(() => {
     return me ? getInstrumentItemFromIdentifier(me.instrument) : null;
   }, [me?.instrument]);
@@ -71,6 +116,24 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     stateRef.current = state;
   }, [state]);
+
+  const masterAudioContextRef = useRef<AudioContext>(new window.AudioContext());
+  const masterGainRef = useRef<GainNode>(
+    masterAudioContextRef.current.createGain()
+  );
+
+  useEffect(() => {
+    masterGainRef.current.connect(masterAudioContextRef.current.destination);
+    return () => {
+      masterGainRef.current.disconnect(
+        masterAudioContextRef.current.destination
+      );
+    };
+  }, [masterAudioContextRef.current, masterGainRef.current]);
+
+  useEffect(() => {
+    masterGainRef.current.gain.value = masterGainValue;
+  }, [masterGainValue, masterGainRef.current, masterAudioContextRef.current]);
 
   useEffect(() => {
     function onNoteOn(note: IPlayerNote) {
@@ -113,21 +176,35 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 
     return null;
   }
-
   useEffect(() => {
     for (const player of players) {
       const playerInstrument = stateRef.current.playersInstruments[player.id];
+
+      let playerGainNode = state.playersGainNodes[player.id];
+      if (!playerGainNode) {
+        playerGainNode = masterAudioContextRef.current.createGain();
+        playerGainNode.gain.value =
+          state.playersGainValues[player.id] || DEFAULT_PLAYER_VOLUME;
+        playerGainNode.connect(masterGainRef.current);
+        setState((draft) => {
+          draft.playersGainNodes[player.id] = playerGainNode;
+          draft.playersGainValues[player.id] = DEFAULT_PLAYER_VOLUME;
+        });
+      }
 
       if (
         playerInstrument &&
         playerInstrument.getIdentifier() === player.instrument
       ) {
+        // Update outputNode with the player's GainNode
+        playerInstrument.setOutputNode(playerGainNode);
         continue;
       } else {
         const instrument = createInstrument(player.instrument);
 
         if (instrument) {
-          instrument.setAudioContext(audioContext);
+          // Set the player's GainNode as outputNode
+          instrument.setOutputNode(playerGainNode);
 
           instrument.load().then(() => {
             setState((draft) => {
@@ -141,7 +218,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         }
       }
     }
-  }, [players]);
+  }, [players, masterAudioContextRef.current]);
 
   return (
     <AudioContext.Provider
@@ -149,6 +226,11 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         playersInstruments: state.playersInstruments,
         currentInstrumentItem,
         instrumentItems: instrumentItems,
+        masterAudioContext: masterAudioContextRef.current,
+        setMasterVolume: setMasterGainValue,
+        masterVolume: masterGainValue,
+        playersVolumes: state.playersGainValues,
+        setPlayerVolume: setPlayerVolume,
       }}
     >
       {children}
