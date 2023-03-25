@@ -1,13 +1,14 @@
 import { Dialog, Transition } from "@headlessui/react";
-import { Fragment, useContext, useCallback, useState, useMemo } from "react";
+import { Fragment, useContext } from "react";
 import { useTranslation } from "react-i18next";
-import { Avatar } from "../Avatar";
 
 import { GameContext } from "../context/GameContext";
-import { AudioContext } from "../context/AudioContext";
 
 import { Panel } from "../Panel";
-import { RangeSlider } from "../form/inputs/RangeSlider";
+
+import { PlayerMixer } from "../PlayerMixer";
+import { MasterMixer } from "../MasterMixer";
+
 interface Props {
   isOpen: boolean;
   onClose?: () => void;
@@ -17,37 +18,7 @@ import _ from "lodash";
 export function MixerModal({ isOpen, onClose }: Props) {
   const { t } = useTranslation();
 
-  const { gameRoom, me, players } = useContext(GameContext);
-  const {
-    playersInstruments,
-    instrumentItems,
-    playersVolumes,
-    setPlayerVolume,
-    setMasterVolume,
-    masterVolume,
-  } = useContext(AudioContext);
-
-  const handleVolumeChange = useCallback((val: number) => {
-    console.log(val);
-    setMasterVolume(val);
-  }, []);
-
-  const debouncedHandleVolumeChange = useMemo(() => {
-    return _.debounce(handleVolumeChange, 100);
-  }, [handleVolumeChange]);
-
-  const handlePlayerVolumeChange = useCallback(
-    (playerId: string, val: number) => {
-      setPlayerVolume(playerId, val);
-    },
-    [setPlayerVolume]
-  );
-
-  const debouncedHandlePlayerVolumeChange = useMemo(() => {
-    return _.debounce((playerId, volume) => {
-      handlePlayerVolumeChange(playerId, volume);
-    }, 100);
-  }, [handlePlayerVolumeChange]);
+  const { players } = useContext(GameContext);
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -87,62 +58,16 @@ export function MixerModal({ isOpen, onClose }: Props) {
                     </div>
                   </Dialog.Title>
 
-                  <table className="w-full">
-                    <tbody>
-                      <tr>
-                        <td className="whitespace-nowrap px-10 py-5 text-lg min-w-[20rem]">
-                          Master volume ({Math.round(masterVolume * 100)}%)
-                        </td>
-                        <td className="w-full">
-                          <RangeSlider
-                            value={masterVolume}
-                            onChange={debouncedHandleVolumeChange}
-                            min={0}
-                            max={1}
-                            formatValue={(val) => {
-                              return `${Math.round(val * 100)}%`;
-                            }}
-                          ></RangeSlider>
-                        </td>
-                      </tr>
+                  <MasterMixer />
 
-                      {players.map((player) => {
-                        return (
-                          <tr key={player.id}>
-                            <td className="whitespace-nowrap px-10 py-5 text-lg min-w-[20rem]">
-                              <div class="flex items-center">
-                                <Avatar
-                                  background={true}
-                                  circle
-                                  size={40}
-                                  seed={player.avatarSeed}
-                                  className="mr-4"
-                                ></Avatar>
-                                {player.nickname} (
-                                {Math.round(playersVolumes[player.id] * 100)}%)
-                              </div>
-                            </td>
-                            <td className="w-full">
-                              <RangeSlider
-                                value={playersVolumes[player.id]}
-                                onChange={(val) => {
-                                  debouncedHandlePlayerVolumeChange(
-                                    player.id,
-                                    val
-                                  );
-                                }}
-                                min={0}
-                                max={1}
-                                formatValue={(val) => {
-                                  return `${Math.round(val * 100)}%`;
-                                }}
-                              ></RangeSlider>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                  {players.map((player) => {
+                    return (
+                      <PlayerMixer
+                        player={player}
+                        key={player.id}
+                      ></PlayerMixer>
+                    );
+                  })}
                 </Panel>
               </Dialog.Panel>
             </Transition.Child>

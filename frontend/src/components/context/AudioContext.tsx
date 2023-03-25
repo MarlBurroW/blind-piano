@@ -220,6 +220,15 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     }
   }, [players, masterAudioContextRef.current]);
 
+  useEffect(() => {
+    Object.entries(state.playersGainValues).forEach(([playerId, gainValue]) => {
+      const playerGainNode = state.playersGainNodes[playerId];
+      if (playerGainNode) {
+        playerGainNode.gain.value = gainValue;
+      }
+    });
+  }, [state.playersGainValues]);
+
   return (
     <AudioContext.Provider
       value={{

@@ -1,17 +1,26 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import Draggable, { DraggableEvent, DraggableData } from "react-draggable";
-
+import Player from "../../../../../backend/schemas/Player";
+import chroma from "chroma-js";
 interface Props {
   value: number;
   onChange: (value: number) => void;
   max: number;
   min: number;
   formatValue?: (value: number) => string;
+  color?: string;
 }
 
-export function RangeSlider({ onChange, value, max, min, formatValue }: Props) {
-  const [internalValue, setInternalValue] = useState(value);
+const CURSOR_WIDTH = 14;
 
+export function RangeSlider({
+  onChange,
+  value,
+  max,
+  min,
+  formatValue,
+  color,
+}: Props) {
   const [cursorX, setCursorX] = useState(0);
 
   const [containerWidth, setContainerWidth] = useState(0);
@@ -20,12 +29,10 @@ export function RangeSlider({ onChange, value, max, min, formatValue }: Props) {
 
   useEffect(() => {
     const handleResize = () => {
-      const cursorWidth = 14;
-
       if (!trackRef.current) return;
-      const adjustedWidth = trackRef.current.clientWidth - cursorWidth;
+      const adjustedWidth = trackRef.current.clientWidth - CURSOR_WIDTH;
       setContainerWidth(adjustedWidth);
-      setCursorX(((internalValue - min) / (max - min)) * adjustedWidth);
+      setCursorX(((value - min) / (max - min)) * adjustedWidth);
     };
 
     handleResize();
@@ -35,23 +42,13 @@ export function RangeSlider({ onChange, value, max, min, formatValue }: Props) {
     return () => {
       window.removeEventListener("resize", handleResize);
     };
-  }, [internalValue, min, max]);
+  }, []);
 
   // Set internal value from cursorX position, max, min and containerWidth
   useEffect(() => {
     const scaledValue = (cursorX / containerWidth) * (max - min) + min;
-    setInternalValue(scaledValue);
-  }, [cursorX, containerWidth, max, min]);
-
-  // Send value when internal value changes
-  useEffect(() => {
-    onChange(internalValue);
-  }, [internalValue, onChange]);
-
-  // Internal value when value prop changes
-  useEffect(() => {
-    setInternalValue(value);
-  }, [value]);
+    onChange(scaledValue);
+  }, [cursorX, containerWidth, max, min, onChange]);
 
   // Set cursorX position (in pixel) on drag
   const onDrag = useCallback((e: DraggableEvent, data: DraggableData) => {
@@ -62,23 +59,39 @@ export function RangeSlider({ onChange, value, max, min, formatValue }: Props) {
     (e: React.MouseEvent<HTMLDivElement>) => {
       const trackRect = trackRef.current?.getBoundingClientRect();
       if (!trackRect) return;
-      const positionInTrack = e.clientX - trackRect.left;
+      let positionInTrack = e.clientX - trackRect.left - CURSOR_WIDTH / 2;
 
-      setCursorX(positionInTrack);
+      if (positionInTrack > containerWidth) {
+        positionInTrack = containerWidth;
+      }
+
+      if (positionInTrack < 0) {
+        positionInTrack = 0;
+      }
+
+      // Vérifiez si la valeur de cursorX a réellement changé avant de la mettre à jour
+      if (positionInTrack !== cursorX) {
+        setCursorX(positionInTrack);
+      }
     },
-    [containerWidth, max, min]
+    [containerWidth, max, min, cursorX]
   );
 
   return (
     <div
-      className=" track w-full bg-shade-700 h-4 rounded-md relative cursor-pointer"
+      className=" track w-full bg-shade-700 h-4 rounded-3xl relative cursor-pointer select-none"
       ref={trackRef}
-      onClick={onClickTrack}
+      onMouseDown={onClickTrack}
     >
       {" "}
       <div
-        style={{ width: cursorX + "px" }}
-        className="progress absolute  bg-gradient-to-b   from-primary-500 to-primary-600 shadow-lg  shadow-primary-600/100 left-0 h-full rounded-l-md "
+        style={{
+          width: cursorX + "px",
+          backgroundColor: color ? chroma(color).darken(0.5) : "",
+        }}
+        className={`progress absolute  ${
+          color ? "" : "bg-primary-500"
+        } shadow-lg left-0 h-full rounded-l-md `}
       ></div>
       <Draggable
         axis="x"
@@ -90,10 +103,20 @@ export function RangeSlider({ onChange, value, max, min, formatValue }: Props) {
         onDrag={onDrag}
       >
         <div className="group absolute top-0 left-0 bottom-0  flex justify-center">
-          <div className="group-hover:opacity-100 group-active:opacity-100 opacity-0  transition-opacity indication absolute px-2 py-2 bg-shade-50 -top-[4rem] rounded-md transform ">
-            {formatValue ? formatValue(internalValue) : internalValue}
+          <div
+            style={{ backgroundColor: color ? color : "" }}
+            className={` group-active:opacity-100 opacity-0 pointer-events-none ${
+              color ? "" : "bg-shade-500"
+            }  transition-opacity indication absolute px-4 py-2  -top-[4rem] rounded-md transform`}
+          >
+            {formatValue ? formatValue(value) : value}{" "}
           </div>
-          <div className="thumb w-4 h-4 bg-primary-400 cursor-pointer transition-all hover:scale-[2] scale-150 rounded-full  mx-auto "></div>
+          <div
+            style={{ backgroundColor: color ? color : "" }}
+            className={`thumb w-4 h-4  ${
+              color ? "" : "bg-primary-400"
+            } cursor-pointer transition-all hover:scale-[2] scale-150 rounded-full  mx-auto`}
+          ></div>
         </div>
       </Draggable>
     </div>

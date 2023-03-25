@@ -4,10 +4,12 @@ import { toast } from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { useImmer, DraftFunction } from "use-immer";
 import { WebMidi } from "webmidi";
+
 import type { Input } from "webmidi";
 import _ from "lodash";
 
 import EventEmitter from "eventemitter3";
+
 interface IMidiContext {
   devices: Array<Input>;
   selectedDevice: Input | null;
@@ -54,6 +56,18 @@ export function MidiProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  function autoSelectDevice(draft: State) {
+    if (!draft.selectedDevice) {
+      if (draft.devices.length > 0) {
+        draft.selectedDevice = draft.devices[0];
+      }
+    } else {
+      if (draft.devices.length === 0) {
+        draft.selectedDevice = null;
+      }
+    }
+  }
+
   useEffect(() => {
     WebMidi.enable()
       .then(() => {
@@ -62,17 +76,21 @@ export function MidiProvider({ children }: { children: React.ReactNode }) {
         WebMidi.addListener("connected", () => {
           setState((draft) => {
             draft.devices = _.clone(WebMidi.inputs);
+
+            autoSelectDevice(draft as State);
           });
         });
 
         WebMidi.addListener("disconnected", () => {
           setState((draft) => {
             draft.devices = _.clone(WebMidi.inputs);
+            autoSelectDevice(draft as State);
           });
         });
 
         setState((draft) => {
           draft.devices = _.clone(WebMidi.inputs);
+          autoSelectDevice(draft as State);
         });
       })
       .catch(() => {

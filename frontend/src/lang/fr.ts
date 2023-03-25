@@ -65,6 +65,7 @@ export default {
       chat: "Chat",
       select_midi_device: "Sélectionner un périphérique MIDI",
       invite_friends: "Inviter des amis",
+      instrument: "Instrument",
     },
     chat: {
       input_placeholder: "Tapez votre message ici",
