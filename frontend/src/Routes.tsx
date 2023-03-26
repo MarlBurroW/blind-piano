@@ -4,6 +4,7 @@ import { Route, Routes, useLocation } from "react-router-dom";
 import { GameProvider } from "../src/components/context/GameContext";
 import { AnimatePresence } from "framer-motion";
 import { AudioProvider } from "./components/context/AudioContext";
+import { useMemo } from "react";
 
 export function AnimatedRoutes() {
   const location = useLocation();

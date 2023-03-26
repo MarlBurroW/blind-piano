@@ -3,13 +3,6 @@
 @tailwind components;
 @tailwind utilities;
 
-html,
-body,
-#root {
-  height: 100%;
-  font-size: 14px;
-}
-
 ::-webkit-scrollbar {
   -webkit-appearance: none;
   width: 7px;
@@ -226,4 +219,44 @@ body,
   overflow-y: scroll;
   scrollbar-width: none;
   -ms-overflow-style: none;
+}
+
+.note-bubbles {
+}
+
+.note-bubbles .note-bubble {
+  animation: bubbleAnimation 2s ease-in-out;
+  right: 0rem;
+}
+
+@keyframes bubbleAnimation {
+  0% {
+    transform: translateX(0rem);
+    opacity: 0;
+    scale: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  50% {
+    scale: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(10rem);
+
+    opacity: 0.5;
+  }
+}
+
+html,
+body,
+#root {
+  height: 100%;
+
+  /* Media query recting root fontt size of root element to scale down site */
+
+  font-size: 100%;
 }

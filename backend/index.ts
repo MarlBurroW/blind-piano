@@ -15,9 +15,6 @@ const gameServer = new Server({
   server: createServer(app),
 });
 
-
-
-
 gameServer.listen(port);
 
 gameServer.define("lobby", LobbyRoom);

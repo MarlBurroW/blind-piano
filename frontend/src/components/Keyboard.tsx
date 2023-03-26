@@ -7,7 +7,8 @@ import Draggable, { DraggableEvent, DraggableData } from "react-draggable";
 import {
   ChevronUpDownIcon,
   AdjustmentsHorizontalIcon,
-} from "@heroicons/react/20/solid";
+  MusicalNoteIcon,
+} from "@heroicons/react/24/outline";
 
 import {
   useContext,
@@ -294,18 +295,11 @@ export function Keyboard() {
     }
   };
 
-  const handleInstrumentChange = useCallback(
-    (instrumentIdentifier: string) => {
-      gameRoom?.send("setInstrument", instrumentIdentifier);
-    },
-    [gameRoom]
-  );
-
   return (
     <Panel>
       <div className="flex flex-col h-full">
         <div className="flex w-full mb-2 gap-8  items-center">
-          <div className="w-[20rem]">
+          <div className="min-w-[30rem]">
             <SelectInput
               onChange={selectDevice}
               value={selectedDevice}
@@ -313,12 +307,13 @@ export function Keyboard() {
               options={deviceOptions}
             ></SelectInput>
           </div>
-          <div className="w-[20rem]">
+          <div className="w-full">
             {me ? (
               <div
                 className="w-full flex mt-1 whitespace-nowrap justify-between cursor-pointer bg-shade-200 mb-2 py-4 px-5 outline-none   focus:outline-none focus:ring rounded-3xl "
                 onClick={() => setSelectIntrumentModalOpen(true)}
               >
+                <MusicalNoteIcon className="h-6 w-6 mr-2" />{" "}
                 {currentInstrumentItem ? currentInstrumentItem.name : "Select"}{" "}
                 <ChevronUpDownIcon
                   className="w-5 h-5 text-gray-400"
@@ -359,15 +354,17 @@ export function Keyboard() {
                 className="overlay absolute   top-0 left-0 right-0 bottom-0 w-full h-full bg-gray-800 bg-opacity-50 z-[3]"
               ></div>
 
-              <div className="z-0 relative pointer-events-none text-[0.15rem]">
+              <div className="z-0 relative pointer-events-none text-[0.17rem]">
                 <KeyboardKeys ref={previewKeyboardKeysRef}></KeyboardKeys>
               </div>
             </div>
           </div>
-          <AdjustmentsHorizontalIcon
+          <div
+            className="cursor-pointer"
             onClick={() => setMixerModalOpen(true)}
-            className="h-10 w-10 cursor-pointer"
-          ></AdjustmentsHorizontalIcon>
+          >
+            <AdjustmentsHorizontalIcon className="h-10 w-10"></AdjustmentsHorizontalIcon>
+          </div>
         </div>
 
         <div

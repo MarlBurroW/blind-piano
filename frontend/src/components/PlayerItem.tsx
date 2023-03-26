@@ -1,22 +1,37 @@
 import { Avatar } from "./Avatar";
 import { Player } from "../../../backend/schemas/Player";
 import { useTranslation } from "react-i18next";
-import { StarIcon } from "@heroicons/react/24/outline";
+import { IPlayerNote } from "../types";
+
 import { Popover, Transition } from "@headlessui/react";
-import { Fragment, useContext } from "react";
-import { Button } from "./form/Button";
+import { Fragment, useContext, useEffect, useMemo, useCallback } from "react";
+
 import { useGameActions } from "../hooks/useGameActions";
 import { TbCrown } from "react-icons/tb";
 import { RxExit } from "react-icons/rx";
 import { HiOutlinePencil } from "react-icons/hi";
 import { GameContext } from "../components/context/GameContext";
+import { AudioContext } from "../components/context/AudioContext";
+import { NoteBubbleEmitter } from "./NoteBubbleEmitter";
 
+import { PlayerVolumeSlider } from "./PlayerVolumeSlider";
+import {
+  SpeakerWaveIcon,
+  SpeakerXMarkIcon,
+  MusicalNoteIcon,
+} from "@heroicons/react/24/outline";
 interface Props {
   player: Player;
   className?: string;
   isMe: boolean;
   isLeader: boolean;
   meIsLeader: boolean;
+}
+
+interface State {
+  latestPlayedNotes: {
+    [key: string]: IPlayerNote;
+  };
 }
 
 export function PlayerItem({
@@ -28,7 +43,12 @@ export function PlayerItem({
 }: Props) {
   const { t } = useTranslation();
   const { kickPlayer, promoteGameLeader } = useGameActions();
-  const { setState } = useContext(GameContext);
+  const { setState: setGameState } = useContext(GameContext);
+  const { playersInstruments } = useContext(AudioContext);
+
+  const playerInstrument = useMemo(() => {
+    return playersInstruments[player.id];
+  }, [playersInstruments[player.id], player]);
 
   return (
     <Popover className={`${className} relative w-full`}>
@@ -60,7 +80,7 @@ export function PlayerItem({
               </div>
             )}
 
-            <div className="w-full text-left">
+            <div className="w-full text-left ">
               <div className="font-bold mb-1">{player.nickname}</div>
 
               <div className="flex gap-2">
@@ -71,6 +91,8 @@ export function PlayerItem({
                   </div>
                 )}
               </div>
+
+              <NoteBubbleEmitter player={player} />
             </div>
           </Popover.Button>
           <Transition
@@ -82,12 +104,39 @@ export function PlayerItem({
             leaveFrom="transform scale-100 opacity-100 translate-x-full"
             leaveTo="transform scale-0 opacity-0 translate-x-0"
           >
-            <Popover.Panel className="absolute w-80 drop-shadow-md rounded-md overflow-hidden  z-10 top-0 -right-9 bg-gradient-to-b from-shade-200 to-shade-300 transform ">
+            <Popover.Panel className="absolute w-[30rem] drop-shadow-md rounded-md overflow-hidden  z-10 top-0 -right-9 bg-gradient-to-b from-shade-200 to-shade-300 transform ">
+              <div className="px-5 py-8 flex justify-center items-center flex-col mb-8">
+                <div className="text-3xl mb-5 w-full flex justify-center items-center">
+                  <Avatar
+                    background={true}
+                    circle
+                    size={60}
+                    seed={player.avatarSeed}
+                    className="mr-5"
+                  ></Avatar>
+
+                  {player.nickname}
+                </div>
+                {playerInstrument && (
+                  <>
+                    <div className="flex items-center text-md justify-center mb-2 w-full">
+                      <MusicalNoteIcon className="h-6 w-6 mr-2" />
+                      {playerInstrument.getName()}
+                    </div>
+                    <div className="flex justify-center items-center gap-2 w-full">
+                      <SpeakerXMarkIcon className="h-8 w-8" />
+                      <PlayerVolumeSlider player={player}></PlayerVolumeSlider>
+                      <SpeakerWaveIcon className="h-8 w-8" />
+                    </div>
+                  </>
+                )}
+              </div>
+
               {isMe && (
                 <div
-                  className="px-5 py-4 cursor-pointer  hover:bg-primary-400 flex justify-start "
+                  className="px-5 py-4 cursor-pointer  bg-shade-200 hover:bg-primary-400 flex justify-start "
                   onClick={() =>
-                    setState((draft) => {
+                    setGameState((draft) => {
                       draft.isIdentityModalOpen = true;
                     })
                   }
@@ -99,14 +148,14 @@ export function PlayerItem({
               {meIsLeader && !isMe && (
                 <>
                   <div
-                    className="px-5  py-4 cursor-pointer  hover:bg-primary-400  flex items-center justify-start"
+                    className="px-5  py-4 cursor-pointer  bg-shade-200 hover:bg-primary-400  flex items-center justify-start"
                     onClick={() => promoteGameLeader(player.id)}
                   >
                     <TbCrown className="text-2xl mr-4" />{" "}
                     {t("generic.promote_game_leader")}
                   </div>
                   <div
-                    className="px-5 py-4 cursor-pointer text-red-300  hover:bg-primary-400 flex justify-start "
+                    className="px-5 py-4 cursor-pointer text-red-300  bg-shade-200 hover:bg-primary-400 flex justify-start "
                     onClick={() => kickPlayer(player.id)}
                   >
                     <RxExit className="text-2xl mr-4"></RxExit>{" "}

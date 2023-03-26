@@ -5,6 +5,8 @@ import { Avatar } from "./Avatar";
 import { RangeSlider } from "./form/inputs/RangeSlider";
 import _ from "lodash";
 import chroma from "chroma-js";
+import { PlayerVolumeSlider } from "./PlayerVolumeSlider";
+
 import {
   SpeakerWaveIcon,
   SpeakerXMarkIcon,
@@ -25,19 +27,6 @@ export function PlayerMixer({ player }: Props) {
   const playerInstrument = useMemo(() => {
     return playersInstruments[player.id];
   }, [playersInstruments[player.id], player]);
-
-  const handlePlayerVolumeChange = useCallback(
-    (playerId: string, val: number) => {
-      setPlayerVolume(playerId, val);
-    },
-    [setPlayerVolume]
-  );
-
-  const debouncedHandlePlayerVolumeChange = useMemo(() => {
-    return _.debounce((playerId, volume) => {
-      handlePlayerVolumeChange(playerId, volume);
-    }, 100);
-  }, [handlePlayerVolumeChange]);
 
   return (
     <div
@@ -69,18 +58,7 @@ export function PlayerMixer({ player }: Props) {
       </div>
       <div className="w-full flex items-center">
         <SpeakerXMarkIcon className="h-8 w-8 mr-4" />
-        <RangeSlider
-          value={playersVolumes[player.id]}
-          color={player.color}
-          onChange={(val) => {
-            debouncedHandlePlayerVolumeChange(player.id, val);
-          }}
-          min={0}
-          max={1}
-          formatValue={(val) => {
-            return `${Math.round(val * 100)}%`;
-          }}
-        ></RangeSlider>
+        <PlayerVolumeSlider player={player} />
         <SpeakerWaveIcon className="h-8 w-8 ml-4" />
       </div>
     </div>

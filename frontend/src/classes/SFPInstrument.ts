@@ -71,7 +71,7 @@ export class SFPInstrument implements IInstrument {
 
 export default SFPInstrument;
 
-const instruments = [
+const instruments: Array<string> = [
   "acoustic_grand_piano",
   "bright_acoustic_piano",
   "electric_grand_piano",
@@ -204,7 +204,7 @@ const instruments = [
 
 const soundfont = "FluidR3_GM";
 
-const formatInstrumentName = (name) => {
+const formatInstrumentName = (name: string) => {
   return name
     .split("_")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
