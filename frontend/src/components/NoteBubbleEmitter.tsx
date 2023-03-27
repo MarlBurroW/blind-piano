@@ -1,10 +1,10 @@
 import Player from "../../../backend/schemas/Player";
-import { useContext, useCallback, useMemo, useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useMidiBus } from "../hooks/hooks";
 
 import { useImmer } from "use-immer";
 import { IPlayerNote } from "../types";
-import { MidiContext } from "./context/MidiContext";
+
 import { v4 as uuidv4 } from "uuid";
 
 interface Props {

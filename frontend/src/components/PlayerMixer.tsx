@@ -28,7 +28,7 @@ export function PlayerMixer({ player }: Props) {
   return (
     <div
       key={player.id}
-      className=" px-8 py-8 rounded-lg mb-5 border-2"
+      className=" px-8 py-8 rounded-3xl mb-5 border-l-8"
       style={{
         borderColor: player.color,
         backgroundColor: chroma(player.color).alpha(0.2).css(),
@@ -41,7 +41,8 @@ export function PlayerMixer({ player }: Props) {
             circle
             size={60}
             seed={player.avatarSeed}
-            className="mr-4"
+            style={{ borderColor: player.color }}
+            className="mr-4 border-2 rounded-full"
           ></Avatar>
         </div>
         <div className="text-xl grow">

@@ -1,13 +1,5 @@
-import React, {
-  useContext,
-  useEffect,
-  useRef,
-  useMemo,
-  useCallback,
-  useState,
-} from "react";
-import { GameContext } from "./GameContext";
-import { MidiContext } from "./MidiContext";
+import React, { useEffect, useRef, useCallback, useState } from "react";
+
 import { IPlayerNote, IInstrumentItem, IInstrument } from "../../types";
 import {
   SFPInstrument,
@@ -20,10 +12,13 @@ import {
 } from "../../classes/WAFInstrument";
 
 import { useImmer } from "use-immer";
+import toast from "react-hot-toast";
+import { useTranslation } from "react-i18next";
+import { usePlayers, useMe, useMidiBus } from "../../hooks/hooks";
 
 interface IAudioContext {
   instrumentItems: Array<IInstrumentItem>;
-  currentInstrumentItem: IInstrumentItem | null;
+
   playersInstruments: {
     [playerId: string]: IInstrument;
   };
@@ -48,7 +43,7 @@ const DEFAULT_PLAYER_VOLUME = 1;
 
 const initialContextValues = {
   instrumentItems,
-  currentInstrumentItem: null,
+
   playersInstruments: {},
   masterAudioContext: null,
   setMasterVolume: (value: number) => {},
@@ -89,8 +84,10 @@ export function getInstrumentItemFromIdentifier(
 }
 
 export function AudioProvider({ children }: { children: React.ReactNode }) {
-  const { players, me } = useContext(GameContext);
-  const { midiBus$ } = useContext(MidiContext);
+  const { t } = useTranslation();
+
+  const players = usePlayers();
+  const midiBus = useMidiBus();
 
   const [state, setState] = useImmer<State>(initialState);
 
@@ -108,10 +105,6 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     },
     [setState]
   );
-
-  const currentInstrumentItem: IInstrumentItem | null = useMemo(() => {
-    return me ? getInstrumentItemFromIdentifier(me.instrument) : null;
-  }, [me?.instrument]);
 
   useEffect(() => {
     stateRef.current = state;
@@ -152,14 +145,14 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    midiBus$?.on("noteon", onNoteOn);
-    midiBus$?.on("noteoff", onNoteOff);
+    midiBus?.on("noteon", onNoteOn);
+    midiBus?.on("noteoff", onNoteOff);
 
     return () => {
-      midiBus$?.off("noteon", onNoteOn);
-      midiBus$?.off("noteoff", onNoteOff);
+      midiBus?.off("noteon", onNoteOn);
+      midiBus?.off("noteoff", onNoteOff);
     };
-  }, [midiBus$]);
+  }, [midiBus]);
 
   function createInstrument(instrumentIdentifier: string): IInstrument | null {
     const instrumentItem =
@@ -176,6 +169,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 
     return null;
   }
+
   useEffect(() => {
     for (const player of players) {
       const playerInstrument = stateRef.current.playersInstruments[player.id];
@@ -206,7 +200,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
           // Set the player's GainNode as outputNode
           instrument.setOutputNode(playerGainNode);
 
-          instrument.load().then(() => {
+          const loadingPromise = instrument.load().then(() => {
             setState((draft) => {
               draft.playersInstruments[player.id] = instrument;
             });
@@ -214,6 +208,18 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
             if (playerInstrument) {
               playerInstrument.dispose();
             }
+          });
+
+          toast.promise(loadingPromise, {
+            loading: t("loading_messages.loading_instrument", {
+              name: instrument.getName(),
+            }),
+            success: t("success_messages.instrument_loaded", {
+              name: instrument.getName(),
+            }),
+            error: t("client_error_messages.instrument_loading_failed", {
+              name: instrument.getName(),
+            }),
           });
         }
       }
@@ -233,7 +239,6 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     <AudioContext.Provider
       value={{
         playersInstruments: state.playersInstruments,
-        currentInstrumentItem,
         instrumentItems: instrumentItems,
         masterAudioContext: masterAudioContextRef.current,
         setMasterVolume: setMasterGainValue,

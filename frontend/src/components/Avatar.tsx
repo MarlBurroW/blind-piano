@@ -9,6 +9,7 @@ interface Props {
   scale?: number;
   circle?: boolean;
   className?: string;
+  style?: Object;
 }
 
 export function Avatar({
@@ -18,6 +19,7 @@ export function Avatar({
   scale = 85,
   circle,
   className,
+  style = {},
 }: Props) {
   const renderedAvatar = useMemo(() => {
     return createAvatar(bottts, {
@@ -32,6 +34,6 @@ export function Avatar({
     }).toDataUriSync();
   }, [seed, size]);
 
-  return <img className={className} src={renderedAvatar} />;
+  return <img style={style} className={className} src={renderedAvatar} />;
 }
 export default Avatar;

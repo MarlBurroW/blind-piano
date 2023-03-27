@@ -131,7 +131,7 @@ export class GameRoom extends Room<Game> {
       this.log(kleur.bold().cyan(`Note On: ${note.number}`), { player });
     });
 
-    this.onMessage("setInstrument", async (client, instrumentIdentifier) => {
+    this.onMessage("set-instrument", async (client, instrumentIdentifier) => {
       const player = this.state.players.get(client.sessionId);
 
       if (player) {

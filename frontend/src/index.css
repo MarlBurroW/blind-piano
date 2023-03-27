@@ -256,7 +256,5 @@ body,
 #root {
   height: 100%;
 
-  /* Media query recting root fontt size of root element to scale down site */
-
-  font-size: 100%;
+  font-size: 13px;
 }

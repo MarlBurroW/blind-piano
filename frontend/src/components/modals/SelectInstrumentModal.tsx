@@ -8,10 +8,10 @@ import TextInput from "../form/inputs/TextInput";
 import { debounce } from "lodash";
 
 import {
-  useGameRoom,
   useMe,
   useIntrumentItems,
   usePlayerInstrument,
+  useSelectInstrument,
 } from "../../hooks/hooks";
 
 interface Props {
@@ -21,9 +21,10 @@ interface Props {
 
 export function SelectInstrumentModal({ isOpen, onClose }: Props) {
   const { t } = useTranslation();
-  const gameRoom = useGameRoom();
+
   const me = useMe();
   const myInstrument = usePlayerInstrument(me ? me.id : null);
+  const selectInstrument = useSelectInstrument();
 
   const instrumentItems = useIntrumentItems();
 
@@ -107,10 +108,8 @@ export function SelectInstrumentModal({ isOpen, onClose }: Props) {
                             : "font-thin hover:bg-shade-300"
                         } border-b-[1px] border-shade-300 py-4 px-4`}
                         onClick={() => {
-                          gameRoom?.send(
-                            "setInstrument",
-                            instrument.identifier
-                          );
+                          selectInstrument(instrument.identifier);
+
                           onClose?.();
                         }}
                       >

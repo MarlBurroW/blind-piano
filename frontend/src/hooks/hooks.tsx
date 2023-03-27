@@ -116,3 +116,24 @@ export function useChat() {
     sendMessage,
   };
 }
+
+export function useSelectInstrument() {
+  const gameRoom = useGameRoom();
+
+  const selectInstrument = useCallback(
+    (instrumentIdentifier: string) => {
+      if (gameRoom) {
+        gameRoom.send("set-instrument", instrumentIdentifier);
+      }
+    },
+    [gameRoom]
+  );
+
+  return selectInstrument;
+}
+
+export function usePlayers() {
+  const { players } = useContext(GameContext);
+
+  return players;
+}

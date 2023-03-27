@@ -2,20 +2,15 @@ import { Avatar } from "./Avatar";
 import { Player } from "../../../backend/schemas/Player";
 import { useTranslation } from "react-i18next";
 import { IPlayerNote } from "../types";
-
 import { Popover, Transition } from "@headlessui/react";
-import { Fragment, useContext, useEffect, useMemo, useCallback } from "react";
-
+import { Fragment, useContext } from "react";
 import { useGameActions } from "../hooks/useGameActions";
 import { TbCrown } from "react-icons/tb";
 import { RxExit } from "react-icons/rx";
 import { HiOutlinePencil } from "react-icons/hi";
 import { GameContext } from "../components/context/GameContext";
-
 import { NoteBubbleEmitter } from "./NoteBubbleEmitter";
-
 import { usePlayerInstrument } from "../hooks/hooks";
-
 import { PlayerVolumeSlider } from "./PlayerVolumeSlider";
 import {
   SpeakerWaveIcon,

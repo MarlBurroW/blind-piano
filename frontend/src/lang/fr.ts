@@ -25,15 +25,20 @@ export default {
       visibility: "Visibilité",
       made_by: "Réalisé avec ❤️ par",
     },
+    loading_messages: {
+      loading_instrument: "Chargement de l'instrument {{name}}",
+    },
 
     success_messages: {
       game_created: "Partie créée avec succès",
+      instrument_loaded: "Instrument {{name}} chargé",
     },
     server_error_messages: {
       validation_error: "Erreur de validation",
       unknown_error: "Erreur inconnue",
     },
     client_error_messages: {
+      instrument_loading_failed: "Impossible de charger l'instrument {{name}}",
       game_not_found: "Partie introuvable",
       join_failed: "Impossible de rejoindre cette partie",
       disconnected_from_server: "Vous avez été déconnecté du serveur",
