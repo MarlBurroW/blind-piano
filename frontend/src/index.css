@@ -225,7 +225,7 @@
 }
 
 .note-bubbles .note-bubble {
-  animation: bubbleAnimation 2s ease-in-out;
+  animation: bubbleAnimation 2s ease-in-out infinite;
   right: 0rem;
 }
 

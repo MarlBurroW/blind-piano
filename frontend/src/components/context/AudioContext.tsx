@@ -14,7 +14,7 @@ import {
 import { useImmer } from "use-immer";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
-import { usePlayers, useMe, useMidiBus } from "../../hooks/hooks";
+import { usePlayers, useMidiBus } from "../../hooks/hooks";
 
 interface IAudioContext {
   instrumentItems: Array<IInstrumentItem>;
@@ -62,12 +62,16 @@ type State = {
   playersGainValues: {
     [playerId: string]: number;
   };
+  playersLoading: {
+    [playerId: string]: boolean;
+  };
 };
 
 const initialState = {
   playersInstruments: {},
   playersGainNodes: {},
   playersGainValues: {},
+  playersLoading: {},
 };
 
 export const AudioContext =
@@ -197,18 +201,30 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         const instrument = createInstrument(player.instrument);
 
         if (instrument) {
-          // Set the player's GainNode as outputNode
+          if (state.playersLoading[player.id]) return;
+
           instrument.setOutputNode(playerGainNode);
 
-          const loadingPromise = instrument.load().then(() => {
-            setState((draft) => {
-              draft.playersInstruments[player.id] = instrument;
-            });
-
-            if (playerInstrument) {
-              playerInstrument.dispose();
-            }
+          setState((draft) => {
+            draft.playersLoading[player.id] = true;
           });
+
+          const loadingPromise = instrument
+            .load()
+            .then(() => {
+              setState((draft) => {
+                draft.playersInstruments[player.id] = instrument;
+              });
+
+              if (playerInstrument) {
+                playerInstrument.dispose();
+              }
+            })
+            .finally(() => {
+              setState((draft) => {
+                draft.playersLoading[player.id] = false;
+              });
+            });
 
           toast.promise(loadingPromise, {
             loading: t("loading_messages.loading_instrument", {

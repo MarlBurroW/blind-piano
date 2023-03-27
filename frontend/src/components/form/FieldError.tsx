@@ -1,6 +1,14 @@
-export const FieldError = ({ error }: { error: string }) => {
+export const FieldError = ({
+  error,
+  className,
+}: {
+  error: string;
+  className?: string;
+}) => {
   return (
-    <div className="text-red-400 rounded-md tracking-widest text-xs">
+    <div
+      className={`${className} text-red-400 rounded-md tracking-widest text-xs`}
+    >
       {error}
     </div>
   );

@@ -1,5 +1,5 @@
 import { Dialog, Transition } from "@headlessui/react";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useFormik, FormikProvider } from "formik";
 import { Avatar } from "../Avatar";
@@ -7,15 +7,18 @@ import { v4 as uuidv4 } from "uuid";
 import TextField from "../form/fields/TextField";
 import * as Yup from "yup";
 import { useLocalStorage } from "usehooks-ts";
+import { colors } from "../../../../common/colors";
 
 import {
   uniqueNamesGenerator,
   adjectives,
   animals,
 } from "unique-names-generator";
-import { IIdentity } from "../../types";
+import { IIdentity } from "../../../../common/types";
 import { Button } from "../form/Button";
 import { Panel } from "../Panel";
+import { useColors } from "../../hooks/hooks";
+import { FieldLabel } from "../form/FieldLabel";
 
 interface Props {
   isOpen: boolean;
@@ -41,6 +44,8 @@ export function CreateIdentityModal({
     string | null
   >("avatarSeed", null);
 
+  const { availableColors } = useColors();
+
   const identityForm = useFormik<IIdentity>({
     initialValues: {
       nickname: storedNickname
@@ -51,6 +56,8 @@ export function CreateIdentityModal({
             dictionaries: [adjectives, animals],
           }),
       avatarSeed: storedAvatarSeed ? storedAvatarSeed : uuidv4(),
+      color:
+        availableColors[Math.floor(Math.random() * availableColors.length)],
     },
     validationSchema: Yup.object({
       nickname: Yup.string()
@@ -59,6 +66,7 @@ export function CreateIdentityModal({
         .max(32, t("validation_rules.max_char", { max: 32 }))
         .trim(),
       avatarSeed: Yup.string().uuid().required(),
+      color: Yup.string().required().oneOf(colors),
     }),
     onSubmit: (identity) => {
       onIdentityValidated(identity);
@@ -74,9 +82,21 @@ export function CreateIdentityModal({
   }
 
   useEffect(() => {
+    // Check if current selected color still available and if not, select a new one
+
+    if (!availableColors.includes(identityForm.values.color)) {
+      identityForm.setFieldValue(
+        "color",
+        availableColors[Math.floor(Math.random() * availableColors.length)]
+      );
+    }
+  }, [availableColors]);
+
+  useEffect(() => {
     if (isOpen && defaultIdentity) {
       identityForm.setFieldValue("avatarSeed", defaultIdentity.avatarSeed);
       identityForm.setFieldValue("nickname", defaultIdentity.nickname);
+      identityForm.setFieldValue("color", defaultIdentity.color);
     }
   }, [isOpen, defaultIdentity]);
 
@@ -111,7 +131,7 @@ export function CreateIdentityModal({
               leaveTo="opacity-0 scale-95"
             >
               <Dialog.Panel className="w-full max-w-2xl">
-                <Panel style="primary" neon className="text-left " padding={10}>
+                <Panel style="primary" neon className="text-left" padding={10}>
                   <FormikProvider value={identityForm}>
                     <form onSubmit={identityForm.handleSubmit}>
                       <Dialog.Title className="text-lg font-medium  text-center mb-10 ">
@@ -140,15 +160,40 @@ export function CreateIdentityModal({
                             {t("create_identity_modal.randomize_avatar")}
                           </Button>
                         </div>
-
+                        <FieldLabel
+                          className="text-center"
+                          label={t("generic.nickname")}
+                        />
                         <TextField
                           className="input-lg text-center"
-                          label={t("generic.nickname")}
+                          labelClassName={"text-center"}
                           placeholder={t(
                             "create_identity_modal.nickname_placeholder"
                           )}
                           name="nickname"
                         ></TextField>
+                        <FieldLabel
+                          className="text-center"
+                          label={t("generic.color")}
+                        />
+                        <div className="flex justify-between py-5 px-2 mb-5">
+                          {availableColors.map((color) => {
+                            return (
+                              <div
+                                key={color}
+                                onClick={() =>
+                                  identityForm.setFieldValue("color", color)
+                                }
+                                style={{ backgroundColor: color }}
+                                className={`h-8 w-8 rounded-full transition-all cursor-pointer ${
+                                  identityForm.values.color === color
+                                    ? "scale-150"
+                                    : ""
+                                }`}
+                              ></div>
+                            );
+                          })}
+                        </div>
                       </div>
 
                       <Button

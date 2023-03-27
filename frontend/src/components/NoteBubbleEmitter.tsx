@@ -1,5 +1,5 @@
 import Player from "../../../backend/schemas/Player";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo, memo } from "react";
 import { useMidiBus } from "../hooks/hooks";
 
 import { useImmer } from "use-immer";
@@ -13,7 +13,10 @@ interface Props {
 
 interface State {
   latestPlayedNotes: {
-    [key: string]: IPlayerNote;
+    [key: string]: {
+      top: number;
+      note: IPlayerNote;
+    };
   };
 }
 
@@ -31,7 +34,10 @@ export function NoteBubbleEmitter({ player }: Props) {
       const id = uuidv4();
 
       setState((draft) => {
-        draft.latestPlayedNotes[id] = note;
+        draft.latestPlayedNotes[id] = {
+          top: Math.random() * 50,
+          note,
+        };
       });
 
       const timeout = setTimeout(() => {
@@ -59,10 +65,13 @@ export function NoteBubbleEmitter({ player }: Props) {
         return (
           <div
             key={key}
-            style={{ backgroundColor: player.color, top: "0%" }}
+            style={{
+              backgroundColor: player.color,
+              top: `${state.latestPlayedNotes[key].top}%`,
+            }}
             className="note-bubble absolute h-12 w-12 rounded-full flex justify-center items-center"
           >
-            {state.latestPlayedNotes[key].name}
+            {state.latestPlayedNotes[key].note.name}
           </div>
         );
       })}

@@ -60,6 +60,7 @@ export default {
     },
     generic: {
       nickname: "Pseudo",
+      color: "Couleur",
       or: "ou",
       players: "Joueurs",
       leader: "Chef de partie",

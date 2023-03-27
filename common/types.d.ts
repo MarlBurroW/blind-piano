@@ -1,6 +1,7 @@
 export interface IIdentity {
   nickname: string;
   avatarSeed: string;
+  color: string;
 }
 
 export interface IPlayerSchema {

@@ -3,10 +3,10 @@ import { Room, Client, ServerError, updateLobby } from "colyseus";
 import { object, string } from "yup";
 import { Game } from "../schemas/Game";
 import { Player } from "../schemas/Player";
-import { IIdentity } from "../types";
+import { IIdentity } from "../../common/types";
 import kleur from "kleur";
 import { v4 as uuidv4 } from "uuid";
-import { off } from "process";
+import { colors } from "../../common/colors";
 import Message from "../schemas/Message";
 
 export class GameRoom extends Room<Game> {
@@ -78,9 +78,16 @@ export class GameRoom extends Room<Game> {
     });
 
     this.onMessage("update-identity", async (client, identity) => {
+      const availableColors = colors.filter((color) => {
+        return !Array.from(this.state.players.values()).some((player) => {
+          return player.color === color;
+        });
+      });
+
       const identitySchema = object({
         nickname: string().required().min(3).max(32).trim(),
         avatarSeed: string().required().uuid(),
+        color: string().required().oneOf(availableColors),
       });
 
       try {
@@ -106,6 +113,7 @@ export class GameRoom extends Room<Game> {
         player.assign({
           nickname: identity.nickname,
           avatarSeed: identity.avatarSeed,
+          color: identity.color,
         });
 
         this.log(
@@ -229,7 +237,7 @@ export class GameRoom extends Room<Game> {
     player.nickname = identity.nickname;
     player.avatarSeed = identity.avatarSeed;
     player.id = client.sessionId;
-    player.color = this.getAvailableColor();
+    player.color = identity.color;
 
     this.state.players.set(client.sessionId, player);
 
@@ -281,18 +289,6 @@ export class GameRoom extends Room<Game> {
   }
 
   getAvailableColor() {
-    const colors = [
-      "#ef4444",
-      "#f97316",
-      "#eab308",
-      "#84cc16",
-      "#22c55e",
-      "#14b8a6",
-      "#0ea5e9",
-      "#6366f1",
-      "#ec4899",
-    ];
-
     // Randomize order
 
     for (let i = colors.length - 1; i > 0; i--) {

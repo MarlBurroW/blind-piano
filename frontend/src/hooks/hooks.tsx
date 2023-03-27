@@ -3,7 +3,8 @@ import { MidiContext } from "../components/context/MidiContext";
 import { AudioContext } from "../components/context/AudioContext";
 import { GameContext } from "../components/context/GameContext";
 import type { Input } from "webmidi";
-import { IInstrument } from "../types";
+import { IInstrument } from "../../../common/types";
+import { colors } from "../../../common/colors";
 
 export function useMidiBus() {
   const { midiBus$ } = useContext(MidiContext);
@@ -136,4 +137,22 @@ export function usePlayers() {
   const { players } = useContext(GameContext);
 
   return players;
+}
+
+export function useColors() {
+  const players = usePlayers();
+  const me = useMe();
+
+  const availableColors = useMemo(() => {
+    const allPlayersExceptMe = players.filter((player) => player.id !== me?.id);
+
+    return colors.filter((color) => {
+      return !allPlayersExceptMe.find((player) => player.color === color);
+    });
+  }, [players]);
+
+  return {
+    colors,
+    availableColors,
+  };
 }

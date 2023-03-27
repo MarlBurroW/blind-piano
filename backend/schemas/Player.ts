@@ -1,5 +1,5 @@
 import { Schema, type } from "@colyseus/schema";
-import { IIdentity, IInstrumentItem } from "../../frontend/src/types";
+import { IIdentity, IInstrumentItem } from "../../common/types";
 
 export class Player extends Schema implements IIdentity {
   @type("string") nickname: string;

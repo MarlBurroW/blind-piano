@@ -1,9 +1,9 @@
 import { Avatar } from "./Avatar";
 import { Player } from "../../../backend/schemas/Player";
 import { useTranslation } from "react-i18next";
-import { IPlayerNote } from "../types";
+import { IPlayerNote } from "../../../common/types";
 import { Popover, Transition } from "@headlessui/react";
-import { Fragment, useContext } from "react";
+import { Fragment, useContext, useMemo } from "react";
 import { useGameActions } from "../hooks/useGameActions";
 import { TbCrown } from "react-icons/tb";
 import { RxExit } from "react-icons/rx";
@@ -12,6 +12,7 @@ import { GameContext } from "../components/context/GameContext";
 import { NoteBubbleEmitter } from "./NoteBubbleEmitter";
 import { usePlayerInstrument } from "../hooks/hooks";
 import { PlayerVolumeSlider } from "./PlayerVolumeSlider";
+import chroma from "chroma-js";
 import {
   SpeakerWaveIcon,
   SpeakerXMarkIcon,
@@ -49,7 +50,9 @@ export function PlayerItem({
       {({ open }) => (
         <>
           <Popover.Button
-            style={{ borderColor: player.color }}
+            style={{
+              borderColor: player.color,
+            }}
             className={` ${
               isMe ? "border-primary-400" : ""
             } p-3 flex w-full items-center relative ${
