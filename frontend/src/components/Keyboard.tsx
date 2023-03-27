@@ -1,8 +1,5 @@
 import { Panel } from "../components/Panel";
-import { MidiContext } from "./context/MidiContext";
-import { GameContext } from "./context/GameContext";
-import { AudioContext } from "./context/AudioContext";
-import { getInstrumentItemFromIdentifier } from "./context/AudioContext";
+
 import Draggable, { DraggableEvent, DraggableData } from "react-draggable";
 import {
   ChevronUpDownIcon,
@@ -10,33 +7,35 @@ import {
   MusicalNoteIcon,
 } from "@heroicons/react/24/outline";
 
-import {
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useCallback,
-  memo,
-  useState,
-} from "react";
+import { useEffect, useMemo, useRef, useCallback, useState } from "react";
 import SelectInput from "../components/form/inputs/SelectInput";
 import { useTranslation } from "react-i18next";
 import type { Input } from "webmidi";
 
 import type { Note } from "webmidi";
 import { KeyboardKeys, KeyboardKeysRef } from "./KeyboardKeys";
-import { IPlayerNote, IInstrumentItem } from "../types";
+import { IPlayerNote } from "../types";
 
 import { SelectInstrumentModal } from "./modals/SelectInstrumentModal";
 import { MixerModal } from "./modals/MixerModal";
-import { Button } from "./form/Button";
+
+import {
+  useMidiBus,
+  useMidiDevices,
+  usePlayerInstrument,
+  useMe,
+  useGameRoom,
+} from "../hooks/hooks";
 
 export function Keyboard() {
-  const { devices, selectedDevice, selectDevice, midiBus$ } =
-    useContext(MidiContext);
-  const { gameRoom, me } = useContext(GameContext);
+  const { midiDevices, selectedMidiDevice, selectMidiDevice } =
+    useMidiDevices();
 
-  const { currentInstrumentItem } = useContext(AudioContext);
+  const midiBus = useMidiBus();
+  const me = useMe();
+  const gameRoom = useGameRoom();
+
+  const playerInstrument = usePlayerInstrument(me ? me.id : null);
 
   const [selectInstrumentModalOpen, setSelectIntrumentModalOpen] =
     useState(false);
@@ -47,16 +46,15 @@ export function Keyboard() {
 
   const deviceOptions: Array<{ value: Input | null; label: string }> =
     useMemo(() => {
-      const result: Array<{ value: Input | null; label: string }> = devices.map(
-        (d) => {
+      const result: Array<{ value: Input | null; label: string }> =
+        midiDevices.map((d) => {
           return { value: d, label: d.name };
-        }
-      );
+        });
 
       result.unshift({ value: null, label: t("generic.select_midi_device") });
 
       return result;
-    }, [devices, i18n.language]);
+    }, [midiDevices, i18n.language]);
 
   const keyboardKeysRef = useRef<KeyboardKeysRef>(null);
   const previewKeyboardKeysRef = useRef<KeyboardKeysRef>(null);
@@ -152,14 +150,14 @@ export function Keyboard() {
       previewKeyboardKeysRef.current?.setKeyState(note, false);
     }
 
-    midiBus$?.on("noteon", noteOn);
-    midiBus$?.on("noteoff", noteOff);
+    midiBus?.on("noteon", noteOn);
+    midiBus?.on("noteoff", noteOff);
 
     return () => {
-      midiBus$?.off("noteon", noteOn);
-      midiBus$?.off("noteoff", noteOff);
+      midiBus?.off("noteon", noteOn);
+      midiBus?.off("noteoff", noteOff);
     };
-  }, [midiBus$, keyboardKeysRef.current, previewKeyboardKeysRef.current]);
+  }, [midiBus, keyboardKeysRef.current, previewKeyboardKeysRef.current]);
 
   // Note received from virtual keyboard
 
@@ -180,7 +178,7 @@ export function Keyboard() {
           playerId: me.id,
           color: me.color,
         };
-        midiBus$?.emit("noteon", playerNote);
+        midiBus?.emit("noteon", playerNote);
       }
     },
     [gameRoom, me]
@@ -202,14 +200,14 @@ export function Keyboard() {
           playerId: me.id,
           color: me.color,
         };
-        midiBus$?.emit("noteoff", playerNote);
+        midiBus?.emit("noteoff", playerNote);
       }
     },
     [gameRoom, me]
   );
 
   useEffect(() => {
-    selectedDevice?.addListener("noteon", (e) => {
+    selectedMidiDevice?.addListener("noteon", (e) => {
       gameRoom?.send("noteon", {
         number: e.note.number,
         name: e.note.identifier,
@@ -226,11 +224,11 @@ export function Keyboard() {
           playerId: me.id,
           color: me.color,
         };
-        midiBus$?.emit("noteon", playerNote);
+        midiBus?.emit("noteon", playerNote);
       }
     });
 
-    selectedDevice?.addListener("noteoff", (e) => {
+    selectedMidiDevice?.addListener("noteoff", (e) => {
       gameRoom?.send("noteoff", {
         number: e.note.number,
         name: e.note.identifier,
@@ -244,16 +242,16 @@ export function Keyboard() {
           playerId: me.id,
           color: me.color,
         };
-        midiBus$?.emit("noteoff", playerNote);
+        midiBus?.emit("noteoff", playerNote);
       }
     });
 
     return () => {
-      selectedDevice?.removeListener("noteon");
-      selectedDevice?.removeListener("noteoff");
+      selectedMidiDevice?.removeListener("noteon");
+      selectedMidiDevice?.removeListener("noteoff");
     };
   }, [
-    selectedDevice,
+    selectedMidiDevice,
     gameRoom,
     keyboardKeysRef.current,
     previewKeyboardKeysRef.current,
@@ -301,28 +299,24 @@ export function Keyboard() {
         <div className="flex w-full mb-2 gap-8  items-center">
           <div className="min-w-[30rem]">
             <SelectInput
-              onChange={selectDevice}
-              value={selectedDevice}
+              onChange={selectMidiDevice}
+              value={selectedMidiDevice}
               style="secondary"
               options={deviceOptions}
             ></SelectInput>
           </div>
           <div className="w-full">
-            {me ? (
-              <div
-                className="w-full flex mt-1 whitespace-nowrap justify-between cursor-pointer bg-shade-200 mb-2 py-4 px-5 outline-none   focus:outline-none focus:ring rounded-3xl "
-                onClick={() => setSelectIntrumentModalOpen(true)}
-              >
-                <MusicalNoteIcon className="h-6 w-6 mr-2" />{" "}
-                {currentInstrumentItem ? currentInstrumentItem.name : "Select"}{" "}
-                <ChevronUpDownIcon
-                  className="w-5 h-5 text-gray-400"
-                  aria-hidden="true"
-                />
-              </div>
-            ) : (
-              ""
-            )}
+            <div
+              className="w-full flex mt-1 whitespace-nowrap justify-between cursor-pointer bg-shade-200 mb-2 py-4 px-5 outline-none   focus:outline-none focus:ring rounded-3xl "
+              onClick={() => setSelectIntrumentModalOpen(true)}
+            >
+              <MusicalNoteIcon className="h-6 w-6 mr-2" />{" "}
+              {playerInstrument ? playerInstrument.getName() : "Select"}{" "}
+              <ChevronUpDownIcon
+                className="w-5 h-5 text-gray-400"
+                aria-hidden="true"
+              />
+            </div>
           </div>
           <div className="flex-grow"></div>
 

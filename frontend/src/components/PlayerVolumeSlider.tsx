@@ -2,19 +2,21 @@ import Player from "../../../backend/schemas/Player";
 import { RangeSlider } from "./form/inputs/RangeSlider";
 import { useContext, useCallback, useMemo } from "react";
 import { AudioContext } from "./context/AudioContext";
+import { usePlayerMixerControl } from "../hooks/hooks";
+
 import _ from "lodash";
 interface Props {
   player: Player;
 }
 
 export function PlayerVolumeSlider({ player }: Props) {
-  const { playersVolumes, setPlayerVolume } = useContext(AudioContext);
+  const { setVolume, volume } = usePlayerMixerControl(player.id);
 
   const handlePlayerVolumeChange = useCallback(
     (playerId: string, val: number) => {
-      setPlayerVolume(playerId, val);
+      setVolume(val);
     },
-    [setPlayerVolume]
+    [setVolume]
   );
 
   const debouncedHandlePlayerVolumeChange = useMemo(() => {
@@ -25,7 +27,7 @@ export function PlayerVolumeSlider({ player }: Props) {
 
   return (
     <RangeSlider
-      value={playersVolumes[player.id]}
+      value={volume}
       color={player.color}
       onChange={(val) => {
         debouncedHandlePlayerVolumeChange(player.id, val);

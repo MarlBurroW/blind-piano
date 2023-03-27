@@ -1,21 +1,20 @@
 import TextareaAutosize from "react-textarea-autosize";
-import { useCallback, useState, useContext, useEffect, useRef } from "react";
-import { useGameActions } from "../hooks/useGameActions";
-import { GameContext } from "../components/context/GameContext";
+import { useCallback, useState, useEffect, useRef } from "react";
 
 import { ChatMessage } from "./ChatMessage";
-import { AnimatePresence, AnimateSharedLayout, motion } from "framer-motion";
+import { AnimateSharedLayout, motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { AiOutlineSend } from "react-icons/ai";
 
-export function Chat() {
-  const [message, setMessage] = useState<string>("");
+import { useChat, useMe } from "../hooks/hooks";
 
-  const { sendChatMessage } = useGameActions();
-  const { messages, me } = useContext(GameContext);
+export function Chat() {
+  const me = useMe();
+  const { messages, sendMessage: sendChatMessage } = useChat();
   const { t } = useTranslation();
 
   const scrollRef = useRef<HTMLDivElement>();
+  const [message, setMessage] = useState<string>("");
 
   useEffect(() => {
     if (scrollRef.current) {

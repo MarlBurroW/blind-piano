@@ -11,8 +11,10 @@ import { TbCrown } from "react-icons/tb";
 import { RxExit } from "react-icons/rx";
 import { HiOutlinePencil } from "react-icons/hi";
 import { GameContext } from "../components/context/GameContext";
-import { AudioContext } from "../components/context/AudioContext";
+
 import { NoteBubbleEmitter } from "./NoteBubbleEmitter";
+
+import { usePlayerInstrument } from "../hooks/hooks";
 
 import { PlayerVolumeSlider } from "./PlayerVolumeSlider";
 import {
@@ -44,11 +46,8 @@ export function PlayerItem({
   const { t } = useTranslation();
   const { kickPlayer, promoteGameLeader } = useGameActions();
   const { setState: setGameState } = useContext(GameContext);
-  const { playersInstruments } = useContext(AudioContext);
 
-  const playerInstrument = useMemo(() => {
-    return playersInstruments[player.id];
-  }, [playersInstruments[player.id], player]);
+  const playerInstrument = usePlayerInstrument(player.id);
 
   return (
     <Popover className={`${className} relative w-full`}>

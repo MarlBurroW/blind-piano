@@ -1,24 +1,18 @@
 import { Dialog, Transition } from "@headlessui/react";
-import {
-  Fragment,
-  useContext,
-  useMemo,
-  useState,
-  useCallback,
-  useRef,
-} from "react";
+import { Fragment, useMemo, useState, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
-import { GameContext } from "../context/GameContext";
-import { AudioContext } from "../context/AudioContext";
-import { getInstrumentItemFromIdentifier } from "../context/AudioContext";
-
-import { Button } from "../form/Button";
 import { Panel } from "../Panel";
-import { IInstrumentItem } from "../../types";
 
 import TextInput from "../form/inputs/TextInput";
 import { debounce } from "lodash";
+
+import {
+  useGameRoom,
+  useMe,
+  useIntrumentItems,
+  usePlayerInstrument,
+} from "../../hooks/hooks";
 
 interface Props {
   isOpen: boolean;
@@ -27,10 +21,11 @@ interface Props {
 
 export function SelectInstrumentModal({ isOpen, onClose }: Props) {
   const { t } = useTranslation();
+  const gameRoom = useGameRoom();
+  const me = useMe();
+  const myInstrument = usePlayerInstrument(me ? me.id : null);
 
-  const { gameRoom, me } = useContext(GameContext);
-  const { playersInstruments, currentInstrumentItem, instrumentItems } =
-    useContext(AudioContext);
+  const instrumentItems = useIntrumentItems();
 
   const [search, setSearch] = useState("");
   const [inputValue, setInputValue] = useState("");
@@ -107,7 +102,7 @@ export function SelectInstrumentModal({ isOpen, onClose }: Props) {
                         key={instrument.identifier}
                         className={`cursor-pointer  ${
                           instrument.identifier ===
-                          currentInstrumentItem?.identifier
+                          myInstrument?.getIdentifier()
                             ? "bg-secondary-500 font-normal hover:bg-secondary-400"
                             : "font-thin hover:bg-shade-300"
                         } border-b-[1px] border-shade-300 py-4 px-4`}

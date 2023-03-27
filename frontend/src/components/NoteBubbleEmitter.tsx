@@ -1,5 +1,6 @@
 import Player from "../../../backend/schemas/Player";
 import { useContext, useCallback, useMemo, useEffect } from "react";
+import { useMidiBus } from "../hooks/hooks";
 
 import { useImmer } from "use-immer";
 import { IPlayerNote } from "../types";
@@ -17,7 +18,7 @@ interface State {
 }
 
 export function NoteBubbleEmitter({ player }: Props) {
-  const { midiBus$ } = useContext(MidiContext);
+  const midiBus = useMidiBus();
 
   const [state, setState] = useImmer<State>({
     latestPlayedNotes: {},
@@ -45,12 +46,12 @@ export function NoteBubbleEmitter({ player }: Props) {
   );
 
   useEffect(() => {
-    midiBus$?.on("noteon", handleNoteOn);
+    midiBus?.on("noteon", handleNoteOn);
 
     return () => {
-      midiBus$?.off("noteon", handleNoteOn);
+      midiBus?.off("noteon", handleNoteOn);
     };
-  }, [midiBus$, player]);
+  }, [midiBus, player]);
 
   return (
     <div className="note-bubbles absolute w-full h-full left-0 top-0 bottom-0">

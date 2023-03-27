@@ -3,15 +3,15 @@ import { AudioContext } from "./context/AudioContext";
 import { RangeSlider } from "./form/inputs/RangeSlider";
 import _ from "lodash";
 import { SpeakerWaveIcon, SpeakerXMarkIcon } from "@heroicons/react/24/outline";
+import { useMasterMixerControl } from "../hooks/hooks";
 
 interface Props {}
 
 export function MasterMixer({}: Props) {
-  const { setMasterVolume, masterVolume } = useContext(AudioContext);
+  const { setVolume, volume } = useMasterMixerControl();
 
   const handleVolumeChange = useCallback((val: number) => {
-    console.log(val);
-    setMasterVolume(val);
+    setVolume(val);
   }, []);
 
   const debouncedHandleVolumeChange = useMemo(() => {
@@ -22,14 +22,14 @@ export function MasterMixer({}: Props) {
     <div className="bg-shade-300 px-10 py-5 rounded-lg mb-5">
       <div className="flex py-4">
         <div className="whitespace-nowrap  text-2xl min-w-[20rem] text-center w-full">
-          Master volume ({Math.round(masterVolume * 100)}%)
+          Master volume ({Math.round(volume * 100)}%)
         </div>
       </div>
       <div className="w-full flex items-center">
         <SpeakerXMarkIcon className="h-8 w-8 mr-4" />
 
         <RangeSlider
-          value={masterVolume}
+          value={volume}
           onChange={debouncedHandleVolumeChange}
           min={0}
           max={1}

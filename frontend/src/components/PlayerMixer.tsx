@@ -1,8 +1,7 @@
 import Player from "../../../backend/schemas/Player";
-import { useContext, useCallback, useMemo } from "react";
-import { AudioContext } from "./context/AudioContext";
+
 import { Avatar } from "./Avatar";
-import { RangeSlider } from "./form/inputs/RangeSlider";
+
 import _ from "lodash";
 import chroma from "chroma-js";
 import { PlayerVolumeSlider } from "./PlayerVolumeSlider";
@@ -13,20 +12,18 @@ import {
   MusicalNoteIcon,
 } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
+import { usePlayerInstrument, usePlayerMixerControl } from "../hooks/hooks";
 
 interface Props {
   player: Player;
 }
 
 export function PlayerMixer({ player }: Props) {
-  const { playersVolumes, setPlayerVolume, playersInstruments } =
-    useContext(AudioContext);
-
   const { t } = useTranslation();
 
-  const playerInstrument = useMemo(() => {
-    return playersInstruments[player.id];
-  }, [playersInstruments[player.id], player]);
+  const playerInstrument = usePlayerInstrument(player.id);
+
+  const { volume } = usePlayerMixerControl(player.id);
 
   return (
     <div
@@ -48,7 +45,7 @@ export function PlayerMixer({ player }: Props) {
           ></Avatar>
         </div>
         <div className="text-xl grow">
-          {player.nickname} ({Math.round(playersVolumes[player.id] * 100)}%)
+          {player.nickname} ({Math.round(volume * 100)}%)
         </div>
 
         <div className="flex items-center text-xl">
