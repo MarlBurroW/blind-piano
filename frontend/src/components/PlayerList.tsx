@@ -11,9 +11,8 @@ export function PlayerList(): JSX.Element {
     <div>
       {players.map((player) => {
         return (
-          <div className="mb-4">
+          <div className="mb-4" key={player.id}>
             <PlayerItem
-              key={player.id}
               player={player}
               isMe={player.id === me?.id}
               isLeader={player.id === leader?.id}

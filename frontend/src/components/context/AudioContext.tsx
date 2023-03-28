@@ -1,6 +1,10 @@
 import React, { useEffect, useRef, useCallback, useState } from "react";
 
-import { IPlayerNote, IInstrumentItem, IInstrument } from "../../types";
+import {
+  IPlayerNote,
+  IInstrumentItem,
+  IInstrument,
+} from "../../../../common/types";
 import {
   SFPInstrument,
   instrumentsItems as SFPInstrumentsItems,
@@ -10,6 +14,11 @@ import {
   WAFInstrument,
   instrumentsItems as WAFInstrumentItems,
 } from "../../classes/WAFInstrument";
+
+import {
+  WAFDrumInstrument,
+  instrumentsItems as WAFDrumInstrumentsItems,
+} from "../../classes/WAFDrumInstrument";
 
 import { useImmer } from "use-immer";
 import toast from "react-hot-toast";
@@ -31,12 +40,14 @@ interface IAudioContext {
   setPlayerVolume: (playerId: string, value: number) => void;
 }
 
-const instrumentItems = [...SFPInstrumentsItems, ...WAFInstrumentItems].map(
-  (instrumentItem, index) => {
-    instrumentItem.name = `${index}. ${instrumentItem.name}`;
-    return instrumentItem;
-  }
-);
+const instrumentItems = [
+  ...SFPInstrumentsItems,
+  ...WAFInstrumentItems,
+  ...WAFDrumInstrumentsItems,
+].map((instrumentItem, index) => {
+  instrumentItem.name = `${index}. ${instrumentItem.name}`;
+  return instrumentItem;
+});
 
 const DEFAULT_MASTER_VOLUME = 1;
 const DEFAULT_PLAYER_VOLUME = 1;
@@ -168,6 +179,8 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
           return new SFPInstrument(instrumentItem);
         case "WAFInstrument":
           return new WAFInstrument(instrumentItem);
+        case "WAFDrumInstrument":
+          return new WAFDrumInstrument(instrumentItem);
       }
     }
 

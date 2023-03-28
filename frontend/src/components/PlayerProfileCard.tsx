@@ -37,7 +37,7 @@ export function PlayerProfileCard({ player }: Props) {
   }, [me, player]);
 
   const meIsLeader = useMemo(() => {
-    return leader?.id === player.id;
+    return leader?.id === me.id;
   }, [leader, player]);
 
   return (
