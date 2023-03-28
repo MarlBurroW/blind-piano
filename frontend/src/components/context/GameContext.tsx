@@ -17,7 +17,6 @@ import toast from "react-hot-toast";
 import client from "../../services/colyseus";
 import { useTranslation } from "react-i18next";
 import { useAppStore } from "../../stores/app";
-import { MidiContext } from "./MidiContext";
 
 import {
   onPlayerJoined,
@@ -26,7 +25,9 @@ import {
   onNewLeader,
 } from "../../handlers/GameHandlers";
 import sfx from "../../services/sfx";
-import { IPlayerNote } from "../../types";
+import { IPlayerNote } from "../../../../common/types";
+
+import { useMidiBus } from "../../hooks/hooks";
 
 type State = {
   gameState: Game | null;
@@ -68,7 +69,7 @@ export const GameContext =
 export function GameProvider({ children }: { children: React.ReactNode }) {
   // Context
 
-  const { midiBus$ } = useContext(MidiContext);
+  const midiBus = useMidiBus();
 
   // Navigation
 
@@ -197,18 +198,18 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       });
 
       gameRoom.onMessage("noteon", (note: IPlayerNote) => {
-        midiBus$?.emit("noteon", note);
+        midiBus?.emit("noteon", note);
       });
 
       gameRoom.onMessage("noteoff", (note: IPlayerNote) => {
-        midiBus$?.emit("noteoff", note);
+        midiBus?.emit("noteoff", note);
       });
     }
 
     return () => {
       gameRoom?.removeAllListeners();
     };
-  }, [gameRoom, midiBus$]);
+  }, [gameRoom, midiBus]);
 
   return (
     <GameContext.Provider

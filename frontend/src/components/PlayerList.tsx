@@ -1,10 +1,11 @@
 import { PlayerItem } from "./PlayerItem";
 
-import { GameContext } from "../components/context/GameContext";
-import { useContext } from "react";
+import { useMe, useLeader, usePlayers } from "../hooks/hooks";
 
 export function PlayerList(): JSX.Element {
-  const { me, leader, isLeader, players } = useContext(GameContext);
+  const me = useMe();
+  const leader = useLeader();
+  const players = usePlayers();
 
   return (
     <div>

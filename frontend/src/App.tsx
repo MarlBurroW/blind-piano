@@ -1,8 +1,8 @@
-import { useEffect, useContext } from "react";
+import { useEffect } from "react";
 import { useAppStore } from "./stores/app";
 
 import { LanguageSwitcher } from "./components/LanguageSwitcher";
-import { ThemeSwitcher } from "./components/ThemeSwitcher";
+
 import { Toaster } from "react-hot-toast";
 import "react-toastify/dist/ReactToastify.css";
 

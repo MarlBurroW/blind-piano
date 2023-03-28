@@ -1,13 +1,12 @@
 import { Dialog, Transition } from "@headlessui/react";
-import { Fragment, useContext } from "react";
+import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
-
-import { GameContext } from "../context/GameContext";
 
 import { Panel } from "../Panel";
 
 import { PlayerMixer } from "../PlayerMixer";
 import { MasterMixer } from "../MasterMixer";
+import { usePlayers } from "../../hooks/hooks";
 
 interface Props {
   isOpen: boolean;
@@ -18,7 +17,7 @@ import _ from "lodash";
 export function MixerModal({ isOpen, onClose }: Props) {
   const { t } = useTranslation();
 
-  const { players } = useContext(GameContext);
+  const players = usePlayers();
 
   return (
     <Transition appear show={isOpen} as={Fragment}>

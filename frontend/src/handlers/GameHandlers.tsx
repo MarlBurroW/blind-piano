@@ -3,9 +3,8 @@ import toast from "react-hot-toast";
 import sfx from "../services/sfx";
 import { Avatar } from "../components/Avatar";
 import i18n from "../services/i18n";
-import { useEffect, useCallback, useContext } from "react";
+
 import { Room } from "colyseus.js";
-import { IMessage } from "../types";
 
 export function onPlayerKicked(player: Player, gameRoom: Room) {
   sfx.playSound("player-kicked");

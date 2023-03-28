@@ -6,10 +6,12 @@ import { useCopyToClipboard } from "usehooks-ts";
 import { Button } from "../components/form/Button";
 import { RxExit } from "react-icons/rx";
 import toast from "react-hot-toast";
+import { useGameRoom, useGameActions } from "../hooks/hooks";
 
 export function GamePanel() {
-  const { me, isIdentityModalOpen, setState, gameRoom, leaveGame } =
-    useContext(GameContext);
+  const gameRoom = useGameRoom();
+  const { leaveGame } = useGameActions();
+
   const [value, copy] = useCopyToClipboard();
   const { t } = useTranslation();
 

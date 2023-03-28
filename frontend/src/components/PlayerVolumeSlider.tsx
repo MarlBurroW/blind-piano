@@ -1,7 +1,7 @@
 import Player from "../../../backend/schemas/Player";
 import { RangeSlider } from "./form/inputs/RangeSlider";
-import { useContext, useCallback, useMemo } from "react";
-import { AudioContext } from "./context/AudioContext";
+import { useCallback, useMemo } from "react";
+
 import { usePlayerMixerControl } from "../hooks/hooks";
 
 import _ from "lodash";
