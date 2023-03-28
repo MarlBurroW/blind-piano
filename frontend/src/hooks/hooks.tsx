@@ -89,6 +89,12 @@ export function useMe() {
   return me;
 }
 
+export function useLeader() {
+  const { leader } = useContext(GameContext);
+
+  return leader;
+}
+
 export function useGameRoom() {
   const { gameRoom } = useContext(GameContext);
 
@@ -154,5 +160,50 @@ export function useColors() {
   return {
     colors,
     availableColors,
+  };
+}
+
+export function useIdentityModalControl() {
+  const { isIdentityModalOpen, setState } = useContext(GameContext);
+
+  const openIdentityModal = useCallback(() => {
+    setState((draft) => {
+      draft.isIdentityModalOpen = true;
+    });
+  }, []);
+
+  const closeIdentityModal = useCallback(() => {
+    setState((draft) => {
+      draft.isIdentityModalOpen = false;
+    });
+  }, []);
+
+  return {
+    isIdentityModalOpen,
+    openIdentityModal,
+    closeIdentityModal,
+  };
+}
+
+export function useGameActions() {
+  const gameRoom = useGameRoom();
+
+  const kickPlayer = useCallback(
+    (action: string) => {
+      gameRoom?.send("kick-player", action);
+    },
+    [gameRoom]
+  );
+
+  const promoteGameLeader = useCallback(
+    (action: string) => {
+      gameRoom?.send("promote-game-leader", action);
+    },
+    [gameRoom]
+  );
+
+  return {
+    kickPlayer,
+    promoteGameLeader,
   };
 }

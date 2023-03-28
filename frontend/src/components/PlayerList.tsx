@@ -10,14 +10,14 @@ export function PlayerList(): JSX.Element {
     <div>
       {players.map((player) => {
         return (
-          <PlayerItem
-            key={player.id}
-            className="mb-4"
-            player={player}
-            isMe={player.id === me?.id}
-            isLeader={player.id === leader?.id}
-            meIsLeader={isLeader}
-          ></PlayerItem>
+          <div className="mb-4">
+            <PlayerItem
+              key={player.id}
+              player={player}
+              isMe={player.id === me?.id}
+              isLeader={player.id === leader?.id}
+            ></PlayerItem>
+          </div>
         );
       })}
     </div>

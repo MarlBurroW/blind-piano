@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, memo } from "react";
 import { useMidiBus } from "../hooks/hooks";
 
 import { useImmer } from "use-immer";
-import { IPlayerNote } from "../types";
+import { IPlayerNote } from "../../../common/types";
 
 import { v4 as uuidv4 } from "uuid";
 
@@ -60,7 +60,7 @@ export function NoteBubbleEmitter({ player }: Props) {
   }, [midiBus, player]);
 
   return (
-    <div className="note-bubbles absolute w-full h-full left-0 top-0 bottom-0">
+    <div className="note-bubbles absolute w-full h-full left-0 top-0 bottom-0 pointer-events-none select-none">
       {Object.keys(state.latestPlayedNotes).map((key) => {
         return (
           <div
