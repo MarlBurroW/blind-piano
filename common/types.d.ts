@@ -4,12 +4,6 @@ export interface IIdentity {
   color: string;
 }
 
-export interface IPlayerSchema {
-  nickname: string;
-  avatarSeed: string;
-  id: string;
-}
-
 export interface IMessage {
   message: string;
   player?: Player;
