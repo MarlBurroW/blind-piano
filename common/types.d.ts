@@ -32,6 +32,7 @@ export interface IInstrument {
   playNote: (note: IPlayerNote) => void;
   stopNote: (note: IPlayerNote) => void;
   dispose: () => void;
+  getInstrumentItems: () => IInstrumentItem[]; // Must be static
 }
 
 export interface IInstrumentItem {

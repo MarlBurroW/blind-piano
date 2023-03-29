@@ -6,6 +6,12 @@ import {
 
 import axios from "axios";
 
+import { WebAudioFontPlayer, WavePreset } from "../classes/WebAudioFont";
+
+const store: {
+  [key: string]: WavePreset;
+} = {};
+
 export class WAFDrumInstrument implements IInstrument {
   name: string = "WAFDrumInstrument";
   identifier: string = "";
@@ -13,9 +19,6 @@ export class WAFDrumInstrument implements IInstrument {
   outputNode: AudioNode | null = null;
   player: WebAudioFontPlayer | null = null;
   instrument: Object | null;
-  playedNotes: {
-    [note: string]: any;
-  } = {};
   options: any;
 
   constructor(instrumentItem: IInstrumentItem) {
@@ -41,8 +44,10 @@ export class WAFDrumInstrument implements IInstrument {
   }
 
   playNote(note: IPlayerNote) {
-    const sound = window[`_drum_${note.number}${this.options.file}`];
-    if (this.player && this.outputNode && sound) {
+    const variable = `_drum_${note.number}${this.options.file}`;
+    const sound = store[variable];
+
+    if (this.audioContext && this.player && this.outputNode && sound) {
       this.player.queueWaveTable(
         this.audioContext,
         this.outputNode,
@@ -57,10 +62,7 @@ export class WAFDrumInstrument implements IInstrument {
   stopNote(note: IPlayerNote) {}
 
   dispose() {
-    for (const note in this.playedNotes) {
-      this.playedNotes[note]?.cancel();
-      delete this.playedNotes[note];
-    }
+    if (this.audioContext) this.player?.cancelQueue(this.audioContext);
   }
 
   load(): Promise<void> {
@@ -70,18 +72,24 @@ export class WAFDrumInstrument implements IInstrument {
         const loadPromises = [];
         for (let i = 35; i <= 81; i++) {
           const variable = `_drum_${i}${this.options.file}`;
+
+          if (store[variable]) continue;
+
           const url = `${this.options.baseUrl}128${i}${this.options.file}.js`;
           const promise = axios
             .get(url)
             .then((response) => {
-              eval.call(window, response.data);
-              this.player.loader.decodeAfterLoading(
-                this.audioContext,
-                variable
-              );
+              store[variable] = eval(response.data + "\n" + variable);
+
+              if (this.audioContext) {
+                this.player?.loader.decodeAfterLoading(
+                  this.audioContext,
+                  variable
+                );
+              }
             })
             .catch((error) => {
-              console.log(error);
+              console.error(error);
               reject(error);
             });
 
@@ -94,16 +102,18 @@ export class WAFDrumInstrument implements IInstrument {
       }
     });
   }
-}
 
-export const instrumentsItems: IInstrumentItem[] = [
-  {
-    type: "WAFDrumInstrument",
-    identifier: `WAFDrumInstrument@_0_Chaos_sf2_file`,
-    name: "Chaos Drum",
-    options: {
-      baseUrl: "https://surikov.github.io/webaudiofontdata/sound/",
-      file: "_0_Chaos_sf2_file",
-    },
-  },
-];
+  static getInstrumentItems() {
+    return [
+      {
+        type: "WAFDrumInstrument",
+        identifier: `WAFDrumInstrument@_0_Chaos_sf2_file`,
+        name: "Chaos Drum",
+        options: {
+          baseUrl: "https://surikov.github.io/webaudiofontdata/sound/",
+          file: "_0_Chaos_sf2_file",
+        },
+      },
+    ];
+  }
+}

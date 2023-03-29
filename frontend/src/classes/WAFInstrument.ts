@@ -1,4 +1,14 @@
-import { IInstrument, IPlayerNote, IInstrumentItem } from "../types";
+import {
+  IInstrument,
+  IPlayerNote,
+  IInstrumentItem,
+} from "../../../common/types";
+import { WebAudioFontPlayer, WavePreset } from "../classes/WebAudioFont";
+import axios from "axios";
+
+const store: {
+  [key: string]: WavePreset;
+} = {};
 
 export class WAFInstrument implements IInstrument {
   name: string = "WAFInstrument";
@@ -8,7 +18,7 @@ export class WAFInstrument implements IInstrument {
   player: WebAudioFontPlayer | null = null;
   url: string;
   variable: string;
-  instrument: Object | null;
+  instrument: WavePreset | null;
   playedNotes: {
     [note: string]: any;
   } = {};
@@ -37,7 +47,7 @@ export class WAFInstrument implements IInstrument {
   }
 
   playNote(note: IPlayerNote) {
-    if (this.instrument && this.outputNode) {
+    if (this.instrument && this.outputNode && this.audioContext) {
       const normalizedVelocity = note.velocity * 0.5;
       const playedNote = this.player?.queueWaveTable(
         this.audioContext,
@@ -61,6 +71,10 @@ export class WAFInstrument implements IInstrument {
   }
 
   dispose() {
+    if (this.audioContext) {
+      this.player?.cancelQueue(this.audioContext);
+    }
+
     for (const note in this.playedNotes) {
       this.playedNotes[note]?.cancel();
       delete this.playedNotes[note];
@@ -72,56 +86,60 @@ export class WAFInstrument implements IInstrument {
       if (this.audioContext) {
         this.player = new WebAudioFontPlayer();
 
-        if (!window[this.variable]) {
-          this.player.loader.startLoad(
-            this.audioContext,
-            this.url,
-            this.variable
-          );
+        if (!store[this.variable]) {
+          axios
+            .get(this.url)
+            .then((response) => {
+              store[this.variable] = eval(response.data + "\n" + this.variable);
+              if (this.audioContext) {
+                this.player?.loader.decodeAfterLoading(
+                  this.audioContext,
+                  this.variable
+                );
+              }
 
-          this.player.loader.waitLoad(() => {
-            this.instrument = window[this.variable];
-            resolve();
-          });
+              resolve();
+            })
+            .catch((error) => {
+              reject(error);
+            });
         } else {
-          this.instrument = window[this.variable];
+          this.instrument = store[this.variable];
           resolve();
         }
       }
     });
   }
-}
 
-function getInstrumentItems() {
-  const player = new WebAudioFontPlayer();
-  const instrumentKeys = player.loader.instrumentKeys();
+  static getInstrumentItems() {
+    const player = new WebAudioFontPlayer();
+    const instrumentKeys = player.loader.instrumentKeys();
 
-  let instrumentItems = [];
+    let instrumentItems = [];
 
-  for (var i = 0; i < instrumentKeys.length; i++) {
-    instrumentItems.push(player.loader.instrumentInfo(i));
+    for (var i = 0; i < instrumentKeys.length; i++) {
+      instrumentItems.push(player.loader.instrumentInfo(i));
+    }
+
+    instrumentItems = instrumentItems.map((instrumentItem, index) => {
+      return {
+        type: "WAFInstrument",
+        identifier: `WAFInstrument@${instrumentItem.variable}`,
+        name: "(WAF) " + instrumentItem.title,
+        options: {
+          url: instrumentItem.url,
+          variable: instrumentItem.variable,
+        },
+      };
+    });
+
+    // Remove duplicates
+
+    instrumentItems = instrumentItems.filter(
+      (item, index, self) =>
+        index === self.findIndex((t) => t.identifier === item.identifier)
+    );
+
+    return instrumentItems;
   }
-
-  instrumentItems = instrumentItems.map((instrumentItem, index) => {
-    return {
-      type: "WAFInstrument",
-      identifier: `WAFInstrument@${instrumentItem.variable}`,
-      name: "(WAF) " + instrumentItem.title,
-      options: {
-        url: instrumentItem.url,
-        variable: instrumentItem.variable,
-      },
-    };
-  });
-
-  // Remove duplicates
-
-  instrumentItems = instrumentItems.filter(
-    (item, index, self) =>
-      index === self.findIndex((t) => t.identifier === item.identifier)
-  );
-
-  return instrumentItems;
 }
-
-export const instrumentsItems: IInstrumentItem[] = getInstrumentItems();

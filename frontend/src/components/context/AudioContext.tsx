@@ -5,20 +5,10 @@ import {
   IInstrumentItem,
   IInstrument,
 } from "../../../../common/types";
-import {
-  SFPInstrument,
-  instrumentsItems as SFPInstrumentsItems,
-} from "../../classes/SFPInstrument";
 
-import {
-  WAFInstrument,
-  instrumentsItems as WAFInstrumentItems,
-} from "../../classes/WAFInstrument";
-
-import {
-  WAFDrumInstrument,
-  instrumentsItems as WAFDrumInstrumentsItems,
-} from "../../classes/WAFDrumInstrument";
+import { SFPInstrument } from "../../classes/SFPInstrument";
+import { WAFInstrument } from "../../classes/WAFInstrument";
+import { WAFDrumInstrument } from "../../classes/WAFDrumInstrument";
 
 import { useImmer } from "use-immer";
 import toast from "react-hot-toast";
@@ -41,9 +31,9 @@ interface IAudioContext {
 }
 
 const instrumentItems = [
-  ...SFPInstrumentsItems,
-  ...WAFInstrumentItems,
-  ...WAFDrumInstrumentsItems,
+  ...SFPInstrument.getInstrumentItems(),
+  ...WAFInstrument.getInstrumentItems(),
+  ...WAFDrumInstrument.getInstrumentItems(),
 ].map((instrumentItem, index) => {
   instrumentItem.name = `${index}. ${instrumentItem.name}`;
   return instrumentItem;
