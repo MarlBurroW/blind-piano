@@ -18,7 +18,6 @@ export class WAFInstrument implements IInstrument {
   player: WebAudioFontPlayer | null = null;
   url: string;
   variable: string;
-  instrument: WavePreset | null;
   playedNotes: {
     [note: string]: any;
   } = {};
@@ -28,7 +27,7 @@ export class WAFInstrument implements IInstrument {
     this.identifier = instrumentItem.identifier;
     this.url = instrumentItem.options.url;
     this.variable = instrumentItem.options.variable;
-    this.instrument = null;
+
     this.audioContext = null;
     this.outputNode = null;
   }
@@ -47,12 +46,13 @@ export class WAFInstrument implements IInstrument {
   }
 
   playNote(note: IPlayerNote) {
-    if (this.instrument && this.outputNode && this.audioContext) {
+    if (store[this.variable] && this.outputNode && this.audioContext) {
       const normalizedVelocity = note.velocity * 0.5;
+
       const playedNote = this.player?.queueWaveTable(
         this.audioContext,
         this.outputNode,
-        this.instrument,
+        store[this.variable],
         0,
         note.number,
         10,
@@ -91,12 +91,6 @@ export class WAFInstrument implements IInstrument {
             .get(this.url)
             .then((response) => {
               store[this.variable] = eval(response.data + "\n" + this.variable);
-              if (this.audioContext) {
-                this.player?.loader.decodeAfterLoading(
-                  this.audioContext,
-                  this.variable
-                );
-              }
 
               resolve();
             })
@@ -104,7 +98,6 @@ export class WAFInstrument implements IInstrument {
               reject(error);
             });
         } else {
-          this.instrument = store[this.variable];
           resolve();
         }
       }

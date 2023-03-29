@@ -80,13 +80,6 @@ export class WAFDrumInstrument implements IInstrument {
             .get(url)
             .then((response) => {
               store[variable] = eval(response.data + "\n" + variable);
-
-              if (this.audioContext) {
-                this.player?.loader.decodeAfterLoading(
-                  this.audioContext,
-                  variable
-                );
-              }
             })
             .catch((error) => {
               console.error(error);
