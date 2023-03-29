@@ -14,6 +14,10 @@ import {
   useSelectInstrument,
 } from "../../hooks/hooks";
 
+import { AiFillStar, AiOutlineStar } from "react-icons/ai";
+
+import { IInstrumentItem } from "../../../../common/types";
+import { useLocalStorage } from "usehooks-ts";
 interface Props {
   isOpen: boolean;
   onClose?: () => void;
@@ -31,7 +35,13 @@ export function SelectInstrumentModal({ isOpen, onClose }: Props) {
   const [search, setSearch] = useState("");
   const [inputValue, setInputValue] = useState("");
 
+  const [showBookmarks, setShowBookmarks] = useState(true);
+
   const debouncedSearch = useRef(debounce(setSearch, 300)).current;
+
+  const [bookmarkedInstruments, setBookmarkedInstruments] = useLocalStorage<{
+    [key: string]: boolean;
+  }>("bookmarkedInstruments", {});
 
   const handleSearchChange = useCallback(
     (e) => {
@@ -42,15 +52,36 @@ export function SelectInstrumentModal({ isOpen, onClose }: Props) {
     [debouncedSearch]
   );
 
-  const filteredInstrumentItems = useMemo(() => {
-    if (search === "") {
-      return instrumentItems;
+  const handleBookmarkClick = useCallback((instrumentItem: IInstrumentItem) => {
+    if (bookmarkedInstruments[instrumentItem.identifier]) {
+      delete bookmarkedInstruments[instrumentItem.identifier];
+    } else {
+      bookmarkedInstruments[instrumentItem.identifier] = true;
     }
 
-    return instrumentItems.filter((instrumentItem) => {
-      return instrumentItem.name.toLowerCase().includes(search.toLowerCase());
-    });
-  }, [search]);
+    setBookmarkedInstruments(bookmarkedInstruments);
+  }, []);
+
+  const filteredInstrumentItems = useMemo(() => {
+    let results: IInstrumentItem[] = instrumentItems;
+
+    if (showBookmarks) {
+      return results.filter((instrumentItem) => {
+        return (
+          bookmarkedInstruments[instrumentItem.identifier] &&
+          instrumentItem.name.toLowerCase().includes(search.toLowerCase())
+        );
+      });
+    }
+
+    if (search) {
+      results = results.filter((instrumentItem) => {
+        return instrumentItem.name.toLowerCase().includes(search.toLowerCase());
+      });
+    }
+
+    return results;
+  }, [search, showBookmarks, bookmarkedInstruments, instrumentItems]);
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -90,6 +121,27 @@ export function SelectInstrumentModal({ isOpen, onClose }: Props) {
                     </div>
                   </Dialog.Title>
 
+                  <div className="flex items-center gap-1 mb-2 text-xl uppercase">
+                    <div
+                      onClick={() => setShowBookmarks(false)}
+                      className={`cursor-pointer rounded-l-3xl py-5 px-2 w-full text-center leading-none transition-all ${
+                        !showBookmarks ? "bg-primary-500" : "bg-shade-300 "
+                      }`}
+                    >
+                      {t("select_instrument_modal.all_instruments")}
+                    </div>
+                    <div
+                      onClick={() => setShowBookmarks(true)}
+                      className={`cursor-pointer rounded-r-3xl py-5 px-2 w-full text-center transition-all leading-none ${
+                        showBookmarks ? "bg-primary-500" : "bg-shade-300 "
+                      }`}
+                    >
+                      <span className="leading-none">
+                        {t("select_instrument_modal.bookmarks")}
+                      </span>
+                    </div>
+                  </div>
+
                   <TextInput
                     value={inputValue}
                     className="mb-5"
@@ -97,25 +149,40 @@ export function SelectInstrumentModal({ isOpen, onClose }: Props) {
                     onChange={handleSearchChange}
                   ></TextInput>
 
-                  <div className="overflow-y-scroll h-[40rem] bg-shade-700 rounded-2xl">
-                    {filteredInstrumentItems.map((instrument) => (
-                      <div
-                        key={instrument.identifier}
-                        className={`cursor-pointer  ${
-                          instrument.identifier ===
-                          myInstrument?.getIdentifier()
-                            ? "bg-secondary-500 font-normal hover:bg-secondary-400"
-                            : "font-thin hover:bg-shade-300"
-                        } border-b-[1px] border-shade-300 py-4 px-4`}
-                        onClick={() => {
-                          selectInstrument(instrument.identifier);
+                  <div className="overflow-y-scroll h-[40rem] bg-shade-700 rounded-2xl ">
+                    {filteredInstrumentItems.map((instrument) => {
+                      const isBookmarked =
+                        bookmarkedInstruments[instrument.identifier];
+                      const StarIcon = isBookmarked
+                        ? AiFillStar
+                        : AiOutlineStar;
 
-                          onClose?.();
-                        }}
-                      >
-                        {instrument.name}
-                      </div>
-                    ))}
+                      return (
+                        <div
+                          key={instrument.identifier}
+                          className={`cursor-pointer  ${
+                            instrument.identifier ===
+                            myInstrument?.getIdentifier()
+                              ? "bg-primary-500 font-normal hover:bg-primary-400"
+                              : "font-thin hover:bg-shade-300"
+                          } border-b-[1px] border-shade-300 py-4 px-4 flex justify-between items-center`}
+                          onClick={() => {
+                            selectInstrument(instrument.identifier);
+                            onClose?.();
+                          }}
+                        >
+                          {instrument.name}
+
+                          <StarIcon
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleBookmarkClick(instrument);
+                            }}
+                            className="h-8 w-8 text-yellow-500"
+                          />
+                        </div>
+                      );
+                    })}
                   </div>
                 </Panel>
               </Dialog.Panel>

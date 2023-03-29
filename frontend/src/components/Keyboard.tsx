@@ -14,10 +14,12 @@ import type { Input } from "webmidi";
 
 import type { Note } from "webmidi";
 import { KeyboardKeys, KeyboardKeysRef } from "./KeyboardKeys";
-import { IPlayerNote } from "../types";
+import { IPlayerNote, ITransportNote } from "../../../common/types";
 
 import { SelectInstrumentModal } from "./modals/SelectInstrumentModal";
 import { MixerModal } from "./modals/MixerModal";
+import { Player } from "../../../backend/schemas/Player";
+import { NoteMessageEvent } from "webmidi";
 
 import {
   useMidiBus,
@@ -26,6 +28,24 @@ import {
   useMe,
   useGameRoom,
 } from "../hooks/hooks";
+
+function transportNoteFromMidiNote(note: Note): ITransportNote {
+  return {
+    number: note.number,
+    name: note.identifier,
+    velocity: note.attack,
+  };
+}
+
+function playerNoteFromMidiNote(note: Note, player: Player): IPlayerNote {
+  return {
+    number: note.number,
+    name: note.identifier,
+    velocity: note.attack,
+    playerId: player.id,
+    color: player.color,
+  };
+}
 
 export function Keyboard() {
   const { midiDevices, selectedMidiDevice, selectMidiDevice } =
@@ -128,6 +148,17 @@ export function Keyboard() {
   }
 
   useEffect(() => {
+    const unbind = gameRoom?.onMessage("player-left", (player: Player) => {
+      keyboardKeysRef.current?.resetAllPlayerKeys(player.id);
+      previewKeyboardKeysRef.current?.resetAllPlayerKeys(player.id);
+    });
+
+    return () => {
+      unbind?.();
+    };
+  }, [gameRoom]);
+
+  useEffect(() => {
     scrollbarRef.current?.addEventListener("scroll", updateScrollState);
     window.addEventListener("resize", updateScrollState);
     updateScrollState();
@@ -163,21 +194,10 @@ export function Keyboard() {
 
   const handleOnKeyDown = useCallback(
     (note: Note) => {
-      gameRoom?.send("noteon", {
-        number: note.number,
-        attack: note.attack,
-        release: note.release,
-        name: note.identifier,
-      });
-      console.log(note);
+      gameRoom?.send("noteon", transportNoteFromMidiNote(note));
+
       if (me) {
-        const playerNote: IPlayerNote = {
-          number: note.number,
-          velocity: 1,
-          name: note.identifier,
-          playerId: me.id,
-          color: me.color,
-        };
+        const playerNote: IPlayerNote = playerNoteFromMidiNote(note, me);
         midiBus?.emit("noteon", playerNote);
       }
     },
@@ -186,20 +206,10 @@ export function Keyboard() {
 
   const handleOnKeyUp = useCallback(
     (note: Note) => {
-      gameRoom?.send("noteoff", {
-        number: note.number,
-        release: note.release,
-        name: note.identifier,
-      });
+      gameRoom?.send("noteoff", transportNoteFromMidiNote(note));
 
       if (me) {
-        const playerNote: IPlayerNote = {
-          number: note.number,
-          velocity: 0,
-          name: note.identifier,
-          playerId: me.id,
-          color: me.color,
-        };
+        const playerNote: IPlayerNote = playerNoteFromMidiNote(note, me);
         midiBus?.emit("noteoff", playerNote);
       }
     },
@@ -207,41 +217,21 @@ export function Keyboard() {
   );
 
   useEffect(() => {
-    selectedMidiDevice?.addListener("noteon", (e) => {
-      gameRoom?.send("noteon", {
-        number: e.note.number,
-        name: e.note.identifier,
-        velocity: e.velocity,
-      });
-
-      console.log(e);
+    selectedMidiDevice?.addListener("noteon", (e: NoteMessageEvent) => {
+      const transportNote: ITransportNote = transportNoteFromMidiNote(e.note);
+      gameRoom?.send("noteon", transportNote);
 
       if (me) {
-        const playerNote: IPlayerNote = {
-          number: e.note.number,
-          velocity: e.velocity,
-          name: e.note.identifier,
-          playerId: me.id,
-          color: me.color,
-        };
+        const playerNote: IPlayerNote = playerNoteFromMidiNote(e.note, me);
         midiBus?.emit("noteon", playerNote);
       }
     });
 
     selectedMidiDevice?.addListener("noteoff", (e) => {
-      gameRoom?.send("noteoff", {
-        number: e.note.number,
-        name: e.note.identifier,
-      });
+      gameRoom?.send("noteoff", transportNoteFromMidiNote(e.note));
 
       if (me) {
-        const playerNote: IPlayerNote = {
-          number: e.note.number,
-          velocity: e.velocity,
-          name: e.note.identifier,
-          playerId: me.id,
-          color: me.color,
-        };
+        const playerNote: IPlayerNote = playerNoteFromMidiNote(e.note, me);
         midiBus?.emit("noteoff", playerNote);
       }
     });

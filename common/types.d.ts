@@ -18,6 +18,12 @@ export interface IPlayerNote {
   color: string;
 }
 
+export interface ITransportNote {
+  number: number;
+  name: string;
+  velocity?: number;
+}
+
 export interface IInstrument {
   getIdentifier(): string;
   getName(): string;

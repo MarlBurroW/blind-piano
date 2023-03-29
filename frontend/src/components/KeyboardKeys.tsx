@@ -38,6 +38,7 @@ interface IKeysState {
 }
 export interface KeyboardKeysRef {
   setKeyState(note: IPlayerNote, state: boolean): void;
+  resetAllPlayerKeys(playerId: string): void;
 }
 
 const keysState: IKeysState = {};
@@ -73,6 +74,19 @@ export const KeyboardKeys = forwardRef<KeyboardKeysRef | null, Props>(
     useEffect(() => {
       isMouseDownRef.current = isMouseDown;
     }, [isMouseDown]);
+
+    const resetAllPlayerKeys = useMemo(() => {
+      return (playerId: string) => {
+        setState((draft) => {
+          draft.updateCount += 1;
+
+          for (let i = KEY_START; i <= KEY_END; i++) {
+            const activePlayers = draft.keys[i].active;
+            delete activePlayers[playerId];
+          }
+        });
+      };
+    }, [setState]);
 
     const setKeyState = useMemo(() => {
       return (note: IPlayerNote, state: boolean) => {
@@ -114,6 +128,7 @@ export const KeyboardKeys = forwardRef<KeyboardKeysRef | null, Props>(
     useImperativeHandle(ref, () => {
       return {
         setKeyState,
+        resetAllPlayerKeys,
       };
     });
 

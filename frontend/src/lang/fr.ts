@@ -54,6 +54,8 @@ export default {
     select_instrument_modal: {
       title: "Mon instrument",
       search_instrument: "Rechercher un instrument",
+      all_instruments: "Tous",
+      bookmarks: "Favoris",
     },
     mixer_modal: {
       title: "Mixeur",

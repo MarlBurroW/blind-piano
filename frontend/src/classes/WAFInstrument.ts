@@ -55,7 +55,7 @@ export class WAFInstrument implements IInstrument {
         store[this.variable],
         0,
         note.number,
-        10,
+        20,
         normalizedVelocity
       );
 
