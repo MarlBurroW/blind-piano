@@ -91,6 +91,12 @@ export class WAFInstrument implements IInstrument {
             .get(this.url)
             .then((response) => {
               store[this.variable] = eval(response.data + "\n" + this.variable);
+              if (this.audioContext) {
+                this.player?.adjustPreset(
+                  this.audioContext,
+                  store[this.variable]
+                );
+              }
 
               resolve();
             })
