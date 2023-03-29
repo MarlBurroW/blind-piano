@@ -27,7 +27,7 @@ import {
 import sfx from "../../services/sfx";
 import { IPlayerNote } from "../../../../common/types";
 
-import { useMidiBus } from "../../hooks/hooks";
+import { MidiContext } from "./MidiContext";
 
 type State = {
   gameState: Game | null;
@@ -69,7 +69,7 @@ export const GameContext =
 export function GameProvider({ children }: { children: React.ReactNode }) {
   // Context
 
-  const midiBus = useMidiBus();
+  const { midiBus$: midiBus } = useContext(MidiContext);
 
   // Navigation
 

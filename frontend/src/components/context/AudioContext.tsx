@@ -1,4 +1,10 @@
-import React, { useEffect, useRef, useCallback, useState } from "react";
+import React, {
+  useEffect,
+  useContext,
+  useRef,
+  useCallback,
+  useState,
+} from "react";
 
 import {
   IPlayerNote,
@@ -13,8 +19,9 @@ import { WAFDrumInstrument } from "../../classes/WAFDrumInstrument";
 import { useImmer } from "use-immer";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
-import { usePlayers, useMidiBus } from "../../hooks/hooks";
 
+import { GameContext } from "./GameContext";
+import { MidiContext } from "./MidiContext";
 interface IAudioContext {
   instrumentItems: Array<IInstrumentItem>;
 
@@ -91,8 +98,8 @@ export function getInstrumentItemFromIdentifier(
 export function AudioProvider({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation();
 
-  const players = usePlayers();
-  const midiBus = useMidiBus();
+  const { players } = useContext(GameContext);
+  const { midiBus$: midiBus } = useContext(MidiContext);
 
   const [state, setState] = useImmer<State>(initialState);
 
