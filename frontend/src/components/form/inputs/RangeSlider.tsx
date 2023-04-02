@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import Draggable, { DraggableEvent, DraggableData } from "react-draggable";
-import Player from "../../../../../backend/schemas/Player";
+
 import chroma from "chroma-js";
 interface Props {
   value: number;
@@ -87,7 +87,7 @@ export function RangeSlider({
       <div
         style={{
           width: cursorX + "px",
-          backgroundColor: color ? chroma(color).darken(0.5) : "",
+          backgroundColor: color ? chroma(color).darken(0.5).css() : "",
         }}
         className={`progress absolute  ${
           color ? "" : "bg-primary-500"

@@ -13,7 +13,7 @@ export function Chat() {
   const { messages, sendMessage: sendChatMessage } = useChat();
   const { t } = useTranslation();
 
-  const scrollRef = useRef<HTMLDivElement>();
+  const scrollRef = useRef<HTMLDivElement>(null);
   const [message, setMessage] = useState<string>("");
 
   useEffect(() => {
@@ -50,7 +50,7 @@ export function Chat() {
         ref={scrollRef}
         className="overflow-y-scroll overflow-x-hidden h-full  bg-gradient-to-b from-shade-600 to-shade-700   p-4"
       >
-        <AnimateSharedLayout mode="wait">
+        <AnimateSharedLayout>
           {messages.map((message) => (
             <motion.div
               layout

@@ -4,9 +4,10 @@ import { RxExit } from "react-icons/rx";
 import { HiOutlinePencil } from "react-icons/hi";
 import { Player } from "../../../backend/schemas/Player";
 import { useTranslation } from "react-i18next";
+import { Icon } from "./Icon";
 
 import {
-  usePlayerInstrument,
+  usePlayerPatch,
   useMe,
   useLeader,
   useIdentityModalControl,
@@ -14,11 +15,7 @@ import {
 } from "../hooks/hooks";
 import { useMemo } from "react";
 import { TbCrown } from "react-icons/tb";
-import {
-  SpeakerWaveIcon,
-  SpeakerXMarkIcon,
-  MusicalNoteIcon,
-} from "@heroicons/react/24/outline";
+import { SpeakerWaveIcon, SpeakerXMarkIcon } from "@heroicons/react/24/outline";
 
 interface Props {
   player: Player;
@@ -27,7 +24,7 @@ interface Props {
 export function PlayerProfileCard({ player }: Props) {
   const { t } = useTranslation();
   const { kickPlayer, promoteGameLeader } = useGameActions();
-  const playerInstrument = usePlayerInstrument(player.id);
+  const playerPatch = usePlayerPatch(player.id);
   const me = useMe();
   const leader = useLeader();
   const { openIdentityModal } = useIdentityModalControl();
@@ -37,8 +34,8 @@ export function PlayerProfileCard({ player }: Props) {
   }, [me, player]);
 
   const meIsLeader = useMemo(() => {
-    return leader?.id === me.id;
-  }, [leader, player]);
+    return leader?.id === me?.id;
+  }, [leader, me]);
 
   return (
     <div className=" w-[30rem] drop-shadow-md rounded-md overflow-hidden  z-10 bg-gradient-to-b from-shade-200 to-shade-300">
@@ -54,11 +51,15 @@ export function PlayerProfileCard({ player }: Props) {
 
           {player.nickname}
         </div>
-        {playerInstrument && (
+        {playerPatch && (
           <>
             <div className="flex items-center text-md justify-center mb-2 w-full">
-              <MusicalNoteIcon className="h-6 w-6 mr-2" />
-              {playerInstrument.getName()}
+              <Icon
+                className="h-10 w-10 mr-4 fill-white"
+                name={playerPatch.category.icon}
+              ></Icon>
+
+              {playerPatch.name}
             </div>
             <div className="flex justify-center items-center gap-2 w-full">
               <SpeakerXMarkIcon className="h-8 w-8" />

@@ -6,13 +6,10 @@ import _ from "lodash";
 import chroma from "chroma-js";
 import { PlayerVolumeSlider } from "./PlayerVolumeSlider";
 
-import {
-  SpeakerWaveIcon,
-  SpeakerXMarkIcon,
-  MusicalNoteIcon,
-} from "@heroicons/react/24/outline";
+import { SpeakerWaveIcon, SpeakerXMarkIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
-import { usePlayerInstrument, usePlayerMixerControl } from "../hooks/hooks";
+import { usePlayerPatch, usePlayerMixerControl } from "../hooks/hooks";
+import { Icon } from "./Icon";
 
 interface Props {
   player: Player;
@@ -21,7 +18,7 @@ interface Props {
 export function PlayerMixer({ player }: Props) {
   const { t } = useTranslation();
 
-  const playerInstrument = usePlayerInstrument(player.id);
+  const playerPatch = usePlayerPatch(player.id);
 
   const { volume } = usePlayerMixerControl(player.id);
 
@@ -50,8 +47,15 @@ export function PlayerMixer({ player }: Props) {
         </div>
 
         <div className="flex items-center text-xl">
-          <MusicalNoteIcon className="h-6 w-6 mr-2" />
-          {playerInstrument.getName()}
+          {playerPatch && (
+            <>
+              <Icon
+                name={playerPatch.category.icon}
+                className="h-10 w-10 mr-4 fill-white"
+              ></Icon>
+              {playerPatch.name}
+            </>
+          )}
         </div>
       </div>
       <div className="w-full flex items-center">

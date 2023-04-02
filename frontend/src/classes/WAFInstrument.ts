@@ -1,58 +1,32 @@
-import {
-  IInstrument,
-  IPlayerNote,
-  IInstrumentItem,
-} from "../../../common/types";
+import { IInstrument, IPlayerNote } from "../../../common/types";
+import { guessCategoryFromName } from "../../../common/instrument-categories";
 import { WebAudioFontPlayer, WavePreset } from "../classes/WebAudioFont";
 import axios from "axios";
+import { BaseInstrument } from "./BaseInstrument";
 
 const store: {
   [key: string]: WavePreset;
 } = {};
 
-export class WAFInstrument implements IInstrument {
-  name: string = "WAFInstrument";
-  identifier: string = "";
-  audioContext: AudioContext | null = null;
-  outputNode: AudioNode | null = null;
+export class WAFInstrument extends BaseInstrument implements IInstrument {
   player: WebAudioFontPlayer | null = null;
-  url: string;
-  variable: string;
+
   playedNotes: {
     [note: string]: any;
   } = {};
 
-  constructor(instrumentItem: IInstrumentItem) {
-    this.name = instrumentItem.name;
-    this.identifier = instrumentItem.identifier;
-    this.url = instrumentItem.options.url;
-    this.variable = instrumentItem.options.variable;
-
-    this.audioContext = null;
-    this.outputNode = null;
-  }
-
-  setOutputNode(outputNode: AudioNode) {
-    this.audioContext = outputNode.context as AudioContext;
-    this.outputNode = outputNode;
-  }
-
-  getIdentifier(): string {
-    return this.identifier;
-  }
-
-  getName(): string {
-    return this.name;
-  }
-
   playNote(note: IPlayerNote) {
-    if (store[this.variable] && this.outputNode && this.audioContext) {
+    if (
+      store[this.patch.options.variable] &&
+      this.outputNode &&
+      this.audioContext
+    ) {
       const normalizedVelocity = note.velocity * 0.5;
 
       const playedNote = this.player?.queueWaveTable(
         this.audioContext,
         this.outputNode,
-        store[this.variable],
+        store[this.patch.options.variable],
         0,
         note.number,
         20,
@@ -86,15 +60,17 @@ export class WAFInstrument implements IInstrument {
       if (this.audioContext) {
         this.player = new WebAudioFontPlayer();
 
-        if (!store[this.variable]) {
+        if (!store[this.patch.options.variable]) {
           axios
-            .get(this.url)
+            .get(this.patch.options.url)
             .then((response) => {
-              store[this.variable] = eval(response.data + "\n" + this.variable);
+              store[this.patch.options.variable] = eval(
+                response.data + "\n" + this.patch.options.variable
+              );
               if (this.audioContext) {
                 this.player?.adjustPreset(
                   this.audioContext,
-                  store[this.variable]
+                  store[this.patch.options.variable]
                 );
               }
 
@@ -110,35 +86,47 @@ export class WAFInstrument implements IInstrument {
     });
   }
 
-  static getInstrumentItems() {
-    const player = new WebAudioFontPlayer();
-    const instrumentKeys = player.loader.instrumentKeys();
-
-    let instrumentItems = [];
-
-    for (var i = 0; i < instrumentKeys.length; i++) {
-      instrumentItems.push(player.loader.instrumentInfo(i));
-    }
-
-    instrumentItems = instrumentItems.map((instrumentItem, index) => {
-      return {
-        type: "WAFInstrument",
-        identifier: `WAFInstrument@${instrumentItem.variable}`,
-        name: "(WAF) " + instrumentItem.title,
-        options: {
-          url: instrumentItem.url,
-          variable: instrumentItem.variable,
-        },
-      };
-    });
-
-    // Remove duplicates
-
-    instrumentItems = instrumentItems.filter(
-      (item, index, self) =>
-        index === self.findIndex((t) => t.identifier === item.identifier)
-    );
-
-    return instrumentItems;
+  static getPatches() {
+    return getPatches();
   }
+}
+
+export default WAFInstrument;
+
+export function getPatches() {
+  const player = new WebAudioFontPlayer();
+  const instrumentKeys = player.loader.instrumentKeys();
+
+  let patches = [];
+
+  for (var i = 0; i < instrumentKeys.length; i++) {
+    patches.push(player.loader.instrumentInfo(i));
+  }
+
+  patches = patches.map((patch, index) => {
+    return {
+      type: "WAFInstrument",
+      identifier: `WAFInstrument@${patch.variable}`,
+      name: patch.title,
+      category: null,
+      options: {
+        url: patch.url,
+        variable: patch.variable,
+      },
+    };
+  });
+
+  // Remove duplicates
+
+  patches = patches.filter(
+    (item, index, self) =>
+      index === self.findIndex((t) => t.identifier === item.identifier)
+  );
+
+  return patches.map((item) => {
+    return {
+      ...item,
+      category: guessCategoryFromName(item.name),
+    };
+  });
 }

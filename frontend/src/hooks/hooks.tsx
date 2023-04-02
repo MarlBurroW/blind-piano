@@ -3,7 +3,7 @@ import { MidiContext } from "../components/context/MidiContext";
 import { AudioContext } from "../components/context/AudioContext";
 import { GameContext } from "../components/context/GameContext";
 import type { Input } from "webmidi";
-import { IInstrument } from "../../../common/types";
+import { IInstrument, IPatch } from "../../../common/types";
 import { colors } from "../../../common/colors";
 
 export function useMidiBus() {
@@ -12,16 +12,14 @@ export function useMidiBus() {
   return midiBus$;
 }
 
-export function usePlayerInstrument(
-  playerId: string | null
-): IInstrument | null {
-  const { playersInstruments } = useContext(AudioContext);
+export function usePlayerPatch(playerId: string | null): IPatch | null {
+  const { playersPatches } = useContext(AudioContext);
 
-  const instrument = useMemo(() => {
-    return playerId ? playersInstruments[playerId] : null;
-  }, [playersInstruments, playerId]);
+  const patch = useMemo(() => {
+    return playerId ? playersPatches.get(playerId) : null;
+  }, [playersPatches, playerId]);
 
-  return instrument;
+  return patch ? patch : null;
 }
 
 export function usePlayerMixerControl(playerId: string) {
@@ -35,10 +33,10 @@ export function usePlayerMixerControl(playerId: string) {
   );
 
   const volume = useMemo(() => {
-    return playersVolumes[playerId];
+    return playersVolumes.get(playerId);
   }, [playersVolumes, playerId]);
 
-  return { setVolume, volume };
+  return { setVolume, volume: volume ? volume : 0 };
 }
 
 export function useMasterMixerControl() {
@@ -102,9 +100,9 @@ export function useGameRoom() {
 }
 
 export function useIntrumentItems() {
-  const { instrumentItems } = useContext(AudioContext);
+  const { patches } = useContext(AudioContext);
 
-  return instrumentItems;
+  return patches;
 }
 
 export function useChat() {
@@ -124,19 +122,19 @@ export function useChat() {
   };
 }
 
-export function useSelectInstrument() {
+export function useSelectPatch() {
   const gameRoom = useGameRoom();
 
-  const selectInstrument = useCallback(
-    (instrumentIdentifier: string) => {
+  const selectPatch = useCallback(
+    (patchIdentifier: string) => {
       if (gameRoom) {
-        gameRoom.send("set-instrument", instrumentIdentifier);
+        gameRoom.send("set-patch", patchIdentifier);
       }
     },
     [gameRoom]
   );
 
-  return selectInstrument;
+  return selectPatch;
 }
 
 export function usePlayers() {

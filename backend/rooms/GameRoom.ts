@@ -139,13 +139,13 @@ export class GameRoom extends Room<Game> {
       this.log(kleur.bold().cyan(`Note On: ${note.number}`), { player });
     });
 
-    this.onMessage("set-instrument", async (client, instrumentIdentifier) => {
+    this.onMessage("set-patch", async (client, instrumentIdentifier) => {
       const player = this.state.players.get(client.sessionId);
 
       if (player) {
-        player.instrument = instrumentIdentifier;
+        player.patch = instrumentIdentifier;
 
-        this.log(kleur.bold().cyan(`Instrument: ${player.instrument}`), {
+        this.log(kleur.bold().cyan(`Patch: ${player.patch}`), {
           player,
         });
       }

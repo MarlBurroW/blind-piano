@@ -26,18 +26,24 @@ export interface ITransportNote {
 
 export interface IInstrument {
   getIdentifier(): string;
+  getPatches(): IPatches;
   getName(): string;
-  load: () => Promise<void>;
-  setOutputNode: (outputNode: AudioNode) => void;
-  playNote: (note: IPlayerNote) => void;
-  stopNote: (note: IPlayerNote) => void;
-  dispose: () => void;
-  getInstrumentItems: () => IInstrumentItem[]; // Must be static
+  load(): Promise<void>;
+  setOutputNode(outputNode: AudioNode): void;
+  playNote(note: IPlayerNote): void;
+  stopNote(note: IPlayerNote): void;
+  dispose(): void;
+  getCategory(): IInstrumentCategory;
+}
+export interface IInstrumentCategory {
+  identifier: string;
+  icon: string;
 }
 
-export interface IInstrumentItem {
+export interface IPatch {
   type: string;
   identifier: string;
   name: string;
   options: any;
+  category: IIinstrumentCategory;
 }

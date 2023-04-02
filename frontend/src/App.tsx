@@ -17,6 +17,7 @@ import Background from "./assets/background.png";
 import { useTranslation } from "react-i18next";
 
 import { MidiContext } from "./components/context/MidiContext";
+import { SVGSymbols } from "./components/Icon";
 
 function App() {
   const { theme, storeTheme } = useAppStore((state) => state);
@@ -44,6 +45,7 @@ function App() {
       className="h-full bg-cover relative"
       style={{ backgroundImage: `url(${Background})` }}
     >
+      <SVGSymbols></SVGSymbols>
       <div className="opacity-90 bg-gradient-to-b from-shade-600 to-shade-900 absolute inset-0"></div>
       <div className={`h-full text-white flex flex-col  font-sans relative`}>
         <div className="flex px-5 py-5 shrink z-10  ">

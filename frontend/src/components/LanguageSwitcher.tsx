@@ -47,7 +47,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
         }}
       >
         <div className="relative">
-          <Listbox.Button className=" relative rounded-md flex relative text-3xl">
+          <Listbox.Button className="relative rounded-md flex text-3xl">
             {selectedOption ? (
               <selectedOption.flag className="w-8 h-8" />
             ) : (

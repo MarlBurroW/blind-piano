@@ -1,3 +1,4 @@
+//@ts-nocheck
 export type WaveEnvelope = {
   audioBufferSourceNode?: AudioBufferSourceNode | null;
   target: AudioNode;

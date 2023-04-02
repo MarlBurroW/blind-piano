@@ -100,7 +100,7 @@ export function PlayerItem({ player, isMe, isLeader }: Props) {
 
           <div className="flex gap-2">
             {isLeader && (
-              <div className="text-xs border-2 border-secondary-400 text-secondary-400 px-3 py-1 text-white rounded-md flex">
+              <div className="text-xs border-2 border-secondary-400 text-secondary-400 px-3 py-1 rounded-md flex">
                 <TbCrown className="mr-2 text-lg" />
                 {t("generic.leader")}
               </div>

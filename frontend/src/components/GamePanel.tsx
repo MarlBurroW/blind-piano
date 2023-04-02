@@ -7,10 +7,10 @@ import { Button } from "../components/form/Button";
 import { RxExit } from "react-icons/rx";
 import toast from "react-hot-toast";
 import { useGameRoom, useGameActions } from "../hooks/hooks";
+import { Icon } from "./Icon";
 
 export function GamePanel() {
   const gameRoom = useGameRoom();
-  const { leaveGame } = useGameActions();
 
   const [value, copy] = useCopyToClipboard();
   const { t } = useTranslation();
@@ -32,10 +32,6 @@ export function GamePanel() {
             {t("generic.invite_friends")}
           </Button>
         </div>
-
-        <button onClick={() => leaveGame()}>
-          <RxExit />
-        </button>
       </div>
     </Panel>
   );

@@ -11,7 +11,7 @@ import {
   useCallback,
   memo,
 } from "react";
-import { IPlayerNote } from "../types";
+import { IPlayerNote } from "../../../common/types";
 import { useImmer } from "use-immer";
 import _ from "lodash";
 

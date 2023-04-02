@@ -1,50 +1,19 @@
-import {
-  IInstrument,
-  IPlayerNote,
-  IInstrumentItem,
-} from "../../../common/types";
+import { IInstrument, IPlayerNote } from "../../../common/types";
 
 import axios from "axios";
-
+import { instrumentCategories } from "../../../common/instrument-categories";
 import { WebAudioFontPlayer, WavePreset } from "../classes/WebAudioFont";
+import { BaseInstrument } from "./BaseInstrument";
 
 const store: {
   [key: string]: WavePreset;
 } = {};
 
-export class WAFDrumInstrument implements IInstrument {
-  name: string = "WAFDrumInstrument";
-  identifier: string = "";
-  audioContext: AudioContext | null = null;
-  outputNode: AudioNode | null = null;
+export class WAFDrumInstrument extends BaseInstrument implements IInstrument {
   player: WebAudioFontPlayer | null = null;
-  instrument: Object | null;
-  options: any;
-
-  constructor(instrumentItem: IInstrumentItem) {
-    this.name = instrumentItem.name;
-    this.identifier = instrumentItem.identifier;
-    this.instrument = null;
-    this.audioContext = null;
-    this.outputNode = null;
-    this.options = instrumentItem.options;
-  }
-
-  setOutputNode(outputNode: AudioNode) {
-    this.audioContext = outputNode.context as AudioContext;
-    this.outputNode = outputNode;
-  }
-
-  getIdentifier(): string {
-    return this.identifier;
-  }
-
-  getName(): string {
-    return this.name;
-  }
 
   playNote(note: IPlayerNote) {
-    const variable = `_drum_${note.number}${this.options.file}`;
+    const variable = `_drum_${note.number}${this.patch.options.file}`;
     const sound = store[variable];
 
     if (this.audioContext && this.player && this.outputNode && sound) {
@@ -71,11 +40,11 @@ export class WAFDrumInstrument implements IInstrument {
         this.player = new WebAudioFontPlayer();
         const loadPromises = [];
         for (let i = 35; i <= 81; i++) {
-          const variable = `_drum_${i}${this.options.file}`;
+          const variable = `_drum_${i}${this.patch.options.file}`;
 
           if (store[variable]) continue;
 
-          const url = `${this.options.baseUrl}128${i}${this.options.file}.js`;
+          const url = `${this.patch.options.baseUrl}128${i}${this.patch.options.file}.js`;
           const promise = axios
             .get(url)
             .then((response) => {
@@ -99,18 +68,26 @@ export class WAFDrumInstrument implements IInstrument {
       }
     });
   }
-
-  static getInstrumentItems() {
-    return [
-      {
-        type: "WAFDrumInstrument",
-        identifier: `WAFDrumInstrument@_0_Chaos_sf2_file`,
-        name: "Chaos Drum",
-        options: {
-          baseUrl: "https://surikov.github.io/webaudiofontdata/sound/",
-          file: "_0_Chaos_sf2_file",
-        },
-      },
-    ];
+  static getPatches() {
+    return getPatches();
   }
+}
+
+export default WAFDrumInstrument;
+
+export function getPatches() {
+  const items = [
+    {
+      type: "WAFDrumInstrument",
+      identifier: `WAFDrumInstrument@_0_Chaos_sf2_file`,
+      name: "Chaos Drum",
+      category: instrumentCategories.drumkit,
+      options: {
+        baseUrl: "https://surikov.github.io/webaudiofontdata/sound/",
+        file: "_0_Chaos_sf2_file",
+      },
+    },
+  ];
+
+  return items;
 }

@@ -4,6 +4,7 @@ import { CreateIdentityModal } from "../components/modals/CreateIdentityModal";
 import { IIdentity } from "../../../common/types";
 
 import { GameContext } from "../components/context/GameContext";
+import { AudioContext } from "../components/context/AudioContext";
 import { PageTransition } from "../PageTransition";
 
 import { Keyboard } from "../components/Keyboard";
@@ -12,6 +13,8 @@ import { RightPanel } from "../components/RightPanel";
 import { LeftPanel } from "../components/LeftPanel";
 
 import { useMe, useGameRoom, useIdentityModalControl } from "../hooks/hooks";
+
+import { Instruments } from "../components/Instruments";
 
 export default function GamePage() {
   const { t } = useTranslation();

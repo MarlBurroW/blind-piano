@@ -10,78 +10,110 @@ import { debounce } from "lodash";
 import {
   useMe,
   useIntrumentItems,
-  usePlayerInstrument,
-  useSelectInstrument,
+  usePlayerPatch,
+  useSelectPatch,
 } from "../../hooks/hooks";
 
 import { AiFillStar, AiOutlineStar } from "react-icons/ai";
 
-import { IInstrumentItem } from "../../../../common/types";
+import { IInstrumentCategory, IPatch } from "../../../../common/types";
 import { useLocalStorage } from "usehooks-ts";
+import { Icon } from "../Icon";
+
+import { instrumentCategories } from "../../../../common/instrument-categories";
 interface Props {
   isOpen: boolean;
   onClose?: () => void;
 }
 
+const DEFAULT_BOOKMARKS = {
+  "WAFInstrument@_tone_0001_FluidR3_GM_sf2_file": true,
+  "WAFInstrument@_tone_0020_GeneralUserGS_sf2_file": true,
+  "WAFInstrument@_tone_0040_FluidR3_GM_sf2_file": true,
+};
+
 export function SelectInstrumentModal({ isOpen, onClose }: Props) {
   const { t } = useTranslation();
 
   const me = useMe();
-  const myInstrument = usePlayerInstrument(me ? me.id : null);
-  const selectInstrument = useSelectInstrument();
+  const myPatch = usePlayerPatch(me ? me.id : null);
+  const selectPatch = useSelectPatch();
 
-  const instrumentItems = useIntrumentItems();
+  const patches = useIntrumentItems();
 
   const [search, setSearch] = useState("");
   const [inputValue, setInputValue] = useState("");
+
+  const [selectedCategory, setSelectedCategory] =
+    useState<IInstrumentCategory | null>(null);
+
+  const selectCategory = useCallback(
+    (category: IInstrumentCategory) => {
+      if (
+        selectedCategory &&
+        selectedCategory.identifier === category.identifier
+      ) {
+        setSelectedCategory(null);
+      } else {
+        setSelectedCategory(category);
+      }
+    },
+    [selectedCategory]
+  );
 
   const [showBookmarks, setShowBookmarks] = useState(true);
 
   const debouncedSearch = useRef(debounce(setSearch, 300)).current;
 
-  const [bookmarkedInstruments, setBookmarkedInstruments] = useLocalStorage<{
+  const [bookmarkedPatches, setbookmarkedPatches] = useLocalStorage<{
     [key: string]: boolean;
-  }>("bookmarkedInstruments", {});
+  }>("bookmarkedPatches", DEFAULT_BOOKMARKS);
 
   const handleSearchChange = useCallback(
-    (e) => {
-      const search = e.target.value;
+    (e: React.FormEvent<HTMLInputElement>) => {
+      const search = e.currentTarget.value;
       debouncedSearch(search);
       setInputValue(search);
     },
     [debouncedSearch]
   );
 
-  const handleBookmarkClick = useCallback((instrumentItem: IInstrumentItem) => {
-    if (bookmarkedInstruments[instrumentItem.identifier]) {
-      delete bookmarkedInstruments[instrumentItem.identifier];
+  const handleBookmarkClick = useCallback((patch: IPatch) => {
+    if (bookmarkedPatches[patch.identifier]) {
+      delete bookmarkedPatches[patch.identifier];
     } else {
-      bookmarkedInstruments[instrumentItem.identifier] = true;
+      bookmarkedPatches[patch.identifier] = true;
     }
 
-    setBookmarkedInstruments(bookmarkedInstruments);
+    setbookmarkedPatches(bookmarkedPatches);
   }, []);
 
-  const filteredInstrumentItems = useMemo(() => {
-    let results: IInstrumentItem[] = instrumentItems;
+  const filteredPatches = useMemo(() => {
+    let results = Array.from(patches.values());
 
     if (showBookmarks) {
-      return results.filter((instrumentItem) => {
+      results = results.filter((patch) => {
         return (
-          bookmarkedInstruments[instrumentItem.identifier] &&
-          instrumentItem.name.toLowerCase().includes(search.toLowerCase())
+          bookmarkedPatches[patch.identifier] &&
+          patch.name.toLowerCase().includes(search.toLowerCase())
         );
       });
     }
 
     if (search) {
-      results = results.filter((instrumentItem) => {
-        return instrumentItem.name.toLowerCase().includes(search.toLowerCase());
+      results = results.filter((patch) => {
+        return patch.name.toLowerCase().includes(search.toLowerCase());
+      });
+    }
+
+    if (selectedCategory) {
+      results = results.filter((patch) => {
+        return patch.category.identifier === selectedCategory.identifier;
       });
     }
 
     return results;
-  }, [search, showBookmarks, bookmarkedInstruments, instrumentItems]);
+  }, [search, showBookmarks, bookmarkedPatches, patches, selectedCategory]);
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -121,7 +153,7 @@ export function SelectInstrumentModal({ isOpen, onClose }: Props) {
                     </div>
                   </Dialog.Title>
 
-                  <div className="flex items-center gap-1 mb-2 text-xl uppercase">
+                  <div className="flex items-center gap-1 mb-5 text-xl uppercase">
                     <div
                       onClick={() => setShowBookmarks(false)}
                       className={`cursor-pointer rounded-l-3xl py-5 px-2 w-full text-center leading-none transition-all ${
@@ -149,34 +181,62 @@ export function SelectInstrumentModal({ isOpen, onClose }: Props) {
                     onChange={handleSearchChange}
                   ></TextInput>
 
+                  <div className="flex flex-wrap w-full gap-2 py-3 justify-between cursor-pointer">
+                    {Object.keys(instrumentCategories).map((key: string) => {
+                      return (
+                        <div
+                          onClick={() =>
+                            selectCategory(instrumentCategories[key])
+                          }
+                          key={instrumentCategories[key].identifier}
+                          className={`${
+                            instrumentCategories[key].identifier ===
+                            selectedCategory?.identifier
+                              ? "bg-primary-500"
+                              : "bg-shade-300"
+                          } p-4 rounded-full transition-all`}
+                        >
+                          <Icon
+                            className="fill-white h-12 w-12"
+                            name={instrumentCategories[key].icon}
+                          ></Icon>
+                        </div>
+                      );
+                    })}
+                  </div>
+
                   <div className="overflow-y-scroll h-[40rem] bg-shade-700 rounded-2xl ">
-                    {filteredInstrumentItems.map((instrument) => {
-                      const isBookmarked =
-                        bookmarkedInstruments[instrument.identifier];
+                    {filteredPatches.map((patch) => {
+                      const isBookmarked = bookmarkedPatches[patch.identifier];
                       const StarIcon = isBookmarked
                         ? AiFillStar
                         : AiOutlineStar;
 
                       return (
                         <div
-                          key={instrument.identifier}
+                          key={patch.identifier}
                           className={`cursor-pointer  ${
-                            instrument.identifier ===
-                            myInstrument?.getIdentifier()
+                            patch.identifier === myPatch?.identifier
                               ? "bg-primary-500 font-normal hover:bg-primary-400"
                               : "font-thin hover:bg-shade-300"
                           } border-b-[1px] border-shade-300 py-4 px-4 flex justify-between items-center`}
                           onClick={() => {
-                            selectInstrument(instrument.identifier);
+                            selectPatch(patch.identifier);
                             onClose?.();
                           }}
                         >
-                          {instrument.name}
+                          <div className="flex items-center">
+                            <Icon
+                              className="fill-white h-8 w-8 mr-5"
+                              name={patch.category.icon}
+                            />
+                            {patch.name}
+                          </div>
 
                           <StarIcon
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleBookmarkClick(instrument);
+                              handleBookmarkClick(patch);
                             }}
                             className="h-8 w-8 text-yellow-500"
                           />

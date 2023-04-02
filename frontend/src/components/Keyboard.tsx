@@ -4,7 +4,6 @@ import Draggable, { DraggableEvent, DraggableData } from "react-draggable";
 import {
   ChevronUpDownIcon,
   AdjustmentsHorizontalIcon,
-  MusicalNoteIcon,
 } from "@heroicons/react/24/outline";
 
 import { useEffect, useMemo, useRef, useCallback, useState } from "react";
@@ -20,11 +19,12 @@ import { SelectInstrumentModal } from "./modals/SelectInstrumentModal";
 import { MixerModal } from "./modals/MixerModal";
 import { Player } from "../../../backend/schemas/Player";
 import { NoteMessageEvent } from "webmidi";
+import { Icon } from "../components/Icon";
 
 import {
   useMidiBus,
   useMidiDevices,
-  usePlayerInstrument,
+  usePlayerPatch,
   useMe,
   useGameRoom,
 } from "../hooks/hooks";
@@ -55,7 +55,7 @@ export function Keyboard() {
   const me = useMe();
   const gameRoom = useGameRoom();
 
-  const playerInstrument = usePlayerInstrument(me ? me.id : null);
+  const patch = usePlayerPatch(me ? me.id : null);
 
   const [selectInstrumentModalOpen, setSelectIntrumentModalOpen] =
     useState(false);
@@ -300,8 +300,16 @@ export function Keyboard() {
               className="w-full flex mt-1 whitespace-nowrap justify-between cursor-pointer bg-shade-200 mb-2 py-4 px-5 outline-none   focus:outline-none focus:ring rounded-3xl "
               onClick={() => setSelectIntrumentModalOpen(true)}
             >
-              <MusicalNoteIcon className="h-6 w-6 mr-2" />{" "}
-              {playerInstrument ? playerInstrument.getName() : "Select"}{" "}
+              <div className="flex items-center">
+                {patch && (
+                  <Icon
+                    className="h-6 w-7 fill-white mr-4"
+                    name={patch?.category.icon}
+                  />
+                )}
+                {patch ? patch.name : "Select"}{" "}
+              </div>
+
               <ChevronUpDownIcon
                 className="w-5 h-5 text-gray-400"
                 aria-hidden="true"
