@@ -222,7 +222,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         me,
         leader,
         isLeader,
-        messages: gameState ? gameState.messages : [],
+        messages: gameState ? Array.from(gameState.messages) : [],
       }}
     >
       {children}

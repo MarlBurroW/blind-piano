@@ -50,5 +50,5 @@ export function Instrument({ patch, bus, output }: Props) {
     };
   }, [patch]);
 
-  return <>{patch.name}</>;
+  return <></>;
 }

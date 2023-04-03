@@ -161,6 +161,15 @@ export function Keyboard() {
   useEffect(() => {
     scrollbarRef.current?.addEventListener("scroll", updateScrollState);
     window.addEventListener("resize", updateScrollState);
+
+    const target = scrollbarRef.current;
+
+    // Set scroll to 50% to center the keyboard
+    target?.scrollTo(
+      (target.scrollWidth - target.clientWidth) / 2,
+      target.scrollTop
+    );
+
     updateScrollState();
     return () => {
       window.removeEventListener("resize", updateScrollState);

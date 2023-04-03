@@ -60,6 +60,27 @@ export default {
     mixer_modal: {
       title: "Mixeur",
     },
+    cache_modal: {
+      title: "Mise en cache des instruments",
+      cache_description:
+        "Pour une meilleur expérience, il est conseillé de mettre en cache l'intégralité des instruments dans votre navigateur afin de diminuer le traffic réseau.",
+      start_caching: "Démarrer la mise en cache",
+      resource: "Ressource",
+      completed: "Mise en cache terminée",
+      progress: "Progression",
+      errorCount: "Nombre d'erreurs",
+      cachedCount: "Nombre de ressources mises en cache",
+      close_modal: "Fermer",
+      maybe_later: "Peut-être plus tard",
+      not_now: "Pas maintenant",
+      dont_ask_later: "Ne plus me proposer cette option",
+      checking_cache: "Vérification du cache en cours...",
+      cache_size: "Taille des resources téléchargées",
+      cache_status: "Resources enregistrées en cache",
+      no_resource_cached: "Aucune ressource mise en cache pour le moment",
+      some_resources_not_cached: "Certaines ressources ne sont pas en cache",
+      all_resources_cached: "Toutes les ressources sont en cache",
+    },
     generic: {
       nickname: "Pseudo",
       color: "Couleur",

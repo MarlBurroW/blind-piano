@@ -1,4 +1,9 @@
-import { IInstrument, IPlayerNote, IPatch } from "../../../common/types";
+import {
+  IInstrument,
+  IPlayerNote,
+  IPatch,
+  ICachableResource,
+} from "../../../common/types";
 import Soundfont from "soundfont-player";
 import { guessCategoryFromName } from "../../../common/instrument-categories";
 import { BaseInstrument } from "./BaseInstrument";
@@ -50,6 +55,17 @@ export class SFPInstrument extends BaseInstrument implements IInstrument {
 
   static getPatches() {
     return getPatches();
+  }
+
+  static getCachableResources(): Array<ICachableResource> {
+    const patches = getPatches();
+
+    return patches.map((patch) => {
+      return {
+        url: `https://gleitz.github.io/midi-js-soundfonts/${patch.options.soundfont}/${patch.options.instrument}-ogg.js`,
+        name: patch.name,
+      };
+    });
   }
 }
 

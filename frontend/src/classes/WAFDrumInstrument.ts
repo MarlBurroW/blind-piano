@@ -1,4 +1,8 @@
-import { IInstrument, IPlayerNote } from "../../../common/types";
+import {
+  IInstrument,
+  IPlayerNote,
+  ICachableResource,
+} from "../../../common/types";
 
 import axios from "axios";
 import { instrumentCategories } from "../../../common/instrument-categories";
@@ -70,6 +74,23 @@ export class WAFDrumInstrument extends BaseInstrument implements IInstrument {
   }
   static getPatches() {
     return getPatches();
+  }
+  static getCachableResources(): Array<ICachableResource> {
+    const patches = getPatches();
+
+    const resources: Array<ICachableResource> = [];
+
+    patches.map((patch) => {
+      for (let i = 35; i <= 81; i++) {
+        const url = `${patch.options.baseUrl}128${i}${patch.options.file}.js`;
+        return resources.push({
+          url,
+          name: `${patch.name} ${i}`,
+        });
+      }
+    });
+
+    return resources;
   }
 }
 

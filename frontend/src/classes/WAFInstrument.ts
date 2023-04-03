@@ -1,4 +1,8 @@
-import { IInstrument, IPlayerNote } from "../../../common/types";
+import {
+  IInstrument,
+  IPlayerNote,
+  ICachableResource,
+} from "../../../common/types";
 import { guessCategoryFromName } from "../../../common/instrument-categories";
 import { WebAudioFontPlayer, WavePreset } from "../classes/WebAudioFont";
 import axios from "axios";
@@ -88,6 +92,17 @@ export class WAFInstrument extends BaseInstrument implements IInstrument {
 
   static getPatches() {
     return getPatches();
+  }
+
+  static getCachableResources(): Array<ICachableResource> {
+    const patches = getPatches();
+
+    return patches.map((patch) => {
+      return {
+        url: patch.options.url,
+        name: patch.name,
+      };
+    });
   }
 }
 

@@ -4,6 +4,11 @@ export interface IIdentity {
   color: string;
 }
 
+export interface ICachableResource {
+  name: string;
+  url: string;
+}
+
 export interface IMessage {
   message: string;
   player?: Player;
