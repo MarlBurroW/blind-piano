@@ -1,14 +1,18 @@
-import { Howl } from "howler";
-
+import { Player } from "tone";
 export class SoundPlayer {
-  private sounds: Map<string, Howl> = new Map();
+  private sounds: Map<string, Player> = new Map();
 
   constructor() {
     // Initialisez tous les sons que vous souhaitez utiliser dans votre jeu.
   }
 
-  public addSound(key: string, src: string | string[]) {
-    this.sounds.set(key, new Howl({ src }));
+  public addSound(key: string, src: string) {
+    const player = new Player({
+      url: src,
+      autostart: false,
+    });
+
+    this.sounds.set(key, player);
   }
 
   public playSound(key: string) {
@@ -16,7 +20,7 @@ export class SoundPlayer {
     if (!sound) {
       throw new Error(`Sound not found with key: ${key}`);
     }
-    sound.play();
+    sound.start();
   }
 }
 

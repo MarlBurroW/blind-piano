@@ -42,7 +42,7 @@ function App() {
 
   return (
     <div
-      className="h-full bg-cover relative"
+      className="h-full bg-cover relative overflow-hidden"
       style={{ backgroundImage: `url(${Background})` }}
     >
       <SVGSymbols></SVGSymbols>

@@ -27,6 +27,8 @@ export function RangeSlider({
 
   const trackRef = useRef<HTMLDivElement>(null);
 
+  const [displayValue, setDisplayValue] = useState(value);
+
   useEffect(() => {
     const handleResize = () => {
       if (!trackRef.current) return;
@@ -47,6 +49,7 @@ export function RangeSlider({
   // Set internal value from cursorX position, max, min and containerWidth
   useEffect(() => {
     const scaledValue = (cursorX / containerWidth) * (max - min) + min;
+    setDisplayValue(scaledValue);
     onChange(scaledValue);
   }, [cursorX, containerWidth, max, min, onChange]);
 
@@ -109,7 +112,7 @@ export function RangeSlider({
               color ? "" : "bg-shade-500"
             }  transition-opacity indication absolute px-4 py-2  -top-[4rem] rounded-md transform`}
           >
-            {formatValue ? formatValue(value) : value}{" "}
+            {formatValue ? formatValue(displayValue) : displayValue}{" "}
           </div>
           <div
             style={{ backgroundColor: color ? color : "" }}

@@ -19,7 +19,7 @@ import { Button } from "../form/Button";
 import { Panel } from "../Panel";
 import { useColors } from "../../hooks/hooks";
 import { FieldLabel } from "../form/FieldLabel";
-
+import { BaseModal } from "./BaseModal";
 interface Props {
   isOpen: boolean;
   mandatory?: boolean;
@@ -101,117 +101,70 @@ export function CreateIdentityModal({
   }, [isOpen, defaultIdentity]);
 
   return (
-    <Transition appear show={isOpen} as={Fragment}>
-      <Dialog
-        as="div"
-        className="relative z-10 text-white"
-        onClose={onClose ? onClose : () => {}}
-      >
-        <Transition.Child
-          as={Fragment}
-          enter="ease-out duration-300"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
-          <div className="fixed inset-0 bg-black bg-opacity-75" />
-        </Transition.Child>
+    <BaseModal isOpen={isOpen} onClose={onClose} size={45}>
+      <Panel style="primary" neon padding={10}>
+        <FormikProvider value={identityForm}>
+          <form onSubmit={identityForm.handleSubmit}>
+            <Dialog.Title className="text-lg font-medium  text-center mb-10 ">
+              <div className="text-5xl font-black">
+                {t("create_identity_modal.title")}
+              </div>
+            </Dialog.Title>
 
-        <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4 text-center ">
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 scale-95"
-              enterTo="opacity-100 scale-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 scale-100"
-              leaveTo="opacity-0 scale-95"
-            >
-              <Dialog.Panel className="w-full max-w-2xl">
-                <Panel style="primary" neon className="text-left" padding={10}>
-                  <FormikProvider value={identityForm}>
-                    <form onSubmit={identityForm.handleSubmit}>
-                      <Dialog.Title className="text-lg font-medium  text-center mb-10 ">
-                        <div className="text-5xl font-black">
-                          {t("create_identity_modal.title")}
-                        </div>
-                      </Dialog.Title>
+            <div className="w-full p10">
+              <div className="p-10 flex justify-center flex-col">
+                <Avatar
+                  className="mb-5 w-8xl block mx-auto"
+                  circle={true}
+                  background={true}
+                  seed={identityForm.values.avatarSeed}
+                  size={320}
+                />
+                <Button
+                  size="sm"
+                  style="secondary"
+                  type="button"
+                  onClick={randomizeSeed}
+                  fullWidth={false}
+                  className="w-32 mx-auto"
+                >
+                  {t("create_identity_modal.randomize_avatar")}
+                </Button>
+              </div>
+              <FieldLabel
+                className="text-center"
+                label={t("generic.nickname")}
+              />
+              <TextField
+                className="input-lg text-center"
+                labelClassName={"text-center"}
+                placeholder={t("create_identity_modal.nickname_placeholder")}
+                name="nickname"
+              ></TextField>
+              <FieldLabel className="text-center" label={t("generic.color")} />
+              <div className="flex justify-between py-5 px-2 mb-5">
+                {availableColors.map((color) => {
+                  return (
+                    <div
+                      key={color}
+                      onClick={() => identityForm.setFieldValue("color", color)}
+                      style={{ backgroundColor: color }}
+                      className={`h-8 w-8 rounded-full transition-all cursor-pointer ${
+                        identityForm.values.color === color ? "scale-150" : ""
+                      }`}
+                    ></div>
+                  );
+                })}
+              </div>
+            </div>
 
-                      <div className="w-full p10">
-                        <div className="p-10 flex justify-center flex-col">
-                          <Avatar
-                            className="mb-5 w-8xl block mx-auto"
-                            circle={true}
-                            background={true}
-                            seed={identityForm.values.avatarSeed}
-                            size={320}
-                          />
-                          <Button
-                            size="sm"
-                            style="secondary"
-                            type="button"
-                            onClick={randomizeSeed}
-                            fullWidth={false}
-                            className="w-32 mx-auto"
-                          >
-                            {t("create_identity_modal.randomize_avatar")}
-                          </Button>
-                        </div>
-                        <FieldLabel
-                          className="text-center"
-                          label={t("generic.nickname")}
-                        />
-                        <TextField
-                          className="input-lg text-center"
-                          labelClassName={"text-center"}
-                          placeholder={t(
-                            "create_identity_modal.nickname_placeholder"
-                          )}
-                          name="nickname"
-                        ></TextField>
-                        <FieldLabel
-                          className="text-center"
-                          label={t("generic.color")}
-                        />
-                        <div className="flex justify-between py-5 px-2 mb-5">
-                          {availableColors.map((color) => {
-                            return (
-                              <div
-                                key={color}
-                                onClick={() =>
-                                  identityForm.setFieldValue("color", color)
-                                }
-                                style={{ backgroundColor: color }}
-                                className={`h-8 w-8 rounded-full transition-all cursor-pointer ${
-                                  identityForm.values.color === color
-                                    ? "scale-150"
-                                    : ""
-                                }`}
-                              ></div>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      <Button
-                        fullWidth
-                        type="submit"
-                        disabled={!identityForm.isValid}
-                      >
-                        {t("create_identity_modal.validate_identity")}
-                      </Button>
-                    </form>
-                  </FormikProvider>
-                </Panel>
-              </Dialog.Panel>
-            </Transition.Child>
-          </div>
-        </div>
-      </Dialog>
-    </Transition>
+            <Button fullWidth type="submit" disabled={!identityForm.isValid}>
+              {t("create_identity_modal.validate_identity")}
+            </Button>
+          </form>
+        </FormikProvider>
+      </Panel>
+    </BaseModal>
   );
 }
 

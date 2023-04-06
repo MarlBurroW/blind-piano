@@ -30,22 +30,22 @@ self.addEventListener("message", (event) => {
   if (event.data && event.data.type === "START_CACHING") {
     // Démarrer la mise en cache des ressources
 
-    cacheResources(event.data.resources);
+    event.waitUntil(cacheResources(event.data.resources));
   } else if (event.data && event.data.type === "CHECK_CACHED_RESOURCES") {
-    console.log("checking cached resources");
-
-    areResourcesCached(event.data.resources).then((result) => {
-      sendMessageToClients({
-        type: "CHECK_CACHED_RESOURCES_RESULT",
-        payload: result,
-      });
-    });
+    event.waitUntil(
+      areResourcesCached(event.data.resources).then((result) => {
+        sendMessageToClients({
+          type: "CHECK_CACHED_RESOURCES_RESULT",
+          payload: result,
+        });
+      })
+    );
   }
 });
 
 async function sendMessageToClients(message: any) {
   const clientsList = await self.clients.matchAll();
-  console.log(clientsList);
+
   clientsList.forEach((client) => {
     client.postMessage(message);
   });
@@ -89,57 +89,61 @@ async function cacheResources(resources: Array<ICachableResource>) {
       total: resources.length,
     },
   });
-  const BATCH_SIZE = 10; // Ajustez cette valeur en fonction de vos besoins
 
-  const processBatch = async (batch: ICachableResource[]) => {
-    return Promise.all(
-      batch.map(async (resource) => {
-        try {
-          const response = await fetch(resource.url);
-          await cache.put(resource.url, response);
-          size += Number(response.headers.get("content-length")) || 0;
-          cachedCount++;
-        } catch (error) {
-          errorCount++;
-          sendMessageToClients({
-            type: "CACHE_ERROR",
-            payload: {
-              resource: resource,
-              error: error,
-            },
-          });
-        } finally {
-          const currentIndex = resources.indexOf(resource);
-          sendMessageToClients({
-            type: "CACHE_PROGRESS",
-            payload: {
-              progress: (currentIndex + 1) / resources.length,
-              latestResource: resource,
-              nextResource: resources[currentIndex + 1],
-              size: size,
-              total: resources.length,
-              cachedCount,
-              errorCount,
-            },
-          });
-        }
-      })
-    );
-  };
+  let i = 0;
+  const batchSize = 10;
 
-  for (let i = 0; i < resources.length; i += BATCH_SIZE) {
-    const batch = resources.slice(i, i + BATCH_SIZE);
-    await processBatch(batch);
+  function processBatch() {
+    const batch = resources.slice(i, i + batchSize);
+    const promises = batch.map(async (resource) => {
+      try {
+        const response = await fetch(resource.url);
+        await cache.put(resource.url, response);
+        size += Number(response.headers.get("content-length")) || 0;
+        cachedCount++;
+      } catch (error) {
+        errorCount++;
+        sendMessageToClients({
+          type: "CACHE_ERROR",
+          payload: {
+            resource: resource,
+            error: error,
+          },
+        });
+      }
+    });
+
+    Promise.all(promises).then(() => {
+      i += batchSize;
+      sendMessageToClients({
+        type: "CACHE_PROGRESS",
+        payload: {
+          progress: i / resources.length,
+          latestResource: batch[batch.length - 1],
+          nextResource: resources[i],
+          size: size,
+          total: resources.length,
+          cachedCount,
+          errorCount,
+        },
+      });
+
+      if (i < resources.length) {
+        setTimeout(processBatch, 0);
+      } else {
+        sendMessageToClients({
+          type: "CACHE_COMPLETE",
+          payload: {
+            cachedCount,
+            errorCount,
+            size: size,
+            progress: 1,
+            total: resources.length,
+          },
+        });
+      }
+    });
   }
 
-  sendMessageToClients({
-    type: "CACHE_COMPLETE",
-    payload: {
-      cachedCount,
-      errorCount,
-      size: size,
-      progress: 1,
-      total: resources.length,
-    },
-  });
+  processBatch();
 }

@@ -63,7 +63,7 @@ export default {
     cache_modal: {
       title: "Mise en cache des instruments",
       cache_description:
-        "Pour une meilleur expérience, il est conseillé de mettre en cache l'intégralité des instruments dans votre navigateur afin de diminuer le traffic réseau.",
+        "Pour une meilleure expérience, il est conseillé de mettre en cache l'intégralité des instruments dans votre navigateur afin de diminuer le traffic réseau.",
       start_caching: "Démarrer la mise en cache",
       resource: "Ressource",
       completed: "Mise en cache terminée",
@@ -80,6 +80,12 @@ export default {
       no_resource_cached: "Aucune ressource mise en cache pour le moment",
       some_resources_not_cached: "Certaines ressources ne sont pas en cache",
       all_resources_cached: "Toutes les ressources sont en cache",
+      continue_in_background: "Continuer en tâche de fond",
+    },
+    track_modal: {
+      create_track: "Créer une piste",
+      edit_track: "Modifier la piste",
+      track_name: "Nom de la piste",
     },
     generic: {
       nickname: "Pseudo",
@@ -106,6 +112,8 @@ export default {
       required: "Requis",
     },
     notification_messages: {
+      cached_completed:
+        "Mise en cache terminée: {{count}} ressources mises en cache sur {{total}}",
       player_joined: "{{nickname}} a rejoint la partie",
       player_left: "{{nickname}} a quitté la partie",
       new_leader: "{{nickname}} est le nouveau chef de partie",

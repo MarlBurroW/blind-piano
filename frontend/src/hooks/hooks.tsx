@@ -122,13 +122,21 @@ export function useChat() {
   };
 }
 
+export function usePatch(patchIdentifier: string): IPatch | null {
+  const { patches } = useContext(AudioContext);
+
+  const patch = patches.get(patchIdentifier);
+
+  return patch || null;
+}
+
 export function useSelectPatch() {
   const gameRoom = useGameRoom();
 
   const selectPatch = useCallback(
-    (patchIdentifier: string) => {
+    (patch: IPatch) => {
       if (gameRoom) {
-        gameRoom.send("set-patch", patchIdentifier);
+        gameRoom.send("set-patch", patch.identifier);
       }
     },
     [gameRoom]

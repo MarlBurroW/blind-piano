@@ -27,6 +27,7 @@ import {
   usePlayerPatch,
   useMe,
   useGameRoom,
+  useSelectPatch,
 } from "../hooks/hooks";
 
 function transportNoteFromMidiNote(note: Note): ITransportNote {
@@ -54,6 +55,7 @@ export function Keyboard() {
   const midiBus = useMidiBus();
   const me = useMe();
   const gameRoom = useGameRoom();
+  const selectPatch = useSelectPatch();
 
   const patch = usePlayerPatch(me ? me.id : null);
 
@@ -294,7 +296,7 @@ export function Keyboard() {
 
   return (
     <Panel>
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-full relative">
         <div className="flex w-full mb-2 gap-8  items-center">
           <div className="min-w-[30rem]">
             <SelectInput
@@ -327,36 +329,38 @@ export function Keyboard() {
           </div>
           <div className="flex-grow"></div>
 
-          <div className="">
-            <div className="relative" ref={previewContainerRef}>
-              <Draggable
-                axis="x"
-                bounds="parent"
-                onDrag={onDrag}
-                position={{
-                  x: scrollState.previewContainerLeft,
-                  y: 0,
-                }}
-                defaultPosition={{ x: 0, y: 0 }}
-              >
-                <div
-                  style={{
-                    width: `${scrollState.visiblePercentage}%`,
+          <div className="absolute flex justify-center w-full -top-[5.85rem] ">
+            <div className="bg-shade-300 pt-5 px-5 rounded-t-3xl">
+              <div className="relative" ref={previewContainerRef}>
+                <Draggable
+                  axis="x"
+                  bounds="parent"
+                  onDrag={onDrag}
+                  position={{
+                    x: scrollState.previewContainerLeft,
+                    y: 0,
                   }}
-                  className="absolute z-[4] h-full cursor-ew-resize top-0  hover:ring-4 ring-secondary-500"
+                  defaultPosition={{ x: 0, y: 0 }}
+                >
+                  <div
+                    style={{
+                      width: `${scrollState.visiblePercentage}%`,
+                    }}
+                    className="absolute z-[4] h-full cursor-ew-resize top-0  hover:ring-4 ring-secondary-500"
+                  ></div>
+                </Draggable>
+                <div
+                  onClick={handleOverlayClick}
+                  ref={overlayRef}
+                  style={{
+                    clipPath: scrollState.clipPathPolygon,
+                  }}
+                  className="overlay absolute   top-0 left-0 right-0 bottom-0 w-full h-full bg-gray-800 bg-opacity-50 z-[3]"
                 ></div>
-              </Draggable>
-              <div
-                onClick={handleOverlayClick}
-                ref={overlayRef}
-                style={{
-                  clipPath: scrollState.clipPathPolygon,
-                }}
-                className="overlay absolute   top-0 left-0 right-0 bottom-0 w-full h-full bg-gray-800 bg-opacity-50 z-[3]"
-              ></div>
 
-              <div className="z-0 relative pointer-events-none text-[0.17rem]">
-                <KeyboardKeys ref={previewKeyboardKeysRef}></KeyboardKeys>
+                <div className="z-0 relative pointer-events-none text-[0.17rem]">
+                  <KeyboardKeys ref={previewKeyboardKeysRef}></KeyboardKeys>
+                </div>
               </div>
             </div>
           </div>
@@ -380,6 +384,8 @@ export function Keyboard() {
         </div>
       </div>
       <SelectInstrumentModal
+        onSelected={selectPatch}
+        defaultPatch={patch}
         isOpen={selectInstrumentModalOpen}
         onClose={() => setSelectIntrumentModalOpen(false)}
       ></SelectInstrumentModal>

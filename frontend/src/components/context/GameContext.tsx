@@ -28,6 +28,7 @@ import sfx from "../../services/sfx";
 import { IPlayerNote } from "../../../../common/types";
 
 import { MidiContext } from "./MidiContext";
+import { ServiceWorkerContext } from "./ServiceWorkerContext";
 
 type State = {
   gameState: Game | null;
@@ -70,6 +71,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   // Context
 
   const { midiBus$: midiBus } = useContext(MidiContext);
+  const { cacheStatus, openCacheModal } = useContext(ServiceWorkerContext);
 
   // Navigation
 
@@ -171,6 +173,10 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
     return () => {};
   }, []);
+
+  useEffect(() => {
+    openCacheModal();
+  }, [cacheStatus]);
 
   // Detect when new room is created, and bind the state change handler
 

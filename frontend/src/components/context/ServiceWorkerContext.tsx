@@ -9,11 +9,17 @@ import { ICachableResource } from "../../../../common/types";
 import { useLocalStorage } from "usehooks-ts";
 interface IServiceWorkerContext {
   serviceWorker: ServiceWorker | null;
+  openCacheModal: () => void;
+  cacheStatus: {
+    cached: number;
+    notCached: number;
+  } | null;
 }
 
 const initialContextValues = {
   serviceWorker: null,
-  cacheUrls: (urls: Array<string>) => {},
+  openCacheModal: () => {},
+  cacheStatus: null,
 };
 
 export type State = {
@@ -81,7 +87,7 @@ export function ServiceWorkerProvider({
     });
   }, []);
 
-  useEffect(() => {
+  const openCacheModal = useCallback(() => {
     if (state.cacheStatus) {
       if (state.cacheStatus.notCached > 0 && !askDisabled) {
         setState((draft) => {
@@ -89,7 +95,7 @@ export function ServiceWorkerProvider({
         });
       }
     }
-  }, [state.cacheStatus, askDisabled]);
+  }, [state.cacheStatus, askDisabled, setState]);
 
   function checkCachedResources() {
     setState((draft) => {
@@ -121,7 +127,6 @@ export function ServiceWorkerProvider({
   useEffect(() => {
     if ("serviceWorker" in navigator) {
       const onControllerChange = () => {
-        console.log("controllerchange");
         serviceWorkerRef.current = navigator.serviceWorker.controller;
       };
 
@@ -135,7 +140,6 @@ export function ServiceWorkerProvider({
       }
 
       function onMessage(event: any) {
-        console.log(event.data.type);
         if (event.data.type === "CACHE_STARTED") {
           setState((draft) => {
             draft.running = true;
@@ -163,6 +167,13 @@ export function ServiceWorkerProvider({
             draft.size = event.data.payload.size;
           });
 
+          toast.success(
+            t("notification_messages.cached_completed", {
+              count: event.data.payload.cachedCount,
+              total: event.data.payload.total,
+            })
+          );
+
           checkCachedResources();
         } else if (event.data.type === "CACHE_ERROR") {
           setState((draft) => {
@@ -172,7 +183,6 @@ export function ServiceWorkerProvider({
             });
           });
         } else if (event.data.type === "CHECK_CACHED_RESOURCES_RESULT") {
-          console.log(event.data.payload);
           setState((draft) => {
             draft.cacheStatus = event.data.payload;
           });
@@ -188,7 +198,11 @@ export function ServiceWorkerProvider({
 
   return (
     <ServiceWorkerContext.Provider
-      value={{ serviceWorker: serviceWorkerRef.current }}
+      value={{
+        cacheStatus: state.cacheStatus,
+        serviceWorker: serviceWorkerRef.current,
+        openCacheModal,
+      }}
     >
       <CacheModal
         onStartCaching={startCaching}

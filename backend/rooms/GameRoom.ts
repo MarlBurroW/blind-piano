@@ -3,6 +3,7 @@ import { Room, Client, ServerError, updateLobby } from "colyseus";
 import { object, string } from "yup";
 import { Game } from "../schemas/Game";
 import { Player } from "../schemas/Player";
+import { Track } from "../schemas/Track";
 import { IIdentity } from "../../common/types";
 import kleur from "kleur";
 import { v4 as uuidv4 } from "uuid";
@@ -43,6 +44,37 @@ export class GameRoom extends Room<Game> {
       this.state.name = validatedOptions.name;
     }
 
+    this.onMessage("new-track", async (client, track) => {
+      const player = this.state.players.get(client.sessionId);
+
+      const trackSchema = object({
+        name: string().required().min(1).max(32).trim(),
+        patch: string().required().min(1).max(32).trim(),
+      });
+
+      try {
+        await trackSchema.validate(track);
+      } catch (err) {
+        return;
+      }
+
+      if (!player) {
+        return;
+      }
+
+      const newTrack = new Track();
+
+      newTrack.name = track.name;
+      newTrack.patch = track.patch;
+      newTrack.id = uuidv4();
+
+      this.state.tracks.push(newTrack);
+
+      this.log(kleur.bold().magenta(`Track: ${newTrack.name}`), {
+        player,
+      });
+    });
+
     this.onMessage("chat-message", async (client, messageContent) => {
       const player = this.state.players.get(client.sessionId);
 
@@ -78,10 +110,14 @@ export class GameRoom extends Room<Game> {
     });
 
     this.onMessage("update-identity", async (client, identity) => {
+      const player = this.state.players.get(client.sessionId);
+
       const availableColors = colors.filter((color) => {
-        return !Array.from(this.state.players.values()).some((player) => {
-          return player.color === color;
-        });
+        return !Array.from(this.state.players.values())
+          .filter((p) => p.id !== player?.id)
+          .some((player) => {
+            return player.color === color;
+          });
       });
 
       const identitySchema = object({
@@ -95,8 +131,6 @@ export class GameRoom extends Room<Game> {
       } catch (err) {
         return;
       }
-
-      const player = this.state.players.get(client.sessionId);
 
       // If the player doesn't exist, create it with the provided identity
       if (!player) {

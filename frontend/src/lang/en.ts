@@ -80,6 +80,7 @@ export default {
       no_resource_cached: "No resources cached at this time",
       some_resources_not_cached: "Some resources are not cached",
       all_resources_cached: "All resources are cached",
+      continue_in_background: "Continue in Background",
     },
     generic: {
       nickname: "Nickname",
@@ -106,6 +107,8 @@ export default {
       required: "Required",
     },
     notification_messages: {
+      cached_completed:
+        "Caching completed: {{count}} resources cached out of {{total}}",
       player_joined: "{{nickname}} joined the game",
       player_left: "{{nickname}} left the game",
       new_leader: "{{nickname}} is the new game leader",
