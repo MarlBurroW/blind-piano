@@ -57,6 +57,9 @@ export default {
       all_instruments: "Tous",
       bookmarks: "Favoris",
     },
+    select_player_modal: {
+      title: "Sélectionner un joueur",
+    },
     mixer_modal: {
       title: "Mixeur",
     },
@@ -122,6 +125,12 @@ export default {
       you_were_kicked: "Vous avez été expulsé de la partie",
       webmidi_enabled: "WebMidi activé avec succès",
       link_copied: "Lien copié dans le presse-papier",
+    },
+
+    inputs: {
+      player_input: {
+        placeholder: "Sélectionner un joueur",
+      },
     },
   },
 };

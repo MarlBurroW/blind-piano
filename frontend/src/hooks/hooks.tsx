@@ -122,7 +122,7 @@ export function useChat() {
   };
 }
 
-export function usePatch(patchIdentifier: string): IPatch | null {
+export function usePatch(patchIdentifier: string | null): IPatch | null {
   const { patches } = useContext(AudioContext);
 
   const patch = patches.get(patchIdentifier);

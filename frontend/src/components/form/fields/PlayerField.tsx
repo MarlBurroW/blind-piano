@@ -2,7 +2,7 @@ import { useField } from "formik";
 
 import { FieldBase } from "../FieldBase";
 
-import { PatchInput } from "../inputs/PatchInput";
+import { PlayerInput } from "../inputs/PlayerInput";
 
 interface Props {
   name: string;
@@ -11,13 +11,13 @@ interface Props {
   [x: string]: any;
 }
 
-export const PatchField = (props: Props) => {
+export const PlayerField = (props: Props) => {
   const [field, meta, helpers] = useField(props);
 
   return (
     <FieldBase label={props.label} error={meta.error}>
-      <PatchInput value={field.value} onChange={helpers.setValue} />
+      <PlayerInput value={field.value} onChange={helpers.setValue} />
     </FieldBase>
   );
 };
-export default PatchField;
+export default PlayerField;

@@ -9,6 +9,7 @@ import { Track } from "../../../../backend/schemas/Track";
 import { useFormik, FormikProvider } from "formik";
 import * as Yup from "yup";
 import { PatchField } from "../form/fields/PatchField";
+import { PlayerField } from "../form/fields/PlayerField";
 
 import { BaseModal } from "./BaseModal";
 interface Props {
@@ -30,6 +31,7 @@ export function TrackModal({ isOpen, onClose, track, onCreated }: Props) {
         .max(32, t("validation_rules.max_char", { max: 32 }))
         .trim(),
       patch: Yup.string().required(),
+      player: Yup.string().nullable(),
     }),
     onSubmit: (track) => {
       onCreated?.(track as Track);
@@ -61,6 +63,8 @@ export function TrackModal({ isOpen, onClose, track, onCreated }: Props) {
               label={t("generic.instrument")}
               name="patch"
             ></PatchField>
+
+            <PlayerField name="player"></PlayerField>
             <Button fullWidth type="submit" disabled={!trackForm.isValid}>
               {track
                 ? t("track_modal.edit_track")
