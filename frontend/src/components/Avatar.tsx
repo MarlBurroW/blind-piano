@@ -1,7 +1,8 @@
+import { bottts } from "@dicebear/collection";
 import { Result } from "@dicebear/core";
 import { createAvatar, schema } from "@dicebear/core";
-import { bottts } from "@dicebear/collection";
 import { useMemo } from "react";
+
 interface Props {
   seed: string;
   size?: number;

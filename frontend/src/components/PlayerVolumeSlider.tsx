@@ -1,12 +1,12 @@
-import Player from "../../../backend/schemas/Player";
-import { RangeSlider } from "./form/inputs/RangeSlider";
+import _ from "lodash";
 import { useCallback, useMemo } from "react";
 
+import { IPlayer } from "../../../common/types";
 import { usePlayerMixerControl } from "../hooks/hooks";
+import { RangeSlider } from "./form/inputs/RangeSlider";
 
-import _ from "lodash";
 interface Props {
-  player: Player;
+  player: IPlayer;
 }
 
 export function PlayerVolumeSlider({ player }: Props) {
@@ -29,12 +29,12 @@ export function PlayerVolumeSlider({ player }: Props) {
     <RangeSlider
       value={volume}
       color={player.color}
-      onChange={(val) => {
+      onChange={val => {
         debouncedHandlePlayerVolumeChange(player.id, val);
       }}
       min={0}
       max={1}
-      formatValue={(val) => {
+      formatValue={val => {
         return `${Math.round(val * 100)}%`;
       }}
     ></RangeSlider>

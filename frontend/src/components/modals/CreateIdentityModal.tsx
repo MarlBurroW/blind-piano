@@ -1,25 +1,26 @@
 import { Dialog, Transition } from "@headlessui/react";
-import { Fragment, useEffect, useState, useMemo } from "react";
+import { FormikProvider, useFormik } from "formik";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useFormik, FormikProvider } from "formik";
-import { Avatar } from "../Avatar";
-import { v4 as uuidv4 } from "uuid";
-import TextField from "../form/fields/TextField";
-import * as Yup from "yup";
-import { useLocalStorage } from "usehooks-ts";
-import { colors } from "../../../../common/colors";
-
 import {
-  uniqueNamesGenerator,
   adjectives,
   animals,
+  uniqueNamesGenerator,
 } from "unique-names-generator";
+import { useLocalStorage } from "usehooks-ts";
+import { v4 as uuidv4 } from "uuid";
+import * as Yup from "yup";
+
+import { colors } from "../../../../common/colors";
 import { IIdentity } from "../../../../common/types";
-import { Button } from "../form/Button";
-import { Panel } from "../Panel";
 import { useColors } from "../../hooks/hooks";
+import { Avatar } from "../Avatar";
+import { Panel } from "../Panel";
+import { Button } from "../form/Button";
 import { FieldLabel } from "../form/FieldLabel";
+import TextField from "../form/fields/TextField";
 import { BaseModal } from "./BaseModal";
+
 interface Props {
   isOpen: boolean;
   mandatory?: boolean;
@@ -68,7 +69,7 @@ export function CreateIdentityModal({
       avatarSeed: Yup.string().uuid().required(),
       color: Yup.string().required().oneOf(colors),
     }),
-    onSubmit: (identity) => {
+    onSubmit: identity => {
       onIdentityValidated(identity);
       setStoredNickname(identity.nickname);
       setStoredAvatarSeed(identity.avatarSeed);
@@ -143,7 +144,7 @@ export function CreateIdentityModal({
               ></TextField>
               <FieldLabel className="text-center" label={t("generic.color")} />
               <div className="flex justify-between py-5 px-2 mb-5">
-                {availableColors.map((color) => {
+                {availableColors.map(color => {
                   return (
                     <div
                       key={color}

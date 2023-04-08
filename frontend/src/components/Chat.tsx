@@ -1,12 +1,11 @@
-import TextareaAutosize from "react-textarea-autosize";
-import { useCallback, useState, useEffect, useRef } from "react";
-
-import { ChatMessage } from "./ChatMessage";
 import { AnimateSharedLayout, motion } from "framer-motion";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AiOutlineSend } from "react-icons/ai";
+import TextareaAutosize from "react-textarea-autosize";
 
 import { useChat, useMe } from "../hooks/hooks";
+import { ChatMessage } from "./ChatMessage";
 
 export function Chat() {
   const me = useMe();
@@ -51,7 +50,7 @@ export function Chat() {
         className="overflow-y-scroll overflow-x-hidden h-full  bg-gradient-to-b from-shade-600 to-shade-700   p-4"
       >
         <AnimateSharedLayout>
-          {messages.map((message) => (
+          {messages.map(message => (
             <motion.div
               layout
               key={message.id}
@@ -68,7 +67,7 @@ export function Chat() {
         <div className="flex">
           <TextareaAutosize
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={e => setMessage(e.target.value)}
             maxRows={4}
             onKeyDown={onEnterPress}
             placeholder={t("chat.input_placeholder")}

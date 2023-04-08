@@ -1,10 +1,11 @@
-import { useContext, useCallback, useRef, useMemo, useState } from "react";
-import { MidiContext } from "../components/context/MidiContext";
+import { useCallback, useContext, useMemo, useRef, useState } from "react";
+import type { Input } from "webmidi";
+
+import { colors } from "../../../common/colors";
+import { IInstrument, IPatch } from "../../../common/types";
 import { AudioContext } from "../components/context/AudioContext";
 import { GameContext } from "../components/context/GameContext";
-import type { Input } from "webmidi";
-import { IInstrument, IPatch } from "../../../common/types";
-import { colors } from "../../../common/colors";
+import { MidiContext } from "../components/context/MidiContext";
 
 export function useMidiBus() {
   const { midiBus$ } = useContext(MidiContext);
@@ -122,7 +123,7 @@ export function useChat() {
   };
 }
 
-export function usePatch(patchIdentifier: string | null): IPatch | null {
+export function usePatch(patchIdentifier: string): IPatch | null {
   const { patches } = useContext(AudioContext);
 
   const patch = patches.get(patchIdentifier);
@@ -151,15 +152,21 @@ export function usePlayers() {
   return players;
 }
 
+export function useTracks() {
+  const { tracks } = useContext(GameContext);
+
+  return tracks;
+}
+
 export function useColors() {
   const players = usePlayers();
   const me = useMe();
 
   const availableColors = useMemo(() => {
-    const allPlayersExceptMe = players.filter((player) => player.id !== me?.id);
+    const allPlayersExceptMe = players.filter(player => player.id !== me?.id);
 
-    return colors.filter((color) => {
-      return !allPlayersExceptMe.find((player) => player.color === color);
+    return colors.filter(color => {
+      return !allPlayersExceptMe.find(player => player.color === color);
     });
   }, [players]);
 
@@ -173,13 +180,13 @@ export function useIdentityModalControl() {
   const { isIdentityModalOpen, setState } = useContext(GameContext);
 
   const openIdentityModal = useCallback(() => {
-    setState((draft) => {
+    setState(draft => {
       draft.isIdentityModalOpen = true;
     });
   }, []);
 
   const closeIdentityModal = useCallback(() => {
-    setState((draft) => {
+    setState(draft => {
       draft.isIdentityModalOpen = false;
     });
   }, []);

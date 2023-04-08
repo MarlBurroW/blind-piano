@@ -1,6 +1,5 @@
+import { useLeader, useMe, usePlayers } from "../hooks/hooks";
 import { PlayerItem } from "./PlayerItem";
-
-import { useMe, useLeader, usePlayers } from "../hooks/hooks";
 
 export function PlayerList(): JSX.Element {
   const me = useMe();
@@ -9,7 +8,7 @@ export function PlayerList(): JSX.Element {
 
   return (
     <div>
-      {players.map((player) => {
+      {players.map(player => {
         return (
           <div className="mb-4" key={player.id}>
             <PlayerItem

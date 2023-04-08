@@ -1,7 +1,7 @@
-import { Panel } from "./Panel";
 import { useTranslation } from "react-i18next";
 
 import { PlayerList } from "../components/PlayerList";
+import { Panel } from "./Panel";
 
 export function LeftPanel() {
   const { t } = useTranslation();

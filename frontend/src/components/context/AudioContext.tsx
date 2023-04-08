@@ -1,19 +1,20 @@
+import EventEmitter from "eventemitter3";
 import React, {
-  useEffect,
-  useContext,
-  useRef,
   useCallback,
-  useState,
+  useContext,
+  useEffect,
   useMemo,
+  useRef,
+  useState,
 } from "react";
-import { IPlayerNote, IPatch } from "../../../../common/types";
-import { useImmer } from "use-immer";
 import { useTranslation } from "react-i18next";
+import { useImmer } from "use-immer";
+
+import { IPatch, IPlayerNote } from "../../../../common/types";
 import instrumentManager from "../../classes/InstrumentManager";
+import { Instruments } from "../Instruments";
 import { GameContext } from "./GameContext";
 import { MidiContext } from "./MidiContext";
-import EventEmitter from "eventemitter3";
-import { Instruments } from "../Instruments";
 
 interface IAudioContext {
   masterAudioContext: AudioContext | null;
@@ -123,7 +124,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 
   const setPlayerVolume = useCallback(
     (playerId: string, value: number) => {
-      setState((draft) => {
+      setState(draft => {
         draft.playersGainValues.set(playerId, value);
       });
     },
@@ -140,7 +141,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 
       // Set player volume if not set
       if (playersGainValues.get(playerId) === undefined) {
-        setState((draft) => {
+        setState(draft => {
           draft.playersGainValues.set(playerId, DEFAULT_PLAYER_VOLUME);
         });
       }
@@ -149,7 +150,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       if (state.playersBuses.get(playerId) === undefined) {
         const eventEmitter = new EventEmitter();
 
-        setState((draft) => {
+        setState(draft => {
           draft.playersBuses.set(playerId, eventEmitter);
         });
       }
@@ -159,7 +160,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         const patch = patches.get(patchIdentifier);
 
         if (patch) {
-          setState((draft) => {
+          setState(draft => {
             draft.playersPatches.set(playerId, patch);
           });
         }
@@ -170,7 +171,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         const patch = patches.get(patchIdentifier);
 
         if (patch) {
-          setState((draft) => {
+          setState(draft => {
             draft.playersPatches.set(playerId, patch);
           });
         }
@@ -182,7 +183,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 
         playerGainNode.connect(masterGainRef.current);
 
-        setState((draft) => {
+        setState(draft => {
           draft.playersGainNodes.set(playerId, playerGainNode);
         });
       }
@@ -191,9 +192,9 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     // Remove audio items fro players that are not in the game anymore
 
     for (const [playerId, playerGainNode] of state.playersGainNodes) {
-      if (!players.find((player) => player.id === playerId)) {
+      if (!players.find(player => player.id === playerId)) {
         playerGainNode.disconnect();
-        setState((draft) => {
+        setState(draft => {
           draft.playersGainNodes.delete(playerId);
           draft.playersGainValues.delete(playerId);
           draft.playersPatches.delete(playerId);

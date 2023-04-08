@@ -1,27 +1,33 @@
 import { Dialog } from "@headlessui/react";
-
+import { FormikProvider, useFormik } from "formik";
+import _ from "lodash";
+import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import TextField from "../form/fields/TextField";
-import { Button } from "../form/Button";
-
-import { Panel } from "../Panel";
-import { Track } from "../../../../backend/schemas/Track";
-import { useFormik, FormikProvider } from "formik";
 import * as Yup from "yup";
+
+import { Track } from "../../../../backend/schemas/Track";
+import { Panel } from "../Panel";
+import { Button } from "../form/Button";
 import { PatchField } from "../form/fields/PatchField";
 import { PlayerField } from "../form/fields/PlayerField";
-
+import TextField from "../form/fields/TextField";
 import { BaseModal } from "./BaseModal";
+
 interface Props {
   isOpen: boolean;
   onClose?: () => void;
   track: Track | null;
   onCreated?: (track: Track) => void;
 }
-import _ from "lodash";
 
 export function TrackModal({ isOpen, onClose, track, onCreated }: Props) {
   const { t } = useTranslation();
+
+  const close = useCallback(() => {
+    onClose?.();
+    trackForm.resetForm();
+  }, [onClose]);
+
   const trackForm = useFormik({
     initialValues: {},
     validationSchema: Yup.object({
@@ -31,17 +37,24 @@ export function TrackModal({ isOpen, onClose, track, onCreated }: Props) {
         .max(32, t("validation_rules.max_char", { max: 32 }))
         .trim(),
       patch: Yup.string().required(),
-      player: Yup.string().nullable(),
+      playerId: Yup.string().nullable(),
     }),
-    onSubmit: (track) => {
+    onSubmit: track => {
       onCreated?.(track as Track);
-      onClose?.();
+      close();
       trackForm.resetForm();
     },
   });
 
   return (
-    <BaseModal isOpen={isOpen} size={40} onClose={onClose}>
+    <BaseModal
+      isOpen={isOpen}
+      size={40}
+      onClose={() => {
+        onClose?.();
+        trackForm.resetForm();
+      }}
+    >
       <Panel style="primary" neon className="text-left" padding={10}>
         <FormikProvider value={trackForm}>
           <form onSubmit={trackForm.handleSubmit}>
@@ -52,19 +65,23 @@ export function TrackModal({ isOpen, onClose, track, onCreated }: Props) {
                   : t("track_modal.create_track")}
               </div>
             </Dialog.Title>
+            <div className="mb-10">
+              <TextField
+                labelClassName={"text-center"}
+                placeholder={t("track_modal.track_name")}
+                name="name"
+                label={t("track_modal.track_name")}
+              ></TextField>
+              <PatchField
+                label={t("generic.instrument")}
+                name="patch"
+              ></PatchField>
 
-            <TextField
-              labelClassName={"text-center"}
-              placeholder={t("track_modal.track_name")}
-              name="name"
-              label={t("track_modal.track_name")}
-            ></TextField>
-            <PatchField
-              label={t("generic.instrument")}
-              name="patch"
-            ></PatchField>
-
-            <PlayerField name="player"></PlayerField>
+              <PlayerField
+                label={t("track_modal.assigned_player")}
+                name="playerId"
+              ></PlayerField>
+            </div>
             <Button fullWidth type="submit" disabled={!trackForm.isValid}>
               {track
                 ? t("track_modal.edit_track")

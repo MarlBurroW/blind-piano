@@ -1,7 +1,7 @@
-import { Link } from "react-router-dom";
-import { RoomAvailable } from "colyseus.js";
 import { ArrowRightIcon } from "@heroicons/react/20/solid";
 import { UsersIcon } from "@heroicons/react/24/outline";
+import { RoomAvailable } from "colyseus.js";
+import { Link } from "react-router-dom";
 
 interface Props {
   room: RoomAvailable;

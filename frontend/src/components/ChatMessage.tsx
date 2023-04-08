@@ -1,14 +1,12 @@
-import { Message } from "../../../backend/schemas/Message";
-import { Player } from "../../../backend/schemas/Player";
-
+import { IMessage, IPlayer } from "../../../common/types";
 import { Avatar } from "./Avatar";
 
 export function ChatMessage({
   message,
   me,
 }: {
-  message: Message;
-  me?: Player | null;
+  message: IMessage;
+  me?: IPlayer | null;
 }) {
   const isMe = me?.id === message.player?.id;
 

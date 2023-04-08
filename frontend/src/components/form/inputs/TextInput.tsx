@@ -38,7 +38,7 @@ export const TextInput = ({
       disabled={disabled}
       className={`${className} ${
         styles[style]
-      } w-full bg-shade-200 mb-2 py-4 px-5 outline-none focus:outline-none focus:ring rounded-3xl ${
+      } w-full bg-shade-200 py-4 px-5 outline-none focus:outline-none focus:ring rounded-3xl ${
         error ? "ring-red-400 outline-red-400" : ""
       }`}
     />

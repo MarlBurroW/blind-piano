@@ -1,18 +1,18 @@
 import { Dialog, Transition } from "@headlessui/react";
+import _ from "lodash";
 import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Panel } from "../Panel";
-
-import { PlayerMixer } from "../PlayerMixer";
-import { MasterMixer } from "../MasterMixer";
 import { usePlayers } from "../../hooks/hooks";
+import { MasterMixer } from "../MasterMixer";
+import { Panel } from "../Panel";
+import { PlayerMixer } from "../PlayerMixer";
 import { BaseModal } from "./BaseModal";
+
 interface Props {
   isOpen: boolean;
   onClose?: () => void;
 }
-import _ from "lodash";
 
 export function MixerModal({ isOpen, onClose }: Props) {
   const { t } = useTranslation();
@@ -28,7 +28,7 @@ export function MixerModal({ isOpen, onClose }: Props) {
 
         <MasterMixer />
 
-        {players.map((player) => {
+        {players.map(player => {
           return <PlayerMixer player={player} key={player.id}></PlayerMixer>;
         })}
       </Panel>

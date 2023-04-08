@@ -1,6 +1,7 @@
-import { useCallback, useState, useMemo, memo, useEffect } from "react";
-import type { Note } from "webmidi";
 import _ from "lodash";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import type { Note } from "webmidi";
+
 interface Props {
   note: Note;
   state: { active: { [key: string]: string } };

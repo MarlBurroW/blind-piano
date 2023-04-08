@@ -1,7 +1,8 @@
 import { useField } from "formik";
+
+import { FieldBase } from "../FieldBase";
 import SelectInput from "../inputs/SelectInput";
 import { Option } from "../inputs/SelectInput";
-import { FieldBase } from "../FieldBase";
 
 interface Props<ValueType> {
   name: string;

@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { ReactSVG } from "react-svg";
+
 import symbolDefs from "../icons/symbol-defs.svg";
 
 export function SVGSymbols() {

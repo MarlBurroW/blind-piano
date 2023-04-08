@@ -1,24 +1,24 @@
-import { PlayerVolumeSlider } from "./PlayerVolumeSlider";
-import { Avatar } from "./Avatar";
-import { RxExit } from "react-icons/rx";
-import { HiOutlinePencil } from "react-icons/hi";
-import { Player } from "../../../backend/schemas/Player";
-import { useTranslation } from "react-i18next";
-import { Icon } from "./Icon";
-
-import {
-  usePlayerPatch,
-  useMe,
-  useLeader,
-  useIdentityModalControl,
-  useGameActions,
-} from "../hooks/hooks";
-import { useMemo } from "react";
-import { TbCrown } from "react-icons/tb";
 import { SpeakerWaveIcon, SpeakerXMarkIcon } from "@heroicons/react/24/outline";
+import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { HiOutlinePencil } from "react-icons/hi";
+import { RxExit } from "react-icons/rx";
+import { TbCrown } from "react-icons/tb";
+
+import { IPlayer } from "../../../common/types";
+import {
+  useGameActions,
+  useIdentityModalControl,
+  useLeader,
+  useMe,
+  usePlayerPatch,
+} from "../hooks/hooks";
+import { Avatar } from "./Avatar";
+import { Icon } from "./Icon";
+import { PlayerVolumeSlider } from "./PlayerVolumeSlider";
 
 interface Props {
-  player: Player;
+  player: IPlayer;
 }
 
 export function PlayerProfileCard({ player }: Props) {

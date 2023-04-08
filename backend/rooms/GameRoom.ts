@@ -10,6 +10,14 @@ import { v4 as uuidv4 } from "uuid";
 import { colors } from "../../common/colors";
 import Message from "../schemas/Message";
 
+import { onChatMessageHandler } from "../handlers/onChatMessageHandler";
+import { onUpdateIdentityHandler } from "../handlers/onUpdateIdentityHandler";
+import { onAddTrackHandler } from "../handlers/onAddTrackHandler";
+import { onSetPatchHandler } from "../handlers/onSetPatchHandler";
+import { onNoteOnHandler } from "../handlers/onNoteOnHandler";
+import { onNoteOffHandler } from "../handlers/onNoteOffHandler";
+import { onKickPlayerHandler } from "../handlers/onKickPlayerHandler";
+import { onPromoteGameLeaderHandler } from "../handlers/onPromoteGameLeaderHandler";
 export class GameRoom extends Room<Game> {
   maxClients = 8;
   maxMessages = 20;
@@ -25,11 +33,9 @@ export class GameRoom extends Room<Game> {
         .matches(/^(public|private)$/),
     });
 
-    const validatedOptions = await optionSchema
-      .validate(options)
-      .catch((err) => {
-        throw new ServerError(422, err.message);
-      });
+    const validatedOptions = await optionSchema.validate(options).catch(err => {
+      throw new ServerError(422, err.message);
+    });
 
     this.setMetadata({ name: validatedOptions.name });
     this.setMetadata({ visibility: validatedOptions.visibility });
@@ -44,200 +50,18 @@ export class GameRoom extends Room<Game> {
       this.state.name = validatedOptions.name;
     }
 
-    this.onMessage("new-track", async (client, track) => {
-      const player = this.state.players.get(client.sessionId);
+    this.onMessage("add-track", onAddTrackHandler.bind(this));
+    this.onMessage("chat-message", onChatMessageHandler.bind(this));
+    this.onMessage("update-identity", onUpdateIdentityHandler.bind(this));
+    this.onMessage("set-patch", onSetPatchHandler.bind(this));
+    this.onMessage("noteon", onNoteOnHandler.bind(this));
+    this.onMessage("noteoff", onNoteOffHandler.bind(this));
+    this.onMessage("kick-player", onKickPlayerHandler.bind(this));
 
-      const trackSchema = object({
-        name: string().required().min(1).max(32).trim(),
-        patch: string().required().min(1).max(32).trim(),
-      });
-
-      try {
-        await trackSchema.validate(track);
-      } catch (err) {
-        return;
-      }
-
-      if (!player) {
-        return;
-      }
-
-      const newTrack = new Track();
-
-      newTrack.name = track.name;
-      newTrack.patch = track.patch;
-      newTrack.id = uuidv4();
-
-      this.state.tracks.push(newTrack);
-
-      this.log(kleur.bold().magenta(`Track: ${newTrack.name}`), {
-        player,
-      });
-    });
-
-    this.onMessage("chat-message", async (client, messageContent) => {
-      const player = this.state.players.get(client.sessionId);
-
-      const messageSchema = string().required().min(1).max(1024).trim();
-
-      try {
-        await messageSchema.validate(messageContent);
-      } catch (err) {
-        return;
-      }
-
-      if (!player) {
-        return;
-      }
-
-      const message = new Message();
-
-      message.player = player;
-      message.message = messageContent;
-      message.id = uuidv4();
-
-      this.state.messages.push(message);
-
-      this.broadcast("chat-message", message, { except: client });
-
-      if (this.state.messages.length > this.maxMessages) {
-        this.state.messages.shift();
-      }
-
-      this.log(kleur.bold().magenta(`Message: ${message.message}`), {
-        player,
-      });
-    });
-
-    this.onMessage("update-identity", async (client, identity) => {
-      const player = this.state.players.get(client.sessionId);
-
-      const availableColors = colors.filter((color) => {
-        return !Array.from(this.state.players.values())
-          .filter((p) => p.id !== player?.id)
-          .some((player) => {
-            return player.color === color;
-          });
-      });
-
-      const identitySchema = object({
-        nickname: string().required().min(3).max(32).trim(),
-        avatarSeed: string().required().uuid(),
-        color: string().required().oneOf(availableColors),
-      });
-
-      try {
-        await identitySchema.validate(identity);
-      } catch (err) {
-        return;
-      }
-
-      // If the player doesn't exist, create it with the provided identity
-      if (!player) {
-        const newPlayer = this.createPlayerFromIdentity(identity, client);
-        this.broadcastPatch();
-        this.broadcast("player-joined", newPlayer, { except: client });
-
-        this.log(kleur.green(`Player ${newPlayer.nickname} joined the game`), {
-          player: newPlayer,
-        });
-
-        // If the player exists, update his identity
-      } else {
-        player.assign({
-          nickname: identity.nickname,
-          avatarSeed: identity.avatarSeed,
-          color: identity.color,
-        });
-
-        this.log(
-          kleur.green(`Player ${player.nickname} updated his identity`),
-          {
-            player,
-          }
-        );
-      }
-
-      this.electNewLeaderIfNecessary();
-    });
-
-    this.onMessage("noteon", async (client, note) => {
-      const player = this.state.players.get(client.sessionId);
-
-      if (player) {
-        note.playerId = player.id;
-        note.color = player.color;
-        this.broadcast("noteon", note, { except: client });
-      }
-
-      this.log(kleur.bold().cyan(`Note On: ${note.number}`), { player });
-    });
-
-    this.onMessage("set-patch", async (client, instrumentIdentifier) => {
-      const player = this.state.players.get(client.sessionId);
-
-      if (player) {
-        player.patch = instrumentIdentifier;
-
-        this.log(kleur.bold().cyan(`Patch: ${player.patch}`), {
-          player,
-        });
-      }
-    });
-
-    this.onMessage("noteoff", async (client, note) => {
-      const player = this.state.players.get(client.sessionId);
-
-      if (player) {
-        note.playerId = player.id;
-        note.color = player.color;
-        this.broadcast("noteoff", note, { except: client });
-      }
-
-      this.log(kleur.bold().cyan(`Note Off: ${note.number}`), { player });
-    });
-
-    this.onMessage("kick-player", (client, playerId) => {
-      const player = this.state.players.get(playerId);
-      const author = this.state.players.get(client.sessionId);
-      const leader = this.getLeader();
-
-      if (player && leader && author && leader.id == author.id) {
-        this.state.players.delete(playerId);
-        this.broadcast("player-kicked", player);
-
-        // Get the kicked player client and close it
-        const kickedPlayerClient = this.clients.find(
-          (c) => c.sessionId == playerId
-        );
-        if (kickedPlayerClient) {
-          kickedPlayerClient.leave();
-        }
-
-        this.log(
-          kleur.red(`Player ${player.nickname} kicked by ${author.nickname}`),
-          { player: author }
-        );
-      }
-    });
-
-    this.onMessage("promote-game-leader", (client, playerId) => {
-      const player = this.state.players.get(playerId);
-      const author = this.state.players.get(client.sessionId);
-      const leader = this.getLeader();
-
-      if (player && leader && author && leader.id == author.id) {
-        this.state.leaderId = playerId;
-        this.broadcast("new-leader", player);
-
-        this.log(
-          kleur.yellow(
-            `Player ${player.nickname} promoted to leader by ${author.nickname}`
-          ),
-          { player: author }
-        );
-      }
-    });
+    this.onMessage(
+      "promote-game-leader",
+      onPromoteGameLeaderHandler.bind(this)
+    );
   }
 
   hasLeader() {
@@ -331,10 +155,10 @@ export class GameRoom extends Room<Game> {
     }
 
     const usedColors = Array.from(this.state.players.values()).map(
-      (p) => p.color
+      p => p.color
     );
 
-    const availableColors = colors.filter((c) => !usedColors.includes(c));
+    const availableColors = colors.filter(c => !usedColors.includes(c));
 
     if (availableColors.length > 0) {
       return availableColors[0];

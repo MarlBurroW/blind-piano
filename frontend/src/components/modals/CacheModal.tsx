@@ -1,30 +1,30 @@
 import { Dialog, Transition } from "@headlessui/react";
+import { AnimatePresence, motion } from "framer-motion";
+import _ from "lodash";
+import prettyBytes from "pretty-bytes";
 import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
-
-import { Panel } from "../Panel";
-import { Button } from "../form/Button";
-import { usePlayers } from "../../hooks/hooks";
 import { AiOutlineCloudDownload } from "react-icons/ai";
-import { ICachableResource } from "../../../../common/types";
-import { ProgressBar } from "../ProgressBar";
-
-import { State as ServiceWorkerState } from "../context/ServiceWorkerContext";
+import { AiOutlineWarning } from "react-icons/ai";
 import { BsCloudCheck } from "react-icons/bs";
 import { IoMdClose } from "react-icons/io";
 import { useLocalStorage } from "usehooks-ts";
-import { AnimatePresence, motion } from "framer-motion";
+
+import { ICachableResource } from "../../../../common/types";
+import { usePlayers } from "../../hooks/hooks";
+import { Panel } from "../Panel";
+import { ProgressBar } from "../ProgressBar";
+import { State as ServiceWorkerState } from "../context/ServiceWorkerContext";
+import { Button } from "../form/Button";
 import { CheckBoxInput } from "../form/inputs/CheckBoxInput";
-import { AiOutlineWarning } from "react-icons/ai";
-import prettyBytes from "pretty-bytes";
 import { BaseModal } from "./BaseModal";
+
 interface Props {
   isOpen: boolean;
   onClose?: () => void;
   onStartCaching: () => void;
   cachingState: ServiceWorkerState;
 }
-import _ from "lodash";
 
 export function CacheModal({
   isOpen,

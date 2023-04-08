@@ -1,18 +1,16 @@
-import Player from "../../../backend/schemas/Player";
-
-import { Avatar } from "./Avatar";
-
-import _ from "lodash";
+import { SpeakerWaveIcon, SpeakerXMarkIcon } from "@heroicons/react/24/outline";
 import chroma from "chroma-js";
+import _ from "lodash";
+import { useTranslation } from "react-i18next";
+
+import { IPlayer } from "../../../common/types";
+import { usePlayerMixerControl, usePlayerPatch } from "../hooks/hooks";
+import { Avatar } from "./Avatar";
+import { Icon } from "./Icon";
 import { PlayerVolumeSlider } from "./PlayerVolumeSlider";
 
-import { SpeakerWaveIcon, SpeakerXMarkIcon } from "@heroicons/react/24/outline";
-import { useTranslation } from "react-i18next";
-import { usePlayerPatch, usePlayerMixerControl } from "../hooks/hooks";
-import { Icon } from "./Icon";
-
 interface Props {
-  player: Player;
+  player: IPlayer;
 }
 
 export function PlayerMixer({ player }: Props) {

@@ -1,22 +1,19 @@
 import { Dialog, Transition } from "@headlessui/react";
-import { Fragment, useMemo, useState, useCallback, useRef } from "react";
-import { useTranslation } from "react-i18next";
-
-import { Panel } from "../Panel";
-
-import TextInput from "../form/inputs/TextInput";
 import { debounce } from "lodash";
-import { BaseModal } from "./BaseModal";
-import { useIntrumentItems } from "../../hooks/hooks";
-
+import { Fragment, useCallback, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { AiFillStar, AiOutlineStar } from "react-icons/ai";
-
-import { IInstrumentCategory, IPatch } from "../../../../common/types";
+import { Virtuoso } from "react-virtuoso";
 import { useLocalStorage } from "usehooks-ts";
-import { Icon } from "../Icon";
 
 import { instrumentCategories } from "../../../../common/instrument-categories";
-import { Virtuoso } from "react-virtuoso";
+import { IInstrumentCategory, IPatch } from "../../../../common/types";
+import { useIntrumentItems } from "../../hooks/hooks";
+import { Icon } from "../Icon";
+import { Panel } from "../Panel";
+import TextInput from "../form/inputs/TextInput";
+import { BaseModal } from "./BaseModal";
+
 interface Props {
   isOpen: boolean;
   onClose?: () => void;
@@ -91,7 +88,7 @@ export function SelectInstrumentModal({
     let results = Array.from(patches.values());
 
     if (showBookmarks) {
-      results = results.filter((patch) => {
+      results = results.filter(patch => {
         return (
           bookmarkedPatches[patch.identifier] &&
           patch.name.toLowerCase().includes(search.toLowerCase())
@@ -100,13 +97,13 @@ export function SelectInstrumentModal({
     }
 
     if (search) {
-      results = results.filter((patch) => {
+      results = results.filter(patch => {
         return patch.name.toLowerCase().includes(search.toLowerCase());
       });
     }
 
     if (selectedCategory) {
-      results = results.filter((patch) => {
+      results = results.filter(patch => {
         return patch.category.identifier === selectedCategory.identifier;
       });
     }
@@ -205,7 +202,7 @@ export function SelectInstrumentModal({
                   </div>
 
                   <StarIcon
-                    onClick={(e) => {
+                    onClick={e => {
                       e.stopPropagation();
                       handleBookmarkClick(patch);
                     }}

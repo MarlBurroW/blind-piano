@@ -1,19 +1,20 @@
-import { KeyboardKey } from "./KeyboardKey";
+import _ from "lodash";
+import {
+  forwardRef,
+  memo,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { useImmer } from "use-immer";
 import type { Note } from "webmidi";
 import { Utilities } from "webmidi";
-import {
-  useMemo,
-  useState,
-  forwardRef,
-  useEffect,
-  useRef,
-  useImperativeHandle,
-  useCallback,
-  memo,
-} from "react";
+
 import { IPlayerNote } from "../../../common/types";
-import { useImmer } from "use-immer";
-import _ from "lodash";
+import { KeyboardKey } from "./KeyboardKey";
 
 const KEY_START = 21;
 const KEY_END = 108;
@@ -77,7 +78,7 @@ export const KeyboardKeys = forwardRef<KeyboardKeysRef | null, Props>(
 
     const resetAllPlayerKeys = useMemo(() => {
       return (playerId: string) => {
-        setState((draft) => {
+        setState(draft => {
           draft.updateCount += 1;
 
           for (let i = KEY_START; i <= KEY_END; i++) {
@@ -92,7 +93,7 @@ export const KeyboardKeys = forwardRef<KeyboardKeysRef | null, Props>(
       return (note: IPlayerNote, state: boolean) => {
         const { playerId, color } = note;
 
-        setState((draft) => {
+        setState(draft => {
           if (!draft.keys[note.number]) return;
 
           draft.updateCount += 1;

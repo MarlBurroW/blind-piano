@@ -1,7 +1,9 @@
-import { useEffect, useState, useCallback } from "react";
-import { SelectPlayerModal } from "../../modals/SelectPlayerModal";
-import { usePlayers } from "../../../hooks/hooks";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+
+import { usePlayers } from "../../../hooks/hooks";
+import { Avatar } from "../../Avatar";
+import { SelectPlayerModal } from "../../modals/SelectPlayerModal";
 
 interface Props {
   value: string | null;
@@ -12,7 +14,7 @@ interface Props {
 export const PlayerInput = (props: Props) => {
   const players = usePlayers();
 
-  const player = players.find((player) => player.id === props.value);
+  const player = players.find(player => player.id === props.value);
 
   const { t } = useTranslation();
 
@@ -39,7 +41,7 @@ export const PlayerInput = (props: Props) => {
   return (
     <>
       <SelectPlayerModal
-        onSelected={(player) => props.onChange(player.id)}
+        onSelected={player => props.onChange(player.id)}
         defaultPlayer={player || null}
         isOpen={selectPlayerModal}
         onClose={() => setSelectPlayerModal(false)}
@@ -49,9 +51,23 @@ export const PlayerInput = (props: Props) => {
         tabIndex={0}
         onKeyDown={handleKeyDown}
         onClick={() => setSelectPlayerModal(true)}
+        style={{
+          borderColor: player?.color,
+          borderLeftWidth: player ? 8 : 0,
+        }}
         className={`w-full cursor-pointer flex items-center bg-shade-200 mb-2 py-4 px-5 outline-none ring-primary-300 focus:outline-none focus:ring rounded-3xl`}
       >
-        {player ? player.nickname : t("inputs.player_input_placeholder")}
+        {player && (
+          <Avatar
+            background={true}
+            circle
+            size={30}
+            seed={player.avatarSeed}
+            className="mr-4"
+          ></Avatar>
+        )}
+
+        {player ? player.nickname : t("inputs.player_input.placeholder")}
       </div>
     </>
   );

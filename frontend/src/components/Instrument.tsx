@@ -1,7 +1,7 @@
-import { IPatch, IInstrument, IPlayerNote } from "../../../common/types";
-
-import { useEffect, useRef, useState } from "react";
 import EventEmitter from "eventemitter3";
+import { useEffect, useRef, useState } from "react";
+
+import { IInstrument, IPatch, IPlayerNote } from "../../../common/types";
 import instrumentManager from "../classes/InstrumentManager";
 
 interface Props {

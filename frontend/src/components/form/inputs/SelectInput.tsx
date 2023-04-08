@@ -1,6 +1,6 @@
-import React, { useState, Fragment, useEffect } from "react";
 import { Listbox, Transition } from "@headlessui/react";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
+import React, { Fragment, useEffect, useState } from "react";
 
 export interface Option<ValueType> {
   value: ValueType;
@@ -29,7 +29,7 @@ export const SelectInput = ({
   const [selectedOption, setSelectedOption] = useState<Option<any>>(options[0]);
 
   useEffect(() => {
-    const defaultOption = options.find((option) => option.value === value);
+    const defaultOption = options.find(option => option.value === value);
 
     if (defaultOption) {
       setSelectedOption(defaultOption);
@@ -49,9 +49,9 @@ export const SelectInput = ({
 
   return (
     <Listbox
-      value={options.find((option) => option.value === value)}
+      value={options.find(option => option.value === value)}
       disabled={disabled}
-      onChange={(option) => {
+      onChange={option => {
         setSelectedOption(option);
         onChange && onChange(option.value);
       }}

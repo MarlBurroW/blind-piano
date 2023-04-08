@@ -89,6 +89,7 @@ export default {
       create_track: "Créer une piste",
       edit_track: "Modifier la piste",
       track_name: "Nom de la piste",
+      assigned_player: "Joueur assigné à la piste",
     },
     generic: {
       nickname: "Pseudo",

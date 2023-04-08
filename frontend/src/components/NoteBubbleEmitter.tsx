@@ -1,14 +1,12 @@
-import Player from "../../../backend/schemas/Player";
-import { useCallback, useEffect, useMemo, memo } from "react";
-import { useMidiBus } from "../hooks/hooks";
-
+import { useCallback, useEffect } from "react";
 import { useImmer } from "use-immer";
-import { IPlayerNote } from "../../../common/types";
-
 import { v4 as uuidv4 } from "uuid";
 
+import { IPlayer, IPlayerNote } from "../../../common/types";
+import { useMidiBus } from "../hooks/hooks";
+
 interface Props {
-  player: Player;
+  player: IPlayer;
 }
 
 interface State {
@@ -33,7 +31,7 @@ export function NoteBubbleEmitter({ player }: Props) {
 
       const id = uuidv4();
 
-      setState((draft) => {
+      setState(draft => {
         draft.latestPlayedNotes[id] = {
           top: Math.random() * 50,
           note,
@@ -41,7 +39,7 @@ export function NoteBubbleEmitter({ player }: Props) {
       });
 
       const timeout = setTimeout(() => {
-        setState((draft) => {
+        setState(draft => {
           delete draft.latestPlayedNotes[id];
         });
 
@@ -61,7 +59,7 @@ export function NoteBubbleEmitter({ player }: Props) {
 
   return (
     <div className="note-bubbles absolute w-full h-full left-0 top-0 bottom-0 pointer-events-none select-none">
-      {Object.keys(state.latestPlayedNotes).map((key) => {
+      {Object.keys(state.latestPlayedNotes).map(key => {
         return (
           <div
             key={key}

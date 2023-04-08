@@ -1,7 +1,7 @@
-import { useState, useCallback, useEffect, useRef, useMemo } from "react";
-import Draggable, { DraggableEvent, DraggableData } from "react-draggable";
-
 import chroma from "chroma-js";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Draggable, { DraggableData, DraggableEvent } from "react-draggable";
+
 interface Props {
   value: number;
   onChange: (value: number) => void;

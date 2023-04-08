@@ -1,7 +1,6 @@
 import { useField } from "formik";
 
 import { FieldBase } from "../FieldBase";
-
 import { PatchInput } from "../inputs/PatchInput";
 
 interface Props {

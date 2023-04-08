@@ -1,22 +1,17 @@
-import { Avatar } from "./Avatar";
-import { Player } from "../../../backend/schemas/Player";
+import { AnimatePresence, motion, useAnimationControls } from "framer-motion";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { IPlayerNote } from "../../../common/types";
-
-import { useEffect, useState, useRef, useCallback } from "react";
-
 import { TbCrown } from "react-icons/tb";
-
-import { NoteBubbleEmitter } from "./NoteBubbleEmitter";
-import { useMidiBus } from "../hooks/hooks";
-
-import { useAnimationControls, motion, AnimatePresence } from "framer-motion";
-import { PlayerProfileCard } from "./PlayerProfileCard";
-
 import { useOnClickOutside } from "usehooks-ts";
 
+import { IPlayer, IPlayerNote } from "../../../common/types";
+import { useMidiBus } from "../hooks/hooks";
+import { Avatar } from "./Avatar";
+import { NoteBubbleEmitter } from "./NoteBubbleEmitter";
+import { PlayerProfileCard } from "./PlayerProfileCard";
+
 interface Props {
-  player: Player;
+  player: IPlayer;
   isMe: boolean;
   isLeader: boolean;
 }

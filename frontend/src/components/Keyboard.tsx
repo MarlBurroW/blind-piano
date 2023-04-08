@@ -1,34 +1,29 @@
-import { Panel } from "../components/Panel";
-
-import Draggable, { DraggableEvent, DraggableData } from "react-draggable";
 import {
-  ChevronUpDownIcon,
   AdjustmentsHorizontalIcon,
+  ChevronUpDownIcon,
 } from "@heroicons/react/24/outline";
-
-import { useEffect, useMemo, useRef, useCallback, useState } from "react";
-import SelectInput from "../components/form/inputs/SelectInput";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Draggable, { DraggableData, DraggableEvent } from "react-draggable";
 import { useTranslation } from "react-i18next";
 import type { Input } from "webmidi";
-
 import type { Note } from "webmidi";
-import { KeyboardKeys, KeyboardKeysRef } from "./KeyboardKeys";
-import { IPlayerNote, ITransportNote } from "../../../common/types";
-
-import { SelectInstrumentModal } from "./modals/SelectInstrumentModal";
-import { MixerModal } from "./modals/MixerModal";
-import { Player } from "../../../backend/schemas/Player";
 import { NoteMessageEvent } from "webmidi";
-import { Icon } from "../components/Icon";
 
+import { IPlayer, IPlayerNote, ITransportNote } from "../../../common/types";
+import { Icon } from "../components/Icon";
+import { Panel } from "../components/Panel";
+import SelectInput from "../components/form/inputs/SelectInput";
 import {
+  useGameRoom,
+  useMe,
   useMidiBus,
   useMidiDevices,
   usePlayerPatch,
-  useMe,
-  useGameRoom,
   useSelectPatch,
 } from "../hooks/hooks";
+import { KeyboardKeys, KeyboardKeysRef } from "./KeyboardKeys";
+import { MixerModal } from "./modals/MixerModal";
+import { SelectInstrumentModal } from "./modals/SelectInstrumentModal";
 
 function transportNoteFromMidiNote(note: Note): ITransportNote {
   return {
@@ -38,7 +33,7 @@ function transportNoteFromMidiNote(note: Note): ITransportNote {
   };
 }
 
-function playerNoteFromMidiNote(note: Note, player: Player): IPlayerNote {
+function playerNoteFromMidiNote(note: Note, player: IPlayer): IPlayerNote {
   return {
     number: note.number,
     name: note.identifier,
@@ -69,7 +64,7 @@ export function Keyboard() {
   const deviceOptions: Array<{ value: Input | null; label: string }> =
     useMemo(() => {
       const result: Array<{ value: Input | null; label: string }> =
-        midiDevices.map((d) => {
+        midiDevices.map(d => {
           return { value: d, label: d.name };
         });
 
@@ -150,7 +145,7 @@ export function Keyboard() {
   }
 
   useEffect(() => {
-    const unbind = gameRoom?.onMessage("player-left", (player: Player) => {
+    const unbind = gameRoom?.onMessage("player-left", (player: IPlayer) => {
       keyboardKeysRef.current?.resetAllPlayerKeys(player.id);
       previewKeyboardKeysRef.current?.resetAllPlayerKeys(player.id);
     });
@@ -238,7 +233,7 @@ export function Keyboard() {
       }
     });
 
-    selectedMidiDevice?.addListener("noteoff", (e) => {
+    selectedMidiDevice?.addListener("noteoff", e => {
       gameRoom?.send("noteoff", transportNoteFromMidiNote(e.note));
 
       if (me) {

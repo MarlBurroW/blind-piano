@@ -1,8 +1,9 @@
-import { useEffect, useState, useCallback } from "react";
-import { SelectInstrumentModal } from "../../modals/SelectInstrumentModal";
+import { useCallback, useEffect, useState } from "react";
+
 import { IPatch } from "../../../../../common/types";
 import { usePatch } from "../../../hooks/hooks";
 import { Icon } from "../../Icon";
+import { SelectInstrumentModal } from "../../modals/SelectInstrumentModal";
 
 interface Props {
   value: string;
@@ -35,7 +36,7 @@ export const PatchInput = (props: Props) => {
   return (
     <>
       <SelectInstrumentModal
-        onSelected={(patch) => props.onChange(patch.identifier)}
+        onSelected={patch => props.onChange(patch.identifier)}
         defaultPatch={patch}
         isOpen={selectInstrumentModalOpen}
         onClose={() => setSelectIntrumentModalOpen(false)}

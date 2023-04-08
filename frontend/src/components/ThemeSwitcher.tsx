@@ -1,13 +1,14 @@
-import { useTranslation } from "react-i18next";
-import React, { Fragment } from "react";
 import { Listbox, Transition } from "@headlessui/react";
 import { MoonIcon, SunIcon } from "@heroicons/react/20/solid";
-import { useAppStore } from "../stores/app";
+import React, { Fragment } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocalStorage } from "usehooks-ts";
+
+import { useAppStore } from "../stores/app";
 
 export function ThemeSwitcher({ className }: { className?: string }) {
   const { t } = useTranslation();
-  const { theme, storeTheme } = useAppStore((state) => state);
+  const { theme, storeTheme } = useAppStore(state => state);
 
   const [storedTheme, setStoredTheme] = useLocalStorage<string>(
     "theme",
@@ -31,13 +32,13 @@ export function ThemeSwitcher({ className }: { className?: string }) {
     },
   ];
 
-  const selectedOption = themeOptions.find((option) => option.value === theme);
+  const selectedOption = themeOptions.find(option => option.value === theme);
 
   return (
     <div className={className}>
       <Listbox
         value={selectedOption?.value}
-        onChange={(theme) => {
+        onChange={theme => {
           storeTheme(theme);
           setStoredTheme(theme);
         }}
@@ -55,7 +56,7 @@ export function ThemeSwitcher({ className }: { className?: string }) {
             leaveTo="opacity-0"
           >
             <Listbox.Options className="absolute bg-base-300 right-0 z-10 mt-3 rounded-md shadow-lg bg-base-300 w-3xl">
-              {themeOptions.map((option) => (
+              {themeOptions.map(option => (
                 <Listbox.Option
                   className="flex px-4 py-2 cursor-pointer  hover:bg-base-100"
                   key={option.value}

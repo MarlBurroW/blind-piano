@@ -15,12 +15,27 @@ export interface IMessage {
   id: string;
 }
 
+export interface IPlayer {
+  id: string;
+  nickname: string;
+  avatarSeed: string;
+  color: string;
+  patch: string;
+}
+
 export interface IPlayerNote {
   number: number;
   name: string;
   velocity: number;
   playerId: string;
   color: string;
+}
+
+export interface ITrack {
+  id: string;
+  name: string;
+  patch: string;
+  playerId: string | null;
 }
 
 export interface ITransportNote {

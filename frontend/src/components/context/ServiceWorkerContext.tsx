@@ -1,12 +1,14 @@
-import React, { useEffect, useCallback, useMemo, useRef } from "react";
+import _ from "lodash";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { toast } from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { useImmer } from "use-immer";
-import _ from "lodash";
+import { useLocalStorage } from "usehooks-ts";
+
+import { ICachableResource } from "../../../../common/types";
 import instrumentManager from "../../classes/InstrumentManager";
 import { CacheModal } from "../modals/CacheModal";
-import { ICachableResource } from "../../../../common/types";
-import { useLocalStorage } from "usehooks-ts";
+
 interface IServiceWorkerContext {
   serviceWorker: ServiceWorker | null;
   openCacheModal: () => void;
@@ -90,7 +92,7 @@ export function ServiceWorkerProvider({
   const openCacheModal = useCallback(() => {
     if (state.cacheStatus) {
       if (state.cacheStatus.notCached > 0 && !askDisabled) {
-        setState((draft) => {
+        setState(draft => {
           draft.isCacheModalOpen = true;
         });
       }
@@ -98,7 +100,7 @@ export function ServiceWorkerProvider({
   }, [state.cacheStatus, askDisabled, setState]);
 
   function checkCachedResources() {
-    setState((draft) => {
+    setState(draft => {
       draft.checking = true;
     });
 
@@ -110,7 +112,7 @@ export function ServiceWorkerProvider({
 
       function onResult(event: any) {
         if (event.data.type === "CHECK_CACHED_RESOURCES_RESULT") {
-          setState((draft) => {
+          setState(draft => {
             draft.cacheStatus = event.data.payload;
             draft.checking = false;
           });
@@ -141,13 +143,13 @@ export function ServiceWorkerProvider({
 
       function onMessage(event: any) {
         if (event.data.type === "CACHE_STARTED") {
-          setState((draft) => {
+          setState(draft => {
             draft.running = true;
             draft.progress = event.data.payload.progress;
             draft.total = event.data.payload.total;
           });
         } else if (event.data.type === "CACHE_PROGRESS") {
-          setState((draft) => {
+          setState(draft => {
             draft.progress = event.data.payload.progress;
             draft.latestResource = event.data.payload.latestResource;
             draft.nextResource = event.data.payload.nextResource;
@@ -157,7 +159,7 @@ export function ServiceWorkerProvider({
             draft.size = event.data.payload.size;
           });
         } else if (event.data.type === "CACHE_COMPLETE") {
-          setState((draft) => {
+          setState(draft => {
             draft.running = false;
             draft.completed = true;
             draft.progress = event.data.payload.progress;
@@ -176,14 +178,14 @@ export function ServiceWorkerProvider({
 
           checkCachedResources();
         } else if (event.data.type === "CACHE_ERROR") {
-          setState((draft) => {
+          setState(draft => {
             draft.errors.push({
               resource: event.data.payload.resource,
               error: event.data.payload.error,
             });
           });
         } else if (event.data.type === "CHECK_CACHED_RESOURCES_RESULT") {
-          setState((draft) => {
+          setState(draft => {
             draft.cacheStatus = event.data.payload;
           });
         } else if (event.data.type === "SERVICE_WORKER_ACTIVATED") {
@@ -207,7 +209,7 @@ export function ServiceWorkerProvider({
       <CacheModal
         onStartCaching={startCaching}
         onClose={() =>
-          setState((draft) => {
+          setState(draft => {
             draft.isCacheModalOpen = false;
           })
         }

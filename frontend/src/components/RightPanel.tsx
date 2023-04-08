@@ -1,6 +1,7 @@
-import { Panel } from "./Panel";
 import { useTranslation } from "react-i18next";
+
 import { Chat } from "./Chat";
+import { Panel } from "./Panel";
 
 export function RightPanel() {
   const { t } = useTranslation();

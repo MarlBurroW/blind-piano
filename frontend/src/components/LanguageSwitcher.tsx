@@ -1,8 +1,9 @@
-import { useTranslation } from "react-i18next";
-import i18n from "../services/i18n";
-import { Fragment } from "react";
 import { Listbox, Transition } from "@headlessui/react";
-import { GB, FR, DE, ES, FlagComponent } from "country-flag-icons/react/3x2";
+import { DE, ES, FR, FlagComponent, GB } from "country-flag-icons/react/3x2";
+import { Fragment } from "react";
+import { useTranslation } from "react-i18next";
+
+import i18n from "../services/i18n";
 
 export function LanguageSwitcher({ className }: { className?: string }) {
   const { t } = useTranslation();
@@ -35,14 +36,14 @@ export function LanguageSwitcher({ className }: { className?: string }) {
   ];
 
   const selectedOption = languageOptions.find(
-    (option) => option.value === i18n.language.split("-")[0]
+    option => option.value === i18n.language.split("-")[0]
   );
 
   return (
     <div className={className}>
       <Listbox
         value={selectedOption?.value}
-        onChange={(lang) => {
+        onChange={lang => {
           i18n.changeLanguage(lang);
         }}
       >
@@ -61,7 +62,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
             leaveTo="opacity-0"
           >
             <Listbox.Options className="absolute z-10 mt-3 bg-gradient-to-b from-shade-200 to-shade-300 transform right-0 shadow-lg w-3xl">
-              {languageOptions.map((language) => (
+              {languageOptions.map(language => (
                 <Listbox.Option
                   className="cursor-pointer px-4 py-2  hover:bg-primary-400 flex"
                   key={language.value}

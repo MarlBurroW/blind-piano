@@ -1,14 +1,11 @@
-import React, { useEffect, useCallback, useMemo, useRef } from "react";
-
+import EventEmitter from "eventemitter3";
+import _ from "lodash";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { toast } from "react-hot-toast";
 import { useTranslation } from "react-i18next";
-import { useImmer, DraftFunction } from "use-immer";
+import { DraftFunction, useImmer } from "use-immer";
 import { WebMidi } from "webmidi";
-
 import type { Input } from "webmidi";
-import _ from "lodash";
-
-import EventEmitter from "eventemitter3";
 
 interface IMidiContext {
   devices: Array<Input>;
@@ -51,7 +48,7 @@ export function MidiProvider({ children }: { children: React.ReactNode }) {
       selectedDevice.removeListener();
     }
 
-    setState((draft) => {
+    setState(draft => {
       draft.selectedDevice = device;
     });
   }, []);
@@ -74,7 +71,7 @@ export function MidiProvider({ children }: { children: React.ReactNode }) {
         toast.success(t("notification_messages.webmidi_enabled"));
 
         WebMidi.addListener("connected", () => {
-          setState((draft) => {
+          setState(draft => {
             draft.devices = _.clone(WebMidi.inputs);
 
             autoSelectDevice(draft as State);
@@ -82,13 +79,13 @@ export function MidiProvider({ children }: { children: React.ReactNode }) {
         });
 
         WebMidi.addListener("disconnected", () => {
-          setState((draft) => {
+          setState(draft => {
             draft.devices = _.clone(WebMidi.inputs);
             autoSelectDevice(draft as State);
           });
         });
 
-        setState((draft) => {
+        setState(draft => {
           draft.devices = _.clone(WebMidi.inputs);
           autoSelectDevice(draft as State);
         });

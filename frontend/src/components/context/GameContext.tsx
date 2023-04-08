@@ -1,32 +1,28 @@
+import { Room } from "colyseus.js";
 import React, {
-  useEffect,
   useCallback,
+  useContext,
+  useEffect,
   useMemo,
   useRef,
-  useContext,
 } from "react";
-
-import { useNavigate, useParams } from "react-router-dom";
-import { Game } from "../../../../backend/schemas/Game";
-import { Player } from "../../../../backend/schemas/Player";
-import { Message } from "../../../../backend/schemas/Message";
-import { useImmer, DraftFunction } from "use-immer";
-import { Room } from "colyseus.js";
 import toast from "react-hot-toast";
-
-import client from "../../services/colyseus";
 import { useTranslation } from "react-i18next";
-import { useAppStore } from "../../stores/app";
+import { useNavigate, useParams } from "react-router-dom";
+import { DraftFunction, useImmer } from "use-immer";
 
+import { Game } from "../../../../backend/schemas/Game";
+import { Message } from "../../../../backend/schemas/Message";
+import { IPlayer, IPlayerNote, ITrack } from "../../../../common/types";
 import {
+  onNewLeader,
   onPlayerJoined,
   onPlayerKicked,
   onPlayerLeft,
-  onNewLeader,
 } from "../../handlers/GameHandlers";
+import client from "../../services/colyseus";
 import sfx from "../../services/sfx";
-import { IPlayerNote } from "../../../../common/types";
-
+import { useAppStore } from "../../stores/app";
 import { MidiContext } from "./MidiContext";
 import { ServiceWorkerContext } from "./ServiceWorkerContext";
 
@@ -39,9 +35,10 @@ interface IGameContext {
   setState: (state: State | DraftFunction<State>) => void;
   leaveGame: () => void;
   gameRoom: Room | null;
-  players: Array<Player>;
-  me: Player | null;
-  leader: Player | null;
+  players: Array<IPlayer>;
+  tracks: Array<ITrack>;
+  me: IPlayer | null;
+  leader: IPlayer | null;
   isLeader: boolean;
   isIdentityModalOpen: boolean;
   messages: Array<Message>;
@@ -52,6 +49,7 @@ const initialContextValues = {
   leaveGame: () => {},
   gameRoom: null,
   players: [],
+  tracks: [],
   isIdentityModalOpen: false,
   me: null,
   leader: null,
@@ -80,7 +78,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
   // Get game room from store
 
-  const { gameRoom, storeGameRoom } = useAppStore((state) => state);
+  const { gameRoom, storeGameRoom } = useAppStore(state => state);
 
   // Translation
 
@@ -103,14 +101,20 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   // Callbacks handlers
 
   const handleStateChange = (gameState: Game) => {
-    setState((draft) => {
+    setState(draft => {
       draft.gameState = gameState.clone();
     });
   };
 
   const players = useMemo(() => {
     return gameState && gameRoom
-      ? Array.from(gameState.players.entries()).map((p) => p[1])
+      ? Array.from(gameState.players.entries()).map(p => p[1])
+      : [];
+  }, [gameState]);
+
+  const tracks = useMemo<Array<ITrack>>(() => {
+    return gameState && gameRoom
+      ? Array.from(gameState.tracks.entries()).map(p => p[1])
       : [];
   }, [gameState]);
 
@@ -184,22 +188,22 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     if (gameRoom) {
       gameRoom.onStateChange.once(handleStateChange);
       gameRoom.onStateChange(handleStateChange);
-      gameRoom.onMessage("player-joined", (player) =>
+      gameRoom.onMessage("player-joined", player =>
         onPlayerJoined(player, gameRoom)
       );
-      gameRoom.onMessage("player-kicked", (player) =>
+      gameRoom.onMessage("player-kicked", player =>
         onPlayerKicked(player, gameRoom)
       );
-      gameRoom.onMessage("player-left", (player) => onPlayerLeft(player));
+      gameRoom.onMessage("player-left", player => onPlayerLeft(player));
 
       gameRoom.onLeave(() => {
         leaveGame();
       });
-      gameRoom.onMessage("new-leader", (player) => {
+      gameRoom.onMessage("new-leader", player => {
         onNewLeader(player, meRef.current);
       });
 
-      gameRoom.onMessage("chat-message", (message) => {
+      gameRoom.onMessage("chat-message", message => {
         sfx.playSound("chat-message");
       });
 
@@ -225,6 +229,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         gameRoom,
         isIdentityModalOpen,
         players,
+        tracks,
         me,
         leader,
         isLeader,

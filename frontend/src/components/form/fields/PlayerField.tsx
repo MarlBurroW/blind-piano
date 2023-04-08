@@ -1,7 +1,6 @@
 import { useField } from "formik";
 
 import { FieldBase } from "../FieldBase";
-
 import { PlayerInput } from "../inputs/PlayerInput";
 
 interface Props {
