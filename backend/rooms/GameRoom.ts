@@ -12,12 +12,15 @@ import Message from "../schemas/Message";
 
 import { onChatMessageHandler } from "../handlers/onChatMessageHandler";
 import { onUpdateIdentityHandler } from "../handlers/onUpdateIdentityHandler";
-import { onAddTrackHandler } from "../handlers/onAddTrackHandler";
+import { onCreateOrUpdateTrack } from "../handlers/onCreateOrUpdateTrack";
 import { onSetPatchHandler } from "../handlers/onSetPatchHandler";
 import { onNoteOnHandler } from "../handlers/onNoteOnHandler";
 import { onNoteOffHandler } from "../handlers/onNoteOffHandler";
 import { onKickPlayerHandler } from "../handlers/onKickPlayerHandler";
 import { onPromoteGameLeaderHandler } from "../handlers/onPromoteGameLeaderHandler";
+import { onRemoveTrackHandler } from "../handlers/onRemoveTrackHandler";
+import { onAddTrackHandler } from "../handlers/onAddTrackHandler";
+import { onChangeTracksOrder } from "../handlers/onChangeTracksOrder";
 export class GameRoom extends Room<Game> {
   maxClients = 8;
   maxMessages = 20;
@@ -50,14 +53,16 @@ export class GameRoom extends Room<Game> {
       this.state.name = validatedOptions.name;
     }
 
-    this.onMessage("add-track", onAddTrackHandler.bind(this));
+    this.onMessage("create-update-track", onCreateOrUpdateTrack.bind(this));
     this.onMessage("chat-message", onChatMessageHandler.bind(this));
     this.onMessage("update-identity", onUpdateIdentityHandler.bind(this));
     this.onMessage("set-patch", onSetPatchHandler.bind(this));
     this.onMessage("noteon", onNoteOnHandler.bind(this));
     this.onMessage("noteoff", onNoteOffHandler.bind(this));
     this.onMessage("kick-player", onKickPlayerHandler.bind(this));
-
+    this.onMessage("remove-track", onRemoveTrackHandler.bind(this));
+    this.onMessage("add-track", onAddTrackHandler.bind(this));
+    this.onMessage("change-tracks-order", onChangeTracksOrder.bind(this));
     this.onMessage(
       "promote-game-leader",
       onPromoteGameLeaderHandler.bind(this)
@@ -125,6 +130,15 @@ export class GameRoom extends Room<Game> {
       this.state.players.delete(client.sessionId);
       this.broadcast("player-left", player, { except: client });
       this.electNewLeaderIfNecessary();
+
+      // Remove the leaving player from all tracks
+      this.state.tracks.forEach((track, trackId) => {
+        if (track.playerId == player.id) {
+          track.playerId = null;
+          this.broadcast("track-removed", trackId);
+        }
+      });
+
       this.log(kleur.red("Player left"), { player });
     } else {
       this.log(kleur.red("Client left"), { client });

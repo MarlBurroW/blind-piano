@@ -1,5 +1,5 @@
-import { FieldLabel } from "./FieldLabel";
 import { FieldError } from "./FieldError";
+import { FieldLabel } from "./FieldLabel";
 
 export const FieldBase = ({
   children,
@@ -17,7 +17,7 @@ export const FieldBase = ({
   return (
     <div className="mb-4">
       {label ? <FieldLabel className={labelClassName} label={label} /> : null}
-      {children}
+      <div className="mb-2">{children}</div>
       {error ? <FieldError className={errorClassName} error={error} /> : null}
     </div>
   );

@@ -42,6 +42,7 @@ interface IGameContext {
   isLeader: boolean;
   isIdentityModalOpen: boolean;
   messages: Array<Message>;
+  gameState: Game | null;
 }
 
 const initialContextValues = {
@@ -55,6 +56,7 @@ const initialContextValues = {
   leader: null,
   isLeader: false,
   messages: [],
+  gameState: null,
 };
 
 const initialState = {
@@ -233,6 +235,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         me,
         leader,
         isLeader,
+        gameState,
         messages: gameState ? Array.from(gameState.messages) : [],
       }}
     >

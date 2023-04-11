@@ -1,4 +1,4 @@
-import { AnimatePresence, motion, useAnimationControls } from "framer-motion";
+import { useAnimationControls } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { TbCrown } from "react-icons/tb";
@@ -7,8 +7,8 @@ import { useOnClickOutside } from "usehooks-ts";
 import { IPlayer, IPlayerNote } from "../../../common/types";
 import { useMidiBus } from "../hooks/hooks";
 import { Avatar } from "./Avatar";
-import { NoteBubbleEmitter } from "./NoteBubbleEmitter";
 import { PlayerProfileCard } from "./PlayerProfileCard";
+import { Popover } from "./Popover";
 
 interface Props {
   player: IPlayer;
@@ -61,17 +61,16 @@ export function PlayerItem({ player, isMe, isLeader }: Props) {
   }, [midiBus, player]);
 
   return (
-    <div className="relative" ref={playerCardRef}>
-      <motion.div
-        animate={controls}
-        onClick={() => setIsCardOpen(!isCardOpen)}
-        style={{
-          borderColor: player.color,
-        }}
-        className={` ${isMe ? "border-primary-400" : ""}  ${
-          isCardOpen ? "ring-4 ring-primary-400 " : ""
-        } p-3 flex w-full items-center relative border-l-4 cursor-pointer bg-gradient-to-b from-shade-200 to-shade-300  rounded-3xl shadow-md`}
-      >
+    <Popover
+      style={{
+        borderColor: player.color,
+      }}
+      className={` ${
+        isMe ? "border-primary-400" : ""
+      }   p-3 flex w-full items-center relative border-l-4 cursor-pointer bg-gradient-to-b from-shade-200 to-shade-300  rounded-3xl shadow-md`}
+      popoverContent={<PlayerProfileCard player={player} />}
+    >
+      <>
         <Avatar
           background={true}
           circle
@@ -102,22 +101,9 @@ export function PlayerItem({ player, isMe, isLeader }: Props) {
             )}
           </div>
         </div>
-      </motion.div>
-      <AnimatePresence>
-        {isCardOpen && (
-          <motion.div
-            className="absolute top-0 left-[105%] z-10"
-            transition={{ duration: 0.2 }}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-          >
-            <PlayerProfileCard player={player} />
-          </motion.div>
-        )}
-      </AnimatePresence>
-      <NoteBubbleEmitter player={player} />
-    </div>
+      </>
+    </Popover>
   );
 }
+
 export default PlayerItem;

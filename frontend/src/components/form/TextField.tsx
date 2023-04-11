@@ -1,6 +1,8 @@
 import { useField } from "formik";
-import TextInput from "./inputs/TextInput";
+
 import { FieldBase } from "../form/FieldBase";
+import TextInput from "./inputs/TextInput";
+
 interface Props {
   name: string;
   label?: string;

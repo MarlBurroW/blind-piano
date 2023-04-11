@@ -1,11 +1,11 @@
 import { Dialog } from "@headlessui/react";
 import { FormikProvider, useFormik } from "formik";
 import _ from "lodash";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import * as Yup from "yup";
 
-import { Track } from "../../../../backend/schemas/Track";
+import { ITrack } from "../../../../common/types";
 import { Panel } from "../Panel";
 import { Button } from "../form/Button";
 import { PatchField } from "../form/fields/PatchField";
@@ -16,20 +16,37 @@ import { BaseModal } from "./BaseModal";
 interface Props {
   isOpen: boolean;
   onClose?: () => void;
-  track: Track | null;
-  onCreated?: (track: Track) => void;
+  track: ITrack | null;
+  onSubmit?: (track: TrackValues) => void;
 }
 
-export function TrackModal({ isOpen, onClose, track, onCreated }: Props) {
+type TrackValues = {
+  id: string | null;
+  name: string;
+  patch: string;
+  playerId: string | null;
+};
+
+const initialValues = {
+  id: null,
+  name: "",
+  patch: "SFP@FluidR3_GM#acoustic_grand_piano",
+  playerId: null,
+};
+
+export function TrackModal({ isOpen, onClose, track, onSubmit }: Props) {
   const { t } = useTranslation();
 
   const close = useCallback(() => {
     onClose?.();
-    trackForm.resetForm();
   }, [onClose]);
 
-  const trackForm = useFormik({
-    initialValues: {},
+  useEffect(() => {
+    trackForm.setValues(track || initialValues);
+  }, [track]);
+
+  const trackForm = useFormik<TrackValues>({
+    initialValues: initialValues,
     validationSchema: Yup.object({
       name: Yup.string()
         .required(t("validation_rules.required"))
@@ -40,9 +57,13 @@ export function TrackModal({ isOpen, onClose, track, onCreated }: Props) {
       playerId: Yup.string().nullable(),
     }),
     onSubmit: track => {
-      onCreated?.(track as Track);
+      onSubmit?.({
+        id: track.id,
+        name: track.name,
+        patch: track.patch,
+        playerId: track.playerId,
+      });
       close();
-      trackForm.resetForm();
     },
   });
 
@@ -51,8 +72,7 @@ export function TrackModal({ isOpen, onClose, track, onCreated }: Props) {
       isOpen={isOpen}
       size={40}
       onClose={() => {
-        onClose?.();
-        trackForm.resetForm();
+        close?.();
       }}
     >
       <Panel style="primary" neon className="text-left" padding={10}>

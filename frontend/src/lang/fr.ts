@@ -133,5 +133,11 @@ export default {
         placeholder: "Sélectionner un joueur",
       },
     },
+
+    tracks: {
+      track: "Piste",
+      tracks: "Pistes",
+      remove_track: "Supprimer la piste",
+    },
   },
 };

@@ -8,5 +8,5 @@ export class Game extends Schema {
   @type([Message]) messages = new ArraySchema<Message>();
   @type("string") leaderId = null;
   @type("string") name = "";
-  @type([Track]) tracks = new ArraySchema<Track>();
+  @type({ map: Track }) tracks = new MapSchema<Track>();
 }

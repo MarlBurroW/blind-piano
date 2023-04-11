@@ -146,6 +146,14 @@ export function useSelectPatch() {
   return selectPatch;
 }
 
+export function usePlayer(playerId: string | null) {
+  const { gameState } = useContext(GameContext);
+
+  const player = gameState?.players.get(playerId || "");
+
+  return player || null;
+}
+
 export function usePlayers() {
   const { players } = useContext(GameContext);
 
@@ -215,8 +223,29 @@ export function useGameActions() {
     [gameRoom]
   );
 
+  const removeTrack = useCallback(
+    (trackId: string) => {
+      gameRoom?.send("remove-track", trackId);
+    },
+    [gameRoom]
+  );
+
+  const addTrack = useCallback(() => {
+    gameRoom?.send("add-track");
+  }, [gameRoom]);
+
+  const changeTracksOrder = useCallback(
+    (tracksIdx: string[]) => {
+      gameRoom?.send("change-tracks-order", tracksIdx);
+    },
+    [gameRoom]
+  );
+
   return {
     kickPlayer,
     promoteGameLeader,
+    removeTrack,
+    addTrack,
+    changeTracksOrder,
   };
 }

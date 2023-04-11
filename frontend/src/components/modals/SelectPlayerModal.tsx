@@ -42,6 +42,7 @@ export function SelectPlayerModal({
                   onClose?.();
                   onSelected?.(player);
                 }}
+                key={player.id}
                 style={{
                   borderColor: player.color,
                 }}
