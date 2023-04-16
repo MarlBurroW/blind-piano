@@ -13,46 +13,34 @@ export function useMidiBus() {
   return midiBus$;
 }
 
-export function usePlayerPatch(playerId: string | null): IPatch | null {
-  const { playersPatches } = useContext(AudioContext);
+export function useTrackMixerControl(trackId: string) {
+  const { tracks } = useContext(AudioContext);
 
-  const patch = useMemo(() => {
-    return playerId ? playersPatches.get(playerId) : null;
-  }, [playersPatches, playerId]);
-
-  return patch ? patch : null;
-}
-
-export function usePlayerMixerControl(playerId: string) {
-  const { setPlayerVolume, playersVolumes } = useContext(AudioContext);
+  const track = tracks[trackId];
 
   const setVolume = useCallback(
     (value: number) => {
-      return setPlayerVolume(playerId, value);
+      return track?.setGain(value);
     },
-    [playerId]
+    [trackId]
   );
 
-  const volume = useMemo(() => {
-    return playersVolumes.get(playerId);
-  }, [playersVolumes, playerId]);
-
-  return { setVolume, volume: volume ? volume : 0 };
+  return { setVolume, volume: track?.gainNode.gain.value };
 }
 
 export function useMasterMixerControl() {
-  const { setMasterVolume, masterVolume } = useContext(AudioContext);
+  const { setMasterGain, masterGainValue } = useContext(AudioContext);
 
   const setVolume = useCallback(
     (value: number) => {
-      return setMasterVolume(value);
+      return setMasterGain(value);
     },
-    [setMasterVolume]
+    [setMasterGain]
   );
 
   const volume = useMemo(() => {
-    return masterVolume;
-  }, [masterVolume]);
+    return masterGainValue;
+  }, [setMasterGain]);
 
   return { setVolume, volume };
 }
@@ -166,6 +154,16 @@ export function useTracks() {
   return tracks;
 }
 
+export function useTrackAnalyser(trackId: string) {
+  const { tracks } = useContext(AudioContext);
+
+  const track = tracks[trackId];
+
+  if (track) {
+    return track.analyserNode;
+  }
+}
+
 export function useColors() {
   const players = usePlayers();
   const me = useMe();
@@ -241,11 +239,55 @@ export function useGameActions() {
     [gameRoom]
   );
 
+  const takeTrackControl = useCallback(
+    (tracksId: string) => {
+      gameRoom?.send("update-track", {
+        id: tracksId,
+        playerId: gameRoom.sessionId,
+      });
+    },
+    [gameRoom]
+  );
+
+  const leaveTrackControl = useCallback(
+    (tracksId: string) => {
+      gameRoom?.send("update-track", {
+        id: tracksId,
+        playerId: null,
+      });
+    },
+    [gameRoom]
+  );
+
+  const selectTrackPatch = useCallback(
+    (tracksId: string, patchId: string) => {
+      gameRoom?.send("update-track", {
+        id: tracksId,
+        patch: patchId,
+      });
+    },
+    [gameRoom]
+  );
+
+  const setTrackName = useCallback(
+    (tracksId: string, name: string) => {
+      gameRoom?.send("update-track", {
+        id: tracksId,
+        name,
+      });
+    },
+    [gameRoom]
+  );
+
   return {
     kickPlayer,
     promoteGameLeader,
     removeTrack,
     addTrack,
     changeTracksOrder,
+    takeTrackControl,
+    leaveTrackControl,
+    selectTrackPatch,
+    setTrackName,
   };
 }

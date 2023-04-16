@@ -1,19 +1,17 @@
 import http from "http";
-import { Room, Client, ServerError, updateLobby } from "colyseus";
+import { Room, Client, ServerError } from "colyseus";
 import { object, string } from "yup";
 import { Game } from "../schemas/Game";
 import { Player } from "../schemas/Player";
-import { Track } from "../schemas/Track";
+
 import { IIdentity } from "../../common/types";
 import kleur from "kleur";
-import { v4 as uuidv4 } from "uuid";
+
 import { colors } from "../../common/colors";
-import Message from "../schemas/Message";
 
 import { onChatMessageHandler } from "../handlers/onChatMessageHandler";
 import { onUpdateIdentityHandler } from "../handlers/onUpdateIdentityHandler";
-import { onCreateOrUpdateTrack } from "../handlers/onCreateOrUpdateTrack";
-import { onSetPatchHandler } from "../handlers/onSetPatchHandler";
+import { onUpdateTrack } from "../handlers/onUpdateTrack";
 import { onNoteOnHandler } from "../handlers/onNoteOnHandler";
 import { onNoteOffHandler } from "../handlers/onNoteOffHandler";
 import { onKickPlayerHandler } from "../handlers/onKickPlayerHandler";
@@ -53,10 +51,10 @@ export class GameRoom extends Room<Game> {
       this.state.name = validatedOptions.name;
     }
 
-    this.onMessage("create-update-track", onCreateOrUpdateTrack.bind(this));
+    this.onMessage("update-track", onUpdateTrack.bind(this));
     this.onMessage("chat-message", onChatMessageHandler.bind(this));
     this.onMessage("update-identity", onUpdateIdentityHandler.bind(this));
-    this.onMessage("set-patch", onSetPatchHandler.bind(this));
+
     this.onMessage("noteon", onNoteOnHandler.bind(this));
     this.onMessage("noteoff", onNoteOffHandler.bind(this));
     this.onMessage("kick-player", onKickPlayerHandler.bind(this));

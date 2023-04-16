@@ -1,7 +1,7 @@
-import { WAFInstrument } from "./WAFInstrument";
+import { ICachableResource, IPatch } from "../../../common/types";
 import { SFPInstrument } from "./SFPInstrument";
 import { WAFDrumInstrument } from "./WAFDrumInstrument";
-import { IPatch, ICachableResource } from "../../../common/types";
+import { WAFInstrument } from "./WAFInstrument";
 
 export class InstrumentManager {
   patches: Map<string, IPatch>;
@@ -33,6 +33,10 @@ export class InstrumentManager {
       ...SFPInstrument.getCachableResources(),
       ...WAFDrumInstrument.getCachableResources(),
     ];
+  }
+
+  getPatch(patchId: string) {
+    return this.patches.get(patchId) || null;
   }
 
   getPatches(): Map<string, IPatch> {

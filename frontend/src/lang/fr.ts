@@ -105,6 +105,7 @@ export default {
       select_midi_device: "Sélectionner un périphérique MIDI",
       invite_friends: "Inviter des amis",
       instrument: "Instrument",
+      master_volume: "Volume général",
     },
     chat: {
       input_placeholder: "Tapez votre message ici",
@@ -138,6 +139,9 @@ export default {
       track: "Piste",
       tracks: "Pistes",
       remove_track: "Supprimer la piste",
+      take_control: "Prendre le contrôle",
+      stop_control: "Arrêter le contrôle",
+      change_instrument: "Changer d'instrument",
     },
   },
 };

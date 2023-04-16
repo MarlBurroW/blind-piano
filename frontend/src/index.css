@@ -13,6 +13,21 @@
   background-color: rgba(0, 0, 0, 0.5);
 }
 
+.custom-scrollbar {
+  overflow-y: scroll;
+  scrollbar-width: thin; /* Pour les navigateurs qui supportent cette propriété, comme Firefox */
+}
+
+/* Pour les navigateurs Webkit, comme Chrome et Safari */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px; /* Largeur de la barre de défilement */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.5); /* Couleur de la barre de défilement */
+  border-radius: 3px; /* Arrondi des coins de la barre de défilement */
+}
+
 [data-simplebar] {
   position: relative;
   flex-direction: column;

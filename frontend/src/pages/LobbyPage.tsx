@@ -1,33 +1,30 @@
-import { useFormik, FormikProvider } from "formik";
-import * as Yup from "yup";
-import TextField from "../components/form/fields/TextField";
-
-import SelectField from "../components/form/fields/SelectField";
-
-import client from "../services/colyseus";
 import { Room, RoomAvailable } from "colyseus.js";
+import { FormikProvider, useFormik } from "formik";
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect } from "react";
-import { useImmer } from "use-immer";
-import { useNavigate } from "react-router-dom";
-
-import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
-import serverErrorHandler from "../services/serverErrorHandler";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import {
-  uniqueNamesGenerator,
   adjectives,
-  colors,
   animals,
+  colors,
+  uniqueNamesGenerator,
 } from "unique-names-generator";
-import { Button } from "../components/form/Button";
+import { useImmer } from "use-immer";
+import * as Yup from "yup";
 
-import { RoomItem } from "../components/RoomItem";
-
-import Logo from "../assets/midi-keyboard.png";
-import { motion, AnimatePresence } from "framer-motion";
+import { Game } from "../../../backend/schemas/Game";
 import { PageTransition } from "../PageTransition";
-import { useAppStore } from "../stores/app";
+import Logo from "../assets/midi-keyboard.png";
 import { Panel } from "../components/Panel";
+import { RoomItem } from "../components/RoomItem";
+import { Button } from "../components/form/Button";
+import SelectField from "../components/form/fields/SelectField";
+import TextField from "../components/form/fields/TextField";
+import client from "../services/colyseus";
+import serverErrorHandler from "../services/serverErrorHandler";
+import { useAppStore } from "../stores/app";
 
 export default function LobbyPage() {
   interface LobbyPageState {
@@ -41,7 +38,7 @@ export default function LobbyPage() {
     rooms: [],
   });
 
-  const { storeGameRoom } = useAppStore((state) => state);
+  const { storeGameRoom } = useAppStore(state => state);
 
   const { t } = useTranslation();
 
@@ -59,13 +56,13 @@ export default function LobbyPage() {
       }),
       visibility: "public",
     },
-    onSubmit: (values) => {
+    onSubmit: values => {
       client
         .create("game", {
           name: values.gameName,
           visibility: values.visibility,
         })
-        .then((room) => {
+        .then(room => {
           toast.success(t("success_messages.game_created"));
 
           state.lobbyRoom?.leave();
@@ -91,13 +88,13 @@ export default function LobbyPage() {
   useEffect(() => {
     const init = async () => {
       client
-        .joinOrCreate("lobby")
-        .then((lobby) => {
-          setState((draft) => {
+        .joinOrCreate<Game>("lobby")
+        .then(lobby => {
+          setState(draft => {
             draft.lobbyRoom = lobby;
           });
         })
-        .catch((err) => {
+        .catch(err => {
           console.log("JOIN ERROR", err);
         });
     };
@@ -109,16 +106,16 @@ export default function LobbyPage() {
   }, []);
 
   useEffect(() => {
-    state.lobbyRoom?.onMessage("rooms", (rooms) => {
-      setState((draft) => {
+    state.lobbyRoom?.onMessage("rooms", rooms => {
+      setState(draft => {
         draft.rooms = rooms;
       });
     });
 
     state.lobbyRoom?.onMessage("+", ([roomId, room]) => {
-      setState((draft) => {
+      setState(draft => {
         // Create or update a room in draft.rooms array, with roomId as the key
-        const index = draft.rooms.findIndex((r) => r.roomId === room.roomId);
+        const index = draft.rooms.findIndex(r => r.roomId === room.roomId);
         if (index === -1) {
           draft.rooms.push(room);
         } else {
@@ -127,10 +124,10 @@ export default function LobbyPage() {
       });
     });
 
-    state.lobbyRoom?.onMessage("-", (roomId) => {
-      setState((draft) => {
+    state.lobbyRoom?.onMessage("-", roomId => {
+      setState(draft => {
         // Remove a room from draft.rooms array, with roomId as the key
-        draft.rooms = draft.rooms.filter((r) => r.roomId !== roomId);
+        draft.rooms = draft.rooms.filter(r => r.roomId !== roomId);
       });
     });
   }, [state.lobbyRoom]);
@@ -188,7 +185,7 @@ export default function LobbyPage() {
             </div>
             <div className="">
               <AnimatePresence>
-                {state.rooms.map((room) => {
+                {state.rooms.map(room => {
                   return (
                     <motion.div
                       key={room.roomId}

@@ -11,11 +11,8 @@ import {
   useIdentityModalControl,
   useLeader,
   useMe,
-  usePlayerPatch,
 } from "../hooks/hooks";
 import { Avatar } from "./Avatar";
-import { Icon } from "./Icon";
-import { PlayerVolumeSlider } from "./PlayerVolumeSlider";
 
 interface Props {
   player: IPlayer;
@@ -24,7 +21,7 @@ interface Props {
 export function PlayerProfileCard({ player }: Props) {
   const { t } = useTranslation();
   const { kickPlayer, promoteGameLeader } = useGameActions();
-  const playerPatch = usePlayerPatch(player.id);
+
   const me = useMe();
   const leader = useLeader();
   const { openIdentityModal } = useIdentityModalControl();
@@ -39,8 +36,8 @@ export function PlayerProfileCard({ player }: Props) {
 
   return (
     <div className=" w-[30rem] drop-shadow-md rounded-md overflow-hidden  z-10 bg-gradient-to-b from-shade-200 to-shade-300">
-      <div className="px-5 py-8 flex justify-center items-center flex-col mb-8">
-        <div className="text-3xl mb-5 w-full flex justify-center items-center">
+      <div className="px-5 py-8 flex justify-center items-center flex-col">
+        <div className="text-3xl  w-full flex justify-center items-center">
           <Avatar
             background={true}
             circle
@@ -51,23 +48,6 @@ export function PlayerProfileCard({ player }: Props) {
 
           {player.nickname}
         </div>
-        {playerPatch && (
-          <>
-            <div className="flex items-center text-md justify-center mb-2 w-full">
-              <Icon
-                className="h-10 w-10 mr-4 fill-white"
-                name={playerPatch.category.icon}
-              ></Icon>
-
-              {playerPatch.name}
-            </div>
-            <div className="flex justify-center items-center gap-2 w-full">
-              <SpeakerXMarkIcon className="h-8 w-8" />
-              <PlayerVolumeSlider player={player}></PlayerVolumeSlider>
-              <SpeakerWaveIcon className="h-8 w-8" />
-            </div>
-          </>
-        )}
       </div>
 
       {isMe && (

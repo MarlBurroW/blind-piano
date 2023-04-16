@@ -1,10 +1,11 @@
-import { Player } from "../../../backend/schemas/Player";
+import { Room } from "colyseus.js";
 import toast from "react-hot-toast";
-import sfx from "../services/sfx";
+
+import { Player } from "../../../backend/schemas/Player";
+import { IPlayer } from "../../../common/types";
 import { Avatar } from "../components/Avatar";
 import i18n from "../services/i18n";
-
-import { Room } from "colyseus.js";
+import sfx from "../services/sfx";
 
 export function onPlayerKicked(player: Player, gameRoom: Room) {
   sfx.playSound("player-kicked");
@@ -42,7 +43,7 @@ export function onPlayerLeft(player: Player) {
   );
 }
 
-export function onNewLeader(player: Player, me: Player | null) {
+export function onNewLeader(player: IPlayer, me: IPlayer | null) {
   if (player.id === me?.id) {
     toast.success(i18n.t("notification_messages.you_are_new_leader"));
     sfx.playSound("you-are-promoted");

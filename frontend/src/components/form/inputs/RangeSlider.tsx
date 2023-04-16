@@ -48,8 +48,10 @@ export function RangeSlider({
 
   // Set internal value from cursorX position, max, min and containerWidth
   useEffect(() => {
+    if (!containerWidth) return;
     const scaledValue = (cursorX / containerWidth) * (max - min) + min;
     setDisplayValue(scaledValue);
+
     onChange(scaledValue);
   }, [cursorX, containerWidth, max, min, onChange]);
 
@@ -86,7 +88,6 @@ export function RangeSlider({
       ref={trackRef}
       onMouseDown={onClickTrack}
     >
-      {" "}
       <div
         style={{
           width: cursorX + "px",

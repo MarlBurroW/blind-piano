@@ -20,7 +20,6 @@ export interface IPlayer {
   nickname: string;
   avatarSeed: string;
   color: string;
-  patch: string;
 }
 
 export interface IPlayerNote {

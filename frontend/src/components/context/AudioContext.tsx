@@ -1,58 +1,45 @@
-import EventEmitter from "eventemitter3";
 import React, {
   useCallback,
   useContext,
   useEffect,
   useMemo,
   useRef,
-  useState,
 } from "react";
 import { useTranslation } from "react-i18next";
 import { useImmer } from "use-immer";
 
-import { IPatch, IPlayerNote } from "../../../../common/types";
+import { IPatch, IPlayerNote, ITrack } from "../../../../common/types";
 import instrumentManager from "../../classes/InstrumentManager";
+import Track from "../../classes/Track";
 import { Instruments } from "../Instruments";
 import { GameContext } from "./GameContext";
 import { MidiContext } from "./MidiContext";
 
 interface IAudioContext {
   masterAudioContext: AudioContext | null;
-  setMasterVolume: (value: number) => void;
-  masterVolume: number;
-  playersVolumes: Map<string, number>;
-  playersPatches: Map<string, IPatch>;
-  setPlayerVolume: (playerId: string, value: number) => void;
+  setMasterGain: (value: number) => void;
+  masterGainValue: number;
   patches: Map<string, IPatch>;
-  playersBuses: Map<string, EventEmitter>;
+  tracks: Record<string, Track>;
 }
 
-const DEFAULT_MASTER_VOLUME = 1;
-const DEFAULT_PLAYER_VOLUME = 1;
+const DEFAULT_MASTER_GAIN = 0.75;
+const DEFAULT_PLAYER_GAIN = 0.75;
 
 const initialContextValues = {
   masterAudioContext: null,
-  setMasterVolume: (value: number) => {},
-  masterVolume: DEFAULT_MASTER_VOLUME,
-  playersVolumes: new Map<string, number>(),
-  playersPatches: new Map<string, IPatch>(),
-  playersBuses: new Map<string, EventEmitter>(),
-  setPlayerVolume: (playerId: string, value: number) => {},
+  setMasterGain: (value: number) => {},
+  masterGainValue: DEFAULT_MASTER_GAIN,
   patches: new Map<string, IPatch>(),
+  tracks: {},
 };
 
-type State = {
-  playersPatches: Map<string, IPatch>;
-  playersGainNodes: Map<string, GainNode>;
-  playersGainValues: Map<string, number>;
-  playersBuses: Map<string, EventEmitter>;
-};
+interface AudioContextState {
+  tracks: Record<string, Track>;
+}
 
-const initialState = {
-  playersPatches: new Map<string, IPatch>(),
-  playersGainNodes: new Map<string, GainNode>(),
-  playersGainValues: new Map<string, number>(),
-  playersBuses: new Map<string, EventEmitter>(),
+const initialState: AudioContextState = {
+  tracks: {},
 };
 
 export const AudioContext =
@@ -60,18 +47,29 @@ export const AudioContext =
 
 export function AudioProvider({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation();
-  const { players } = useContext(GameContext);
+  const { tracks: tracksData } = useContext(GameContext);
   const { midiBus$: midiBus } = useContext(MidiContext);
-  const [state, setState] = useImmer<State>(initialState);
-  const { playersPatches, playersGainValues, playersBuses, playersGainNodes } =
-    state;
   const masterAudioContextRef = useRef<AudioContext>(new window.AudioContext());
   const masterGainRef = useRef<GainNode>(
     masterAudioContextRef.current.createGain()
   );
-  const [masterGainValue, setMasterGainValue] = useState<number>(
-    DEFAULT_MASTER_VOLUME
-  );
+  const [contextState, setContextState] = useImmer(initialState);
+  const { tracks } = contextState;
+  const masterGainValueRef = useRef<number>(DEFAULT_MASTER_GAIN);
+  const updateGain = (value: number) => {
+    masterGainValueRef.current = value;
+    updateMasterGain();
+  };
+  const playersTracksMapping = useMemo(() => {
+    const map = new Map<string, string>();
+
+    for (const trackData of tracksData) {
+      if (trackData && trackData.playerId) {
+        map.set(trackData.playerId, trackData.id);
+      }
+    }
+    return map;
+  }, [tracksData]);
 
   useEffect(() => {
     masterGainRef.current.connect(masterAudioContextRef.current.destination);
@@ -83,36 +81,40 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     };
   }, [masterAudioContextRef.current, masterGainRef.current]);
 
-  useEffect(() => {
-    masterGainRef.current.gain.value = masterGainValue;
-  }, [masterGainValue, masterGainRef.current, masterAudioContextRef.current]);
+  const updateMasterGain = useCallback(() => {
+    const gainNode = masterGainRef.current;
+    const gainValue = masterGainValueRef.current;
+    gainNode.gain.setTargetAtTime(
+      gainValue,
+      masterAudioContextRef.current.currentTime,
+      0.01
+    );
+  }, []);
 
   useEffect(() => {
-    for (const [playerId, gainValue] of state.playersGainValues) {
-      const playerGainNode = state.playersGainNodes.get(playerId);
-
-      if (playerGainNode) {
-        playerGainNode.gain.value = gainValue;
-      }
-    }
-  }, [state.playersGainValues, state.playersGainNodes]);
+    updateMasterGain();
+  }, [updateMasterGain]);
 
   useEffect(() => {
     midiBus?.on("noteon", (note: IPlayerNote) => {
-      // Emit on player bus
-      const playerBus = playersBuses.get(note.playerId);
+      const trackId = playersTracksMapping.get(note.playerId);
+      if (!trackId) return;
 
-      if (playerBus) {
-        playerBus.emit("noteon", note);
+      const track = tracks[trackId];
+
+      if (track) {
+        track.bus.emit("noteon", note);
       }
     });
 
     midiBus?.on("noteoff", (note: IPlayerNote) => {
-      // Emit on player bus
-      const playerBus = playersBuses.get(note.playerId);
+      const trackId = playersTracksMapping.get(note.playerId);
+      if (!trackId) return;
 
-      if (playerBus) {
-        playerBus.emit("noteoff", note);
+      const track = tracks[trackId];
+
+      if (track) {
+        track.bus.emit("noteoff", note);
       }
     });
 
@@ -120,109 +122,72 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       midiBus?.off("noteon");
       midiBus?.off("noteoff");
     };
-  }, [playersBuses, midiBus]);
-
-  const setPlayerVolume = useCallback(
-    (playerId: string, value: number) => {
-      setState(draft => {
-        draft.playersGainValues.set(playerId, value);
-      });
-    },
-    [setState]
-  );
+  }, [midiBus, playersTracksMapping]);
 
   const patches = useMemo(() => {
     return instrumentManager.getPatches();
   }, []);
 
   useEffect(() => {
-    for (const player of players) {
-      const { id: playerId, patch: patchIdentifier } = player;
+    for (const trackData of tracksData) {
+      const { id: trackId, patch: patchIdentifier } = trackData;
 
-      // Set player volume if not set
-      if (playersGainValues.get(playerId) === undefined) {
-        setState(draft => {
-          draft.playersGainValues.set(playerId, DEFAULT_PLAYER_VOLUME);
-        });
-      }
+      // Check if track already exists
 
-      // Set event emitter if not set
-      if (state.playersBuses.get(playerId) === undefined) {
-        const eventEmitter = new EventEmitter();
+      if (tracks.hasOwnProperty(trackId)) {
+        // If track exists, check if patch has changed
 
-        setState(draft => {
-          draft.playersBuses.set(playerId, eventEmitter);
-        });
-      }
+        const track = tracks[trackId];
 
-      // Set player patch if not set
-      if (playersPatches.get(playerId) === undefined) {
+        if (track?.patch?.identifier !== trackData.patch) {
+          // Track patch has changed, update it
+
+          const patch = patches.get(patchIdentifier);
+
+          if (patch) {
+            track?.setTrackData(trackData);
+          }
+        }
+      } else {
+        // Track doesn't exist yet, we create it
+
+        // Patch is mandatory to create a track, so we create it only if it exists
         const patch = patches.get(patchIdentifier);
 
         if (patch) {
-          setState(draft => {
-            draft.playersPatches.set(playerId, patch);
+          const track = new Track(trackData, masterAudioContextRef.current);
+
+          track.setTrackData(trackData);
+
+          setContextState(draft => {
+            draft.tracks[trackId] = track;
           });
+
+          // Set the default track default gain to default value
+
+          track.setGain(DEFAULT_PLAYER_GAIN);
+
+          // Once track is created, we can connect it to the master gain node
+
+          track.connect(masterGainRef.current);
         }
       }
-
-      // Check if patch has changed
-      if (playersPatches.get(playerId)?.identifier !== patchIdentifier) {
-        const patch = patches.get(patchIdentifier);
-
-        if (patch) {
-          setState(draft => {
-            draft.playersPatches.set(playerId, patch);
-          });
-        }
-      }
-
-      // Set player GainNode if not set
-      if (state.playersGainNodes.get(playerId) === undefined) {
-        const playerGainNode = masterAudioContextRef.current.createGain();
-
-        playerGainNode.connect(masterGainRef.current);
-
-        setState(draft => {
-          draft.playersGainNodes.set(playerId, playerGainNode);
-        });
-      }
     }
-
-    // Remove audio items fro players that are not in the game anymore
-
-    for (const [playerId, playerGainNode] of state.playersGainNodes) {
-      if (!players.find(player => player.id === playerId)) {
-        playerGainNode.disconnect();
-        setState(draft => {
-          draft.playersGainNodes.delete(playerId);
-          draft.playersGainValues.delete(playerId);
-          draft.playersPatches.delete(playerId);
-          draft.playersBuses.delete(playerId);
-        });
-      }
-    }
-  }, [players]);
+  }, [tracksData]);
 
   return (
     <AudioContext.Provider
       value={{
         masterAudioContext: masterAudioContextRef.current,
-        masterVolume: masterGainValue,
-        setMasterVolume: setMasterGainValue,
-        playersVolumes: playersGainValues,
-        setPlayerVolume,
-        playersPatches,
-        patches,
-        playersBuses,
+        masterGainValue: masterGainValueRef.current,
+        setMasterGain: updateGain,
+        patches: patches,
+        tracks: tracks,
       }}
     >
       <>
-        <Instruments
-          buses={playersBuses}
-          patches={playersPatches}
-          outputs={playersGainNodes}
-        ></Instruments>
+        <Instruments tracks={tracks}></Instruments>
+
         {children}
       </>
     </AudioContext.Provider>

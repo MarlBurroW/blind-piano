@@ -1,26 +1,24 @@
 import { useCallback, useContext, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { CreateIdentityModal } from "../components/modals/CreateIdentityModal";
-import { IIdentity } from "../../../common/types";
 import toast from "react-hot-toast";
-import { GameContext } from "../components/context/GameContext";
-import { AudioContext } from "../components/context/AudioContext";
-import { PageTransition } from "../PageTransition";
-
-import { Keyboard } from "../components/Keyboard";
-import { GamePanel } from "../components/GamePanel";
-import { RightPanel } from "../components/RightPanel";
-import { LeftPanel } from "../components/LeftPanel";
-import { Panel } from "../components/Panel";
+import { useTranslation } from "react-i18next";
+import { HiOutlineChatBubbleLeftRight } from "react-icons/hi2";
+import { IoPeopleOutline } from "react-icons/io5";
 import { useMediaQuery } from "usehooks-ts";
 import { useCopyToClipboard } from "usehooks-ts";
 
-import { useMe, useGameRoom, useIdentityModalControl } from "../hooks/hooks";
-import { Button } from "../components/form/Button";
+import { IIdentity } from "../../../common/types";
+import { PageTransition } from "../PageTransition";
+import { GamePanel } from "../components/GamePanel";
 import { Instruments } from "../components/Instruments";
-import { HiOutlineChatBubbleLeftRight } from "react-icons/hi2";
-
-import { IoPeopleOutline } from "react-icons/io5";
+import { Keyboard } from "../components/Keyboard";
+import { LeftPanel } from "../components/LeftPanel";
+import { Panel } from "../components/Panel";
+import { RightPanel } from "../components/RightPanel";
+import { AudioContext } from "../components/context/AudioContext";
+import { GameContext } from "../components/context/GameContext";
+import { Button } from "../components/form/Button";
+import { CreateIdentityModal } from "../components/modals/CreateIdentityModal";
+import { useGameRoom, useIdentityModalControl, useMe } from "../hooks/hooks";
 
 export default function GamePage() {
   const { t } = useTranslation();
@@ -33,7 +31,6 @@ export default function GamePage() {
   const gameRoom = useGameRoom();
   const { closeIdentityModal, isIdentityModalOpen } = useIdentityModalControl();
 
-  const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(false);
   const [isRightPanelOpen, setIsRightPanelOpen] = useState(false);
 
   const handleIdentityValidated = useCallback(
@@ -55,38 +52,9 @@ export default function GamePage() {
 
   return (
     <PageTransition>
-      <div className="flex h-full max-h-[calc(100vh-80px)] py-5 px-5">
-        <div
-          onClick={() => {
-            setIsLeftPanelOpen(false);
-            setIsRightPanelOpen(false);
-          }}
-          className={`${
-            (isLeftPanelOpen || isRightPanelOpen) && isSmall
-              ? "opacity-70"
-              : "opacity-0 pointer-events-none"
-          } absolute bg-black top-0 bottom-0 left-0 right-0  z-30 transition-opacity `}
-        ></div>
-        <div
-          style={{
-            transform: `translateX(${isSmall && !isLeftPanelOpen ? -120 : 0}%)`,
-          }}
-          className={`${
-            isSmall ? `absolute top-0 left-0 bottom-0 z-40  ` : ""
-          } h-full w-96 shrink-0 transition-transform`}
-        >
-          <LeftPanel></LeftPanel>
-        </div>
-
+      <div className="flex h-full max-h-[100vh] py-5 px-5">
         <div className="grow flex flex-col items-center px-4 overflow-x-auto">
           <Panel className="flex justify-between  mb-4">
-            {isSmall && (
-              <IoPeopleOutline
-                className="h-8 w-8 cursor-pointer"
-                onClick={() => setIsLeftPanelOpen(!isLeftPanelOpen)}
-              />
-            )}
-
             <div>
               <span className="font-bold mr-4">
                 {gameRoom ? gameRoom.state.name : ""}
@@ -96,12 +64,11 @@ export default function GamePage() {
                 {t("generic.invite_friends")}
               </Button>
             </div>
-            {isSmall && (
-              <HiOutlineChatBubbleLeftRight
-                className="h-8 w-8 cursor-pointer"
-                onClick={() => setIsRightPanelOpen(!isRightPanelOpen)}
-              />
-            )}
+
+            <HiOutlineChatBubbleLeftRight
+              className="h-8 w-8 cursor-pointer"
+              onClick={() => setIsRightPanelOpen(!isRightPanelOpen)}
+            />
           </Panel>
 
           <GamePanel></GamePanel>
@@ -110,13 +77,13 @@ export default function GamePage() {
 
         <div
           style={{
-            transform: `translateX(${isSmall && !isRightPanelOpen ? 120 : 0}%)`,
+            width: `${isRightPanelOpen ? "24rem" : "0px"}`,
           }}
-          className={`${
-            isSmall ? `absolute z-40 top-0 right-0 bottom-0 ` : ""
-          } h-full w-96 shrink-0 transition-transform`}
+          className={`relative h-full w-96 shrink-0 transition-all overflow-hidden`}
         >
-          <RightPanel></RightPanel>
+          <div className="absolute w-96 left-0 right-0 bottom-0 top-0">
+            <RightPanel></RightPanel>
+          </div>
         </div>
       </div>
 
@@ -126,7 +93,7 @@ export default function GamePage() {
         defaultIdentity={me ? me : null}
         onClose={() =>
           me
-            ? setState((draft) => {
+            ? setState(draft => {
                 draft.isIdentityModalOpen = false;
               })
             : null

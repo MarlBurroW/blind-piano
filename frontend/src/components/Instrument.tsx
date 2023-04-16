@@ -1,16 +1,14 @@
-import EventEmitter from "eventemitter3";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import { IInstrument, IPatch, IPlayerNote } from "../../../common/types";
+import { IInstrument, IPlayerNote } from "../../../common/types";
 import instrumentManager from "../classes/InstrumentManager";
+import Track from "../classes/Track";
 
 interface Props {
-  patch: IPatch;
-  bus: EventEmitter;
-  output: AudioNode;
+  track: Track;
 }
 
-export function Instrument({ patch, bus, output }: Props) {
+export function Instrument({ track }: Props) {
   const instrumentRef = useRef<IInstrument | null>(null);
 
   const [loading, setLoading] = useState(false);
@@ -21,16 +19,20 @@ export function Instrument({ patch, bus, output }: Props) {
     };
   }, []);
 
+  const onTrackDataChanged = useCallback(() => {
+    if (track.patch) {
+      instrumentRef.current = instrumentManager.createInstrument(track.patch);
+      instrumentRef.current?.setOutputNode(track.gainNode);
+
+      setLoading(true);
+
+      instrumentRef.current?.load().then(() => {
+        setLoading(false);
+      });
+    }
+  }, [track]);
+
   useEffect(() => {
-    instrumentRef.current = instrumentManager.createInstrument(patch);
-
-    instrumentRef.current?.setOutputNode(output);
-
-    setLoading(true);
-    instrumentRef.current?.load().then(() => {
-      setLoading(false);
-    });
-
     function noteOn(note: IPlayerNote) {
       instrumentRef.current?.playNote(note);
     }
@@ -39,16 +41,21 @@ export function Instrument({ patch, bus, output }: Props) {
       instrumentRef.current?.stopNote(note);
     }
 
-    bus.on("noteon", noteOn);
-    bus.on("noteoff", noteOff);
+    track.bus.on("noteon", noteOn);
+    track.bus.on("noteoff", noteOff);
+
+    track.bus.on("track-data-changed", onTrackDataChanged);
+
+    onTrackDataChanged();
 
     return () => {
-      bus.off("noteon", noteOn);
-      bus.off("noteoff", noteOff);
-      instrumentRef.current?.setOutputNode(output);
+      track.bus.off("noteon", noteOn);
+      track.bus.off("noteoff", noteOff);
+      track.bus.off("track-data-changed", onTrackDataChanged);
+
       instrumentRef.current?.dispose();
     };
-  }, [patch]);
+  }, [track, onTrackDataChanged]);
 
   return <></>;
 }

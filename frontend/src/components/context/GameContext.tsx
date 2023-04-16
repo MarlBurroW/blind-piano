@@ -34,7 +34,7 @@ type State = {
 interface IGameContext {
   setState: (state: State | DraftFunction<State>) => void;
   leaveGame: () => void;
-  gameRoom: Room | null;
+  gameRoom: Room<Game> | null;
   players: Array<IPlayer>;
   tracks: Array<ITrack>;
   me: IPlayer | null;
@@ -110,7 +110,9 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
   const players = useMemo(() => {
     return gameState && gameRoom
-      ? Array.from(gameState.players.entries()).map(p => p[1])
+      ? (Array.from(gameState.players.entries()).map(
+          p => p[1] as unknown
+        ) as IPlayer[])
       : [];
   }, [gameState]);
 
@@ -126,7 +128,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       return me ? me : null;
     }
     return null;
-  }, [players]);
+  }, [players]) as IPlayer | null;
 
   const meRef = useRef(me);
 
@@ -140,7 +142,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       return leader ? leader : null;
     }
     return null;
-  }, [players]);
+  }, [players]) as IPlayer | null;
 
   const isLeader = useMemo(() => {
     if (leader && me) {
@@ -163,7 +165,8 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       if (!gameRoom) {
         if (roomId) {
           try {
-            const room = await client.joinById(roomId);
+            const room = await client.joinById<Game>(roomId);
+
             storeGameRoom(room);
           } catch (err) {
             toast.error(t("client_error_messages.join_failed"));

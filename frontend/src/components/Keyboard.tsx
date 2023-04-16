@@ -1,7 +1,4 @@
-import {
-  AdjustmentsHorizontalIcon,
-  ChevronUpDownIcon,
-} from "@heroicons/react/24/outline";
+import { AdjustmentsHorizontalIcon } from "@heroicons/react/24/outline";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Draggable, { DraggableData, DraggableEvent } from "react-draggable";
 import { useTranslation } from "react-i18next";
@@ -10,20 +7,11 @@ import type { Note } from "webmidi";
 import { NoteMessageEvent } from "webmidi";
 
 import { IPlayer, IPlayerNote, ITransportNote } from "../../../common/types";
-import { Icon } from "../components/Icon";
 import { Panel } from "../components/Panel";
 import SelectInput from "../components/form/inputs/SelectInput";
-import {
-  useGameRoom,
-  useMe,
-  useMidiBus,
-  useMidiDevices,
-  usePlayerPatch,
-  useSelectPatch,
-} from "../hooks/hooks";
+import { useGameRoom, useMe, useMidiBus, useMidiDevices } from "../hooks/hooks";
 import { KeyboardKeys, KeyboardKeysRef } from "./KeyboardKeys";
 import { MixerModal } from "./modals/MixerModal";
-import { SelectInstrumentModal } from "./modals/SelectInstrumentModal";
 
 function transportNoteFromMidiNote(note: Note): ITransportNote {
   return {
@@ -50,12 +38,6 @@ export function Keyboard() {
   const midiBus = useMidiBus();
   const me = useMe();
   const gameRoom = useGameRoom();
-  const selectPatch = useSelectPatch();
-
-  const patch = usePlayerPatch(me ? me.id : null);
-
-  const [selectInstrumentModalOpen, setSelectIntrumentModalOpen] =
-    useState(false);
 
   const [mixerModalOpen, setMixerModalOpen] = useState(false);
 
@@ -301,69 +283,39 @@ export function Keyboard() {
               options={deviceOptions}
             ></SelectInput>
           </div>
-          <div className="w-full">
-            <div
-              className="w-full flex mt-1 whitespace-nowrap justify-between cursor-pointer bg-shade-200 mb-2 py-4 px-5 outline-none   focus:outline-none focus:ring rounded-3xl "
-              onClick={() => setSelectIntrumentModalOpen(true)}
-            >
-              <div className="flex items-center">
-                {patch && (
-                  <Icon
-                    className="h-6 w-7 fill-white mr-4"
-                    name={patch?.category.icon}
-                  />
-                )}
-                {patch ? patch.name : "Select"}{" "}
-              </div>
 
-              <ChevronUpDownIcon
-                className="w-5 h-5 text-gray-400"
-                aria-hidden="true"
-              />
-            </div>
-          </div>
           <div className="flex-grow"></div>
 
-          <div className="absolute flex justify-center w-full -top-[5.85rem] ">
-            <div className="bg-shade-300 pt-5 px-5 rounded-t-3xl">
-              <div className="relative" ref={previewContainerRef}>
-                <Draggable
-                  axis="x"
-                  bounds="parent"
-                  onDrag={onDrag}
-                  position={{
-                    x: scrollState.previewContainerLeft,
-                    y: 0,
-                  }}
-                  defaultPosition={{ x: 0, y: 0 }}
-                >
-                  <div
-                    style={{
-                      width: `${scrollState.visiblePercentage}%`,
-                    }}
-                    className="absolute z-[4] h-full cursor-ew-resize top-0  hover:ring-4 ring-secondary-500"
-                  ></div>
-                </Draggable>
-                <div
-                  onClick={handleOverlayClick}
-                  ref={overlayRef}
-                  style={{
-                    clipPath: scrollState.clipPathPolygon,
-                  }}
-                  className="overlay absolute   top-0 left-0 right-0 bottom-0 w-full h-full bg-gray-800 bg-opacity-50 z-[3]"
-                ></div>
+          <div className="relative" ref={previewContainerRef}>
+            <Draggable
+              axis="x"
+              bounds="parent"
+              onDrag={onDrag}
+              position={{
+                x: scrollState.previewContainerLeft,
+                y: 0,
+              }}
+              defaultPosition={{ x: 0, y: 0 }}
+            >
+              <div
+                style={{
+                  width: `${scrollState.visiblePercentage}%`,
+                }}
+                className="absolute z-[4] h-full cursor-ew-resize top-0  hover:ring-4 ring-secondary-500"
+              ></div>
+            </Draggable>
+            <div
+              onClick={handleOverlayClick}
+              ref={overlayRef}
+              style={{
+                clipPath: scrollState.clipPathPolygon,
+              }}
+              className="overlay absolute   top-0 left-0 right-0 bottom-0 w-full h-full bg-gray-800 bg-opacity-50 z-[3]"
+            ></div>
 
-                <div className="z-0 relative pointer-events-none text-[0.17rem]">
-                  <KeyboardKeys ref={previewKeyboardKeysRef}></KeyboardKeys>
-                </div>
-              </div>
+            <div className="z-0 relative pointer-events-none text-[0.17rem]">
+              <KeyboardKeys ref={previewKeyboardKeysRef}></KeyboardKeys>
             </div>
-          </div>
-          <div
-            className="cursor-pointer"
-            onClick={() => setMixerModalOpen(true)}
-          >
-            <AdjustmentsHorizontalIcon className="h-10 w-10"></AdjustmentsHorizontalIcon>
           </div>
         </div>
 
@@ -378,16 +330,6 @@ export function Keyboard() {
           ></KeyboardKeys>
         </div>
       </div>
-      <SelectInstrumentModal
-        onSelected={selectPatch}
-        defaultPatch={patch}
-        isOpen={selectInstrumentModalOpen}
-        onClose={() => setSelectIntrumentModalOpen(false)}
-      ></SelectInstrumentModal>
-      <MixerModal
-        isOpen={mixerModalOpen}
-        onClose={() => setMixerModalOpen(false)}
-      ></MixerModal>
     </Panel>
   );
 }

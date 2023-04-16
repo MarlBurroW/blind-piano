@@ -1,3 +1,5 @@
+import chroma from "chroma-js";
+
 import { IMessage, IPlayer } from "../../../common/types";
 import { Avatar } from "./Avatar";
 
@@ -22,11 +24,12 @@ export function ChatMessage({
         ></Avatar>
       ) : null}
       <div
-        className={`p-3 ${
-          isMe
-            ? "text-left  bg-gradient-to-b from-secondary-400 to-secondary-500 text-white"
-            : "text-left  bg-gradient-to-b from-primary-400 to-primary-500 text-white text-opacity-70 "
-        }  items-start rounded-2xl flex flex-col`}
+        style={{
+          backgroundColor: message.player
+            ? chroma(message.player.color).alpha(0.6).css()
+            : undefined,
+        }}
+        className={`p-3  items-start rounded-2xl flex flex-col`}
       >
         <div className={`font-normal`}>{message.player?.nickname}</div>
         <div className="whitespace-pre-wrap font-light  overflow-hidden break-all">
