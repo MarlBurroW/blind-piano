@@ -57,7 +57,7 @@ export function useMidiDevices() {
   }, [selectedDevice]);
 
   const selectMidiDevice = useCallback(
-    (device: Input) => {
+    (device: Input | null) => {
       return selectDevice(device);
     },
     [selectDevice]

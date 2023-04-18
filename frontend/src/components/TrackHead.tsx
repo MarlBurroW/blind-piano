@@ -16,6 +16,7 @@ import { Icon } from "./Icon";
 import { Popover } from "./Popover";
 import { TrackPopoverMenu } from "./TrackPopoverMenu";
 import { TrackVolumeSlider } from "./TrackVolumeSlider";
+import { VuMeter } from "./VuMeter";
 import SelectInstrumentModal from "./modals/SelectInstrumentModal";
 
 interface Props {
@@ -36,34 +37,6 @@ export function TrackHead({ track, onClick }: Props) {
   const [levelIndicator, setLevelIndicator] = useState(0);
 
   const analyser = useTrackAnalyser(track.id);
-
-  const updateLevel = () => {
-    if (analyser) {
-      const dataArray = new Uint8Array(analyser.frequencyBinCount);
-      analyser.getByteFrequencyData(dataArray);
-
-      // Calculer le niveau moyen
-      const level =
-        dataArray.reduce((acc, val) => acc + val, 0) / dataArray.length;
-
-      // Ajuster le niveau en fonction de la valeur maximale définie
-      const adjustedLevel = (level / MAX_LEVEL) * 100;
-      setLevelIndicator(Math.min(adjustedLevel, 100));
-
-      // Appeler la fonction de manière récursive
-      requestAnimationFrame(updateLevel);
-    }
-  };
-  useEffect(() => {
-    if (analyser) {
-      const animationId = requestAnimationFrame(updateLevel);
-
-      // Nettoyer lors du démontage
-      return () => {
-        cancelAnimationFrame(animationId);
-      };
-    }
-  }, [analyser]);
 
   // CHATGPT ICI POUR LE VOLUME
 
@@ -131,7 +104,14 @@ export function TrackHead({ track, onClick }: Props) {
               ref={setReference}
               className="h-[10rem] select-none  w-[20rem] flex flex-col"
             >
-              <div className="text-md    p-1 px-3 bg-shade-500  justify-between flex items-center">
+              <div
+                style={{
+                  backgroundColor: player?.color
+                    ? chroma(player.color).luminance(0.2).css()
+                    : undefined,
+                }}
+                className="text-md    p-1 px-3 bg-shade-500  justify-between flex items-center"
+              >
                 <div className="flex items-center w-full">
                   <MdOutlineDragHandle
                     onPointerDown={e => dragControls?.start(e)}
@@ -148,7 +128,14 @@ export function TrackHead({ track, onClick }: Props) {
                 </div>
               </div>
 
-              <div className="flex flex-col  grow px-4  bg-shade-300 ">
+              <div
+                style={{
+                  backgroundColor: player?.color
+                    ? chroma(player.color).luminance(0.1).css()
+                    : undefined,
+                }}
+                className="flex flex-col  grow px-4  bg-shade-300 "
+              >
                 <div className="flex items-center py-2">
                   {patch && (
                     <div
@@ -180,14 +167,9 @@ export function TrackHead({ track, onClick }: Props) {
                   </div>
                 </div>
                 <div className="px-0">
-                  <div className="bg-shade-400  h-2 mb-4 rounded-lg w-full">
-                    <div
-                      style={{
-                        width: `${levelIndicator.toFixed(1)}%`,
-                      }}
-                      className={`h-2 rounded-lg bg-green-500`}
-                    ></div>
-                  </div>
+                  {analyser && (
+                    <VuMeter color={player?.color} analyser={analyser} />
+                  )}
                   <TrackVolumeSlider
                     color={player?.color}
                     track={track}

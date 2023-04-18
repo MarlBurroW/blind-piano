@@ -2,6 +2,8 @@ import { AdjustmentsHorizontalIcon } from "@heroicons/react/24/outline";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Draggable, { DraggableData, DraggableEvent } from "react-draggable";
 import { useTranslation } from "react-i18next";
+import { MdPiano } from "react-icons/md";
+import { useImmer } from "use-immer";
 import type { Input } from "webmidi";
 import type { Note } from "webmidi";
 import { NoteMessageEvent } from "webmidi";
@@ -11,7 +13,7 @@ import { Panel } from "../components/Panel";
 import SelectInput from "../components/form/inputs/SelectInput";
 import { useGameRoom, useMe, useMidiBus, useMidiDevices } from "../hooks/hooks";
 import { KeyboardKeys, KeyboardKeysRef } from "./KeyboardKeys";
-import { MixerModal } from "./modals/MixerModal";
+import { DropdownSelectInput } from "./form/inputs/DropdownSelectInput";
 
 function transportNoteFromMidiNote(note: Note): ITransportNote {
   return {
@@ -31,6 +33,17 @@ function playerNoteFromMidiNote(note: Note, player: IPlayer): IPlayerNote {
   };
 }
 
+interface KeyboardState {
+  isKeyboardHidden: boolean;
+  isShouldRenderKeyboard: boolean;
+}
+
+interface DeviceOption {
+  value: string | null;
+  label: string;
+  payload: Input | null;
+}
+
 export function Keyboard() {
   const { midiDevices, selectedMidiDevice, selectMidiDevice } =
     useMidiDevices();
@@ -39,21 +52,62 @@ export function Keyboard() {
   const me = useMe();
   const gameRoom = useGameRoom();
 
-  const [mixerModalOpen, setMixerModalOpen] = useState(false);
+  const [state, setState] = useImmer<KeyboardState>({
+    isKeyboardHidden: false,
+    isShouldRenderKeyboard: true,
+  });
+
+  const toggleKeyboard = useCallback(() => {
+    setState(draft => {
+      draft.isKeyboardHidden = !draft.isKeyboardHidden;
+    });
+  }, [setState]);
+
+  useEffect(() => {
+    if (selectedMidiDevice) {
+      setState(draft => {
+        draft.isKeyboardHidden = true;
+      });
+    } else {
+      setState(draft => {
+        draft.isKeyboardHidden = false;
+      });
+    }
+  }, [selectedMidiDevice]);
+
+  useEffect(() => {
+    if (state.isKeyboardHidden) {
+      setTimeout(() => {
+        setState(draft => {
+          draft.isShouldRenderKeyboard = false;
+        });
+      }, 100);
+    } else {
+      setState(draft => {
+        draft.isShouldRenderKeyboard = true;
+      });
+    }
+  }, [state.isKeyboardHidden]);
+
+  useEffect(() => {
+    updateScrollState();
+  }, [state.isShouldRenderKeyboard]);
 
   const { t, i18n } = useTranslation();
 
-  const deviceOptions: Array<{ value: Input | null; label: string }> =
-    useMemo(() => {
-      const result: Array<{ value: Input | null; label: string }> =
-        midiDevices.map(d => {
-          return { value: d, label: d.name };
-        });
+  const deviceOptions: Array<DeviceOption> = useMemo(() => {
+    const result: Array<DeviceOption> = midiDevices.map(d => {
+      return { value: d.id, label: d.name, payload: d };
+    });
 
-      result.unshift({ value: null, label: t("generic.select_midi_device") });
+    result.unshift({
+      value: null,
+      payload: null,
+      label: t("generic.select_midi_device"),
+    });
 
-      return result;
-    }, [midiDevices, i18n.language]);
+    return result;
+  }, [midiDevices, i18n.language]);
 
   const keyboardKeysRef = useRef<KeyboardKeysRef>(null);
   const previewKeyboardKeysRef = useRef<KeyboardKeysRef>(null);
@@ -274,14 +328,17 @@ export function Keyboard() {
   return (
     <Panel>
       <div className="flex flex-col h-full relative">
-        <div className="flex w-full mb-2 gap-8  items-center">
+        <div className="flex w-full  gap-8  items-center">
+          <MdPiano
+            onClick={toggleKeyboard}
+            className="cursor-pointer h-10 w-10 text-white"
+          ></MdPiano>
           <div className="min-w-[30rem]">
-            <SelectInput
-              onChange={selectMidiDevice}
-              value={selectedMidiDevice}
-              style="secondary"
+            <DropdownSelectInput<string | null, Input | null>
+              value={selectedMidiDevice ? selectedMidiDevice.id : null}
               options={deviceOptions}
-            ></SelectInput>
+              onChange={(value, device) => selectMidiDevice(device)}
+            ></DropdownSelectInput>
           </div>
 
           <div className="flex-grow"></div>
@@ -321,13 +378,20 @@ export function Keyboard() {
 
         <div
           ref={scrollbarRef}
-          className="h-[20em] overflow-x-scroll overflow-y-hidden relative"
+          style={{
+            height: state.isKeyboardHidden ? "0rem" : "20rem",
+          }}
+          className="overflow-x-scroll transition-all overflow-y-hidden relative"
         >
-          <KeyboardKeys
-            ref={keyboardKeysRef}
-            onKeyUp={handleOnKeyUp}
-            onKeyDown={handleOnKeyDown}
-          ></KeyboardKeys>
+          {state.isShouldRenderKeyboard && (
+            <div className="pt-4">
+              <KeyboardKeys
+                ref={keyboardKeysRef}
+                onKeyUp={handleOnKeyUp}
+                onKeyDown={handleOnKeyDown}
+              ></KeyboardKeys>
+            </div>
+          )}
         </div>
       </div>
     </Panel>

@@ -20,6 +20,7 @@ interface Props {
     getReferenceProps: () => Record<string, unknown>;
   }) => React.ReactNode;
   popoverContent: React.ReactNode;
+  placement?: "top" | "right" | "bottom" | "left";
 }
 
 interface Methods {
@@ -28,13 +29,13 @@ interface Methods {
 }
 
 export const Popover = forwardRef<Methods, Props>(
-  ({ children, popoverContent, ...restProps }, ref) => {
+  ({ children, popoverContent, placement = "right", ...restProps }, ref) => {
     const arrowRef = useRef(null);
     const [isOpen, setIsOpen] = useState(false);
     const { x, y, strategy, refs, context, update } = useFloating({
       open: isOpen,
       onOpenChange: setIsOpen,
-      placement: "right",
+      placement: placement,
       whileElementsMounted: autoUpdate,
       middleware: [
         offset(10),

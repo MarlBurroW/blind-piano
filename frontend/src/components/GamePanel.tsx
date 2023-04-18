@@ -67,6 +67,7 @@ export function GamePanel() {
           <SpeakerWaveIcon className="h-8 w-8 ml-4" />
         </div>
       </div>
+
       <TrackModal
         track={trackToEdit}
         isOpen={isTrackModalOpen}

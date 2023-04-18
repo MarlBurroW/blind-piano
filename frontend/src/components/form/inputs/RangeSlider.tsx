@@ -87,6 +87,11 @@ export function RangeSlider({
       className=" track w-full bg-shade-700 h-4 rounded-3xl relative cursor-pointer select-none"
       ref={trackRef}
       onMouseDown={onClickTrack}
+      style={{
+        backgroundColor: color
+          ? chroma(color).luminance(0.05).css()
+          : undefined,
+      }}
     >
       <div
         style={{

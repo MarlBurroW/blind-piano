@@ -27,7 +27,6 @@ export class Track {
     this.id = track.id;
     this.patch = instrumentManager.getPatch(track.patch);
     this.playerId = track.playerId;
-
     this.bus.emit("track-data-changed", this);
   }
 

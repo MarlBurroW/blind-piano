@@ -8,17 +8,25 @@ import { useCopyToClipboard } from "usehooks-ts";
 
 import { IIdentity } from "../../../common/types";
 import { PageTransition } from "../PageTransition";
+import Avatar from "../components/Avatar";
 import { GamePanel } from "../components/GamePanel";
 import { Instruments } from "../components/Instruments";
 import { Keyboard } from "../components/Keyboard";
 import { LeftPanel } from "../components/LeftPanel";
 import { Panel } from "../components/Panel";
+import { PlayerProfileCard } from "../components/PlayerProfileCard";
+import { Popover } from "../components/Popover";
 import { RightPanel } from "../components/RightPanel";
 import { AudioContext } from "../components/context/AudioContext";
 import { GameContext } from "../components/context/GameContext";
 import { Button } from "../components/form/Button";
 import { CreateIdentityModal } from "../components/modals/CreateIdentityModal";
-import { useGameRoom, useIdentityModalControl, useMe } from "../hooks/hooks";
+import {
+  useGameRoom,
+  useIdentityModalControl,
+  useMe,
+  usePlayers,
+} from "../hooks/hooks";
 
 export default function GamePage() {
   const { t } = useTranslation();
@@ -32,6 +40,8 @@ export default function GamePage() {
   const { closeIdentityModal, isIdentityModalOpen } = useIdentityModalControl();
 
   const [isRightPanelOpen, setIsRightPanelOpen] = useState(false);
+
+  const players = usePlayers();
 
   const handleIdentityValidated = useCallback(
     (identity: IIdentity) => {
@@ -65,10 +75,41 @@ export default function GamePage() {
               </Button>
             </div>
 
-            <HiOutlineChatBubbleLeftRight
-              className="h-8 w-8 cursor-pointer"
-              onClick={() => setIsRightPanelOpen(!isRightPanelOpen)}
-            />
+            <div className="flex items-center">
+              <div className="flex mr-4 items-center">
+                {players.map(player => (
+                  <Popover
+                    placement="bottom"
+                    key={player.id}
+                    popoverContent={<PlayerProfileCard player={player} />}
+                  >
+                    {props => {
+                      const { setReference, getReferenceProps } = props;
+                      return (
+                        <div
+                          ref={setReference}
+                          {...getReferenceProps()}
+                          key={player.id}
+                          style={{ borderColor: player.color }}
+                          className="cursor-pointer flex items-center border-4 rounded-full mr-2"
+                        >
+                          <Avatar
+                            seed={player.avatarSeed}
+                            size={32}
+                            background
+                            circle
+                          ></Avatar>
+                        </div>
+                      );
+                    }}
+                  </Popover>
+                ))}
+              </div>
+              <HiOutlineChatBubbleLeftRight
+                className="h-8 w-8 cursor-pointer"
+                onClick={() => setIsRightPanelOpen(!isRightPanelOpen)}
+              />
+            </div>
           </Panel>
 
           <GamePanel></GamePanel>
