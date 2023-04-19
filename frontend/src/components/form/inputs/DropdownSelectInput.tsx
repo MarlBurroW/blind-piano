@@ -83,6 +83,7 @@ export const DropdownSelectInput = <ValueType, PayloadType>({
   return (
     <>
       <div
+        tabIndex={0}
         ref={refs.setReference}
         {...getReferenceProps()}
         className="relative cursor-pointer ring-primary-300 text-left focus:ring w-full bg-shade-200  py-4 px-5 rounded-3xl"

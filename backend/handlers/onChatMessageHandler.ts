@@ -32,6 +32,8 @@ export async function onChatMessageHandler(
 
   this.state.messages.push(message);
 
+  this.state.typing.set(player.id, false);
+
   this.broadcast("chat-message", message, { except: client });
 
   if (this.state.messages.length > this.maxMessages) {

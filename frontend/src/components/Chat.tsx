@@ -1,16 +1,18 @@
 import { AnimateSharedLayout, motion } from "framer-motion";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AiOutlineSend } from "react-icons/ai";
 import TextareaAutosize from "react-textarea-autosize";
 
 import { useChat, useMe } from "../hooks/hooks";
 import { ChatMessage } from "./ChatMessage";
+import { PlayersTyping } from "./PlayersTyping";
 
 export function Chat() {
   const me = useMe();
-  const { messages, sendMessage: sendChatMessage } = useChat();
+  const { messages, sendMessage: sendChatMessage, sendTyping } = useChat();
   const { t } = useTranslation();
+  const { playersTyping } = useChat();
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const [message, setMessage] = useState<string>("");
@@ -22,7 +24,7 @@ export function Chat() {
         behavior: "smooth",
       });
     }
-  }, [messages[messages.length - 1]?.id]);
+  }, [messages[messages.length - 1]?.id, playersTyping.length]);
 
   const sendMessage = useCallback(() => {
     if (message.length === 0) return;
@@ -61,13 +63,17 @@ export function Chat() {
               <ChatMessage me={me ? me : null} message={message}></ChatMessage>
             </motion.div>
           ))}
+          <PlayersTyping></PlayersTyping>
         </AnimateSharedLayout>
       </div>
       <div className="shrink">
         <div className="flex">
           <TextareaAutosize
             value={message}
-            onChange={e => setMessage(e.target.value)}
+            onChange={e => {
+              setMessage(e.target.value);
+              sendTyping();
+            }}
             maxRows={4}
             onKeyDown={onEnterPress}
             placeholder={t("chat.input_placeholder")}

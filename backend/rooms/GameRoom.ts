@@ -19,12 +19,14 @@ import { onPromoteGameLeaderHandler } from "../handlers/onPromoteGameLeaderHandl
 import { onRemoveTrackHandler } from "../handlers/onRemoveTrackHandler";
 import { onAddTrackHandler } from "../handlers/onAddTrackHandler";
 import { onChangeTracksOrder } from "../handlers/onChangeTracksOrder";
+import { onTypingHandler } from "../handlers/onTypingHandler";
 export class GameRoom extends Room<Game> {
   maxClients = 8;
   maxMessages = 20;
   autoDispose: false = false;
   emptyRoomTimeoutTime: number = 1000 * 5;
   emptyRoomTimeout: null | ReturnType<typeof setTimeout> = null;
+  typingTimeout: Map<string, NodeJS.Timeout> = new Map();
 
   async onCreate(options: any) {
     const optionSchema = object({
@@ -61,6 +63,7 @@ export class GameRoom extends Room<Game> {
     this.onMessage("remove-track", onRemoveTrackHandler.bind(this));
     this.onMessage("add-track", onAddTrackHandler.bind(this));
     this.onMessage("change-tracks-order", onChangeTracksOrder.bind(this));
+    this.onMessage("chat-typing", onTypingHandler.bind(this));
     this.onMessage(
       "promote-game-leader",
       onPromoteGameLeaderHandler.bind(this)
@@ -136,6 +139,8 @@ export class GameRoom extends Room<Game> {
           this.broadcast("track-removed", trackId);
         }
       });
+
+      this.state.typing.delete(player.id);
 
       this.log(kleur.red("Player left"), { player });
     } else {

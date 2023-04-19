@@ -29,6 +29,7 @@ import { ServiceWorkerContext } from "./ServiceWorkerContext";
 type State = {
   gameState: Game | null;
   isIdentityModalOpen: boolean;
+  isChatPanelOpen: boolean;
 };
 
 interface IGameContext {
@@ -43,6 +44,8 @@ interface IGameContext {
   isIdentityModalOpen: boolean;
   messages: Array<Message>;
   gameState: Game | null;
+  isChatPanelOpen: boolean;
+  setIsChatPanelOpen: (isOpen: boolean) => void;
 }
 
 const initialContextValues = {
@@ -57,11 +60,14 @@ const initialContextValues = {
   isLeader: false,
   messages: [],
   gameState: null,
+  isChatPanelOpen: false,
+  setIsChatPanelOpen: () => {},
 };
 
 const initialState = {
   gameState: null,
   isIdentityModalOpen: false,
+  isChatPanelOpen: false,
 };
 
 export const GameContext =
@@ -98,7 +104,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
   // Extract state
 
-  const { gameState, isIdentityModalOpen } = state;
+  const { gameState, isIdentityModalOpen, isChatPanelOpen } = state;
 
   // Callbacks handlers
 
@@ -159,6 +165,12 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       navigate("/");
     }
   }, [gameRoom]);
+
+  const setIsChatPanelOpen = useCallback((isOpen: boolean) => {
+    setState(draft => {
+      draft.isChatPanelOpen = isOpen;
+    });
+  }, []);
 
   useEffect(() => {
     async function initGameRoom() {
@@ -239,6 +251,8 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         leader,
         isLeader,
         gameState,
+        isChatPanelOpen,
+        setIsChatPanelOpen,
         messages: gameState ? Array.from(gameState.messages) : [],
       }}
     >

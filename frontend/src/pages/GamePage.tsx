@@ -1,31 +1,20 @@
 import { useCallback, useContext, useState } from "react";
-import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
-import { HiOutlineChatBubbleLeftRight } from "react-icons/hi2";
-import { IoPeopleOutline } from "react-icons/io5";
-import { useMediaQuery } from "usehooks-ts";
-import { useCopyToClipboard } from "usehooks-ts";
 
 import { IIdentity } from "../../../common/types";
 import { PageTransition } from "../PageTransition";
-import Avatar from "../components/Avatar";
 import { GamePanel } from "../components/GamePanel";
-import { Instruments } from "../components/Instruments";
 import { Keyboard } from "../components/Keyboard";
-import { LeftPanel } from "../components/LeftPanel";
-import { Panel } from "../components/Panel";
-import { PlayerProfileCard } from "../components/PlayerProfileCard";
-import { Popover } from "../components/Popover";
+import { MenuBar } from "../components/MenuBar";
 import { RightPanel } from "../components/RightPanel";
-import { AudioContext } from "../components/context/AudioContext";
 import { GameContext } from "../components/context/GameContext";
-import { Button } from "../components/form/Button";
 import { CreateIdentityModal } from "../components/modals/CreateIdentityModal";
 import {
   useGameRoom,
   useIdentityModalControl,
   useMe,
   usePlayers,
+  useUIControl,
 } from "../hooks/hooks";
 
 export default function GamePage() {
@@ -33,15 +22,9 @@ export default function GamePage() {
 
   const { setState, leaveGame } = useContext(GameContext);
 
-  const isSmall = useMediaQuery("(max-width: 90rem)");
-
   const me = useMe();
   const gameRoom = useGameRoom();
   const { closeIdentityModal, isIdentityModalOpen } = useIdentityModalControl();
-
-  const [isRightPanelOpen, setIsRightPanelOpen] = useState(false);
-
-  const players = usePlayers();
 
   const handleIdentityValidated = useCallback(
     (identity: IIdentity) => {
@@ -52,11 +35,7 @@ export default function GamePage() {
     [gameRoom, isIdentityModalOpen, closeIdentityModal]
   );
 
-  const [value, copy] = useCopyToClipboard();
-  const handleInviteFriends = useCallback(() => {
-    toast.success(t("notification_messages.link_copied"));
-    copy(window.location.href);
-  }, [copy]);
+  const { isChatPanelOpen } = useUIControl();
 
   // On game room change, listen to events
 
@@ -64,53 +43,7 @@ export default function GamePage() {
     <PageTransition>
       <div className="flex h-full max-h-[100vh] py-5 px-5">
         <div className="grow flex flex-col items-center px-4 overflow-x-auto">
-          <Panel className="flex justify-between  mb-4">
-            <div>
-              <span className="font-bold mr-4">
-                {gameRoom ? gameRoom.state.name : ""}
-              </span>
-
-              <Button onClick={handleInviteFriends} size="sm" style="primary">
-                {t("generic.invite_friends")}
-              </Button>
-            </div>
-
-            <div className="flex items-center">
-              <div className="flex mr-4 items-center">
-                {players.map(player => (
-                  <Popover
-                    placement="bottom"
-                    key={player.id}
-                    popoverContent={<PlayerProfileCard player={player} />}
-                  >
-                    {props => {
-                      const { setReference, getReferenceProps } = props;
-                      return (
-                        <div
-                          ref={setReference}
-                          {...getReferenceProps()}
-                          key={player.id}
-                          style={{ borderColor: player.color }}
-                          className="cursor-pointer flex items-center border-4 rounded-full mr-2"
-                        >
-                          <Avatar
-                            seed={player.avatarSeed}
-                            size={32}
-                            background
-                            circle
-                          ></Avatar>
-                        </div>
-                      );
-                    }}
-                  </Popover>
-                ))}
-              </div>
-              <HiOutlineChatBubbleLeftRight
-                className="h-8 w-8 cursor-pointer"
-                onClick={() => setIsRightPanelOpen(!isRightPanelOpen)}
-              />
-            </div>
-          </Panel>
+          <MenuBar></MenuBar>
 
           <GamePanel></GamePanel>
           <Keyboard></Keyboard>
@@ -118,7 +51,7 @@ export default function GamePage() {
 
         <div
           style={{
-            width: `${isRightPanelOpen ? "24rem" : "0px"}`,
+            width: `${isChatPanelOpen ? "24rem" : "0px"}`,
           }}
           className={`relative h-full w-96 shrink-0 transition-all overflow-hidden`}
         >

@@ -94,9 +94,18 @@ export function useIntrumentItems() {
   return patches;
 }
 
+export function useGameState() {
+  const { gameState } = useContext(GameContext);
+
+  return gameState;
+}
+
 export function useChat() {
   const { messages } = useContext(GameContext);
   const gameRoom = useGameRoom();
+  const gameState = useGameState();
+  const playersMap = usePlayersMap();
+  const me = useMe();
 
   const sendMessage = useCallback(
     (message: string) => {
@@ -105,9 +114,28 @@ export function useChat() {
     [gameRoom]
   );
 
+  const sendTyping = useCallback(() => {
+    gameRoom?.send("chat-typing");
+  }, [gameRoom]);
+
+  const typingStates = useMemo(() => {
+    return gameState?.typing || new Map();
+  }, [gameState]);
+
+  const playersTyping = useMemo(() => {
+    return Array.from(typingStates.keys())
+      .filter(id => id !== me?.id && typingStates.get(id))
+      .map(id => {
+        return playersMap.get(id);
+      });
+  }, [typingStates, playersMap]);
+
   return {
     messages,
     sendMessage,
+    sendTyping,
+    typingStates,
+    playersTyping,
   };
 }
 
@@ -140,6 +168,14 @@ export function usePlayer(playerId: string | null) {
   const player = gameState?.players.get(playerId || "");
 
   return player || null;
+}
+
+export function usePlayersMap() {
+  const { gameState } = useContext(GameContext);
+
+  const players = gameState?.players;
+
+  return players || new Map();
 }
 
 export function usePlayers() {
@@ -201,6 +237,15 @@ export function useIdentityModalControl() {
     isIdentityModalOpen,
     openIdentityModal,
     closeIdentityModal,
+  };
+}
+
+export function useUIControl() {
+  const { setIsChatPanelOpen, isChatPanelOpen } = useContext(GameContext);
+
+  return {
+    isChatPanelOpen,
+    setIsChatPanelOpen,
   };
 }
 

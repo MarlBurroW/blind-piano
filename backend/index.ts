@@ -8,7 +8,16 @@ import cors from "cors";
 const port = Number(process.env.PORT) || 3000;
 
 const app = express();
-app.options("*", cors());
+
+const corsOptions = {
+  origin: "*", // Autoriser toutes les origines
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE", // Autoriser toutes les méthodes
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 const gameServer = new Server({
   server: createServer(app),
@@ -16,11 +25,7 @@ const gameServer = new Server({
 app.use(express.static("public"));
 app.use(express.json());
 app.use("/colyseus", monitor());
-app.use(
-  cors({
-    origin: "https://piano.marlburrow.io",
-  })
-);
+
 gameServer.listen(port);
 
 gameServer.define("lobby", LobbyRoom);

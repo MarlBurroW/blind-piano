@@ -10,4 +10,5 @@ export class Game extends Schema {
   @type("string") leaderId = null;
   @type("string") name = "";
   @type({ map: Track }) tracks = getDefaultTracks();
+  @type({ map: "boolean" }) typing = new MapSchema<boolean>();
 }

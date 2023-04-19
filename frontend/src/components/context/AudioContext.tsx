@@ -11,6 +11,7 @@ import { useImmer } from "use-immer";
 import { IPatch, IPlayerNote, ITrack } from "../../../../common/types";
 import instrumentManager from "../../classes/InstrumentManager";
 import Track from "../../classes/Track";
+import sfx from "../../services/sfx";
 import { Instruments } from "../Instruments";
 import { GameContext } from "./GameContext";
 import { MidiContext } from "./MidiContext";
@@ -70,6 +71,10 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     }
     return map;
   }, [tracksData]);
+
+  useEffect(() => {
+    sfx.setOutput(masterGainRef.current);
+  }, [masterGainRef.current]);
 
   useEffect(() => {
     masterGainRef.current.connect(masterAudioContextRef.current.destination);
