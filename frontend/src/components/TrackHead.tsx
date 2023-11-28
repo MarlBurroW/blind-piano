@@ -70,11 +70,6 @@ export function TrackHead({ track, onClick }: Props) {
       onDragEnd={handleDragEnd}
       exit={{ scale: 0 }}
       value={track}
-      transition={{
-        type: "tween",
-        duration: 0.3,
-        ease: "linear",
-      }}
     >
       <SelectInstrumentModal
         defaultPatch={patch}
@@ -102,7 +97,7 @@ export function TrackHead({ track, onClick }: Props) {
           return (
             <div
               ref={setReference}
-              className="h-[10rem] select-none  w-[20rem] flex flex-col"
+              className="h-[10rem] select-none flex flex-col"
             >
               <div
                 style={{

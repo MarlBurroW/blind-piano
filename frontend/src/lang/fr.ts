@@ -136,6 +136,7 @@ export default {
     },
 
     tracks: {
+      add_track: "Ajouter une piste",
       track: "Piste",
       tracks: "Pistes",
       remove_track: "Supprimer la piste",

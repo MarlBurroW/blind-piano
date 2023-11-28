@@ -14,8 +14,7 @@ services:
     environment:
       - PORT=${BACKEND_PORT}
       - TERM=xterm-256color
-    networks:
-      - proxy
+
   frontend:
     container_name: 'blind-piano-frontend'
     image: node:18.11.0-alpine
@@ -27,10 +26,5 @@ services:
     command: 'yarn dev'
     environment:
       - PORT=${FRONTEND_PORT}
-    networks:
-      - proxy
 
-networks:
-  proxy:
-    external: true
-    name: proxy
+

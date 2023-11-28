@@ -13,7 +13,12 @@ import { DraftFunction, useImmer } from "use-immer";
 
 import { Game } from "../../../../backend/schemas/Game";
 import { Message } from "../../../../backend/schemas/Message";
-import { IPlayer, IPlayerNote, ITrack } from "../../../../common/types";
+import {
+  IPlayer,
+  IPlayerNote,
+  ISequencer,
+  ITrack,
+} from "../../../../common/types";
 import {
   onNewLeader,
   onPlayerJoined,
@@ -38,6 +43,7 @@ interface IGameContext {
   gameRoom: Room<Game> | null;
   players: Array<IPlayer>;
   tracks: Array<ITrack>;
+  sequencer: ISequencer | null;
   me: IPlayer | null;
   leader: IPlayer | null;
   isLeader: boolean;
@@ -54,6 +60,7 @@ const initialContextValues = {
   gameRoom: null,
   players: [],
   tracks: [],
+  sequencer: null,
   isIdentityModalOpen: false,
   me: null,
   leader: null,
@@ -124,8 +131,15 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
   const tracks = useMemo<Array<ITrack>>(() => {
     return gameState && gameRoom
-      ? Array.from(gameState.tracks.entries()).map(p => p[1])
+      ? Array.from(gameState.sequencer.tracks.entries()).map(p => p[1])
       : [];
+  }, [gameState]);
+
+  const sequencer: ISequencer | null = useMemo(() => {
+    if (gameState && gameRoom) {
+      return gameState.sequencer as unknown as ISequencer;
+    }
+    return null;
   }, [gameState]);
 
   const me = useMemo(() => {
@@ -247,6 +261,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         isIdentityModalOpen,
         players,
         tracks,
+        sequencer,
         me,
         leader,
         isLeader,

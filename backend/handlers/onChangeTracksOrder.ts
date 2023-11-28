@@ -1,8 +1,8 @@
-import { GameRoom } from "../rooms/GameRoom";
-
-import { Client } from "colyseus";
-import Track from "../schemas/Track";
 import { MapSchema } from "@colyseus/schema";
+import { Client } from "colyseus";
+
+import { GameRoom } from "../rooms/GameRoom";
+import Track from "../schemas/Track";
 
 export async function onChangeTracksOrder(
   this: GameRoom,
@@ -15,7 +15,7 @@ export async function onChangeTracksOrder(
     return;
   }
 
-  const tracks = this.state.tracks;
+  const tracks = this.state.sequencer.tracks;
 
   const reorderedTracks = new MapSchema<Track>();
 
@@ -26,5 +26,5 @@ export async function onChangeTracksOrder(
     }
   });
 
-  this.state.tracks = reorderedTracks;
+  this.state.sequencer.tracks = reorderedTracks;
 }

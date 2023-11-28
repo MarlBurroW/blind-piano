@@ -2,7 +2,7 @@ import { useCallback, useContext, useMemo, useRef, useState } from "react";
 import type { Input } from "webmidi";
 
 import { colors } from "../../../common/colors";
-import { IInstrument, IPatch } from "../../../common/types";
+import { IInstrument, IPatch, TimeSignature } from "../../../common/types";
 import { AudioContext } from "../components/context/AudioContext";
 import { GameContext } from "../components/context/GameContext";
 import { MidiContext } from "../components/context/MidiContext";
@@ -324,6 +324,13 @@ export function useGameActions() {
     [gameRoom]
   );
 
+  const setTimeSignature = useCallback(
+    (timeSignature: TimeSignature) => {
+      gameRoom?.send("update-time-signature", timeSignature);
+    },
+    [gameRoom]
+  );
+
   return {
     kickPlayer,
     promoteGameLeader,
@@ -334,5 +341,6 @@ export function useGameActions() {
     leaveTrackControl,
     selectTrackPatch,
     setTrackName,
+    setTimeSignature,
   };
 }

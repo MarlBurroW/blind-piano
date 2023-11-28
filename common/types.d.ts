@@ -66,3 +66,10 @@ export interface IPatch {
   options: any;
   category: IIinstrumentCategory;
 }
+
+export interface ISequencer {
+  timeSignature: TimeSignature;
+  tracks: Array<ITrack>;
+}
+
+export type TimeSignature = "3/4" | "4/4" | "5/4" | "6/8" | "7/8" | "12/8";

@@ -1,13 +1,12 @@
-import { GameRoom } from "../rooms/GameRoom";
-
 import { Client } from "colyseus";
-
-import { Track } from "../schemas/Track";
 import { v4 as uuidv4 } from "uuid";
+
+import { GameRoom } from "../rooms/GameRoom";
+import { Track } from "../schemas/Track";
 
 export async function onAddTrackHandler(this: GameRoom, client: Client) {
   const player = this.state.players.get(client.sessionId);
-  const tracksLength = this.state.tracks.size;
+  const tracksLength = this.state.sequencer.tracks.size;
 
   if (!player) {
     return;
@@ -19,5 +18,5 @@ export async function onAddTrackHandler(this: GameRoom, client: Client) {
   track.patch = "SFP@FluidR3_GM#acoustic_grand_piano";
   track.playerId = null;
 
-  this.state.tracks.set(track.id, track);
+  this.state.sequencer.tracks.set(track.id, track);
 }

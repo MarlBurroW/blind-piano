@@ -1,10 +1,12 @@
+import { enableMapSet } from "immer";
 import React from "react";
 import ReactDOM from "react-dom/client";
+import "react-tooltip/dist/react-tooltip.css";
+
 import App from "./App";
-import "./index.css";
-import { enableMapSet } from "immer";
 import { MidiProvider } from "./components/context/MidiContext";
 import { ServiceWorkerProvider } from "./components/context/ServiceWorkerContext";
+import "./index.css";
 
 enableMapSet();
 

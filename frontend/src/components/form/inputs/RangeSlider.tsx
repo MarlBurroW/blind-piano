@@ -28,15 +28,25 @@ export function RangeSlider({
   const trackRef = useRef<HTMLDivElement>(null);
 
   const [displayValue, setDisplayValue] = useState(value);
+  const handleResize = () => {
+    if (!trackRef.current) return;
+    const adjustedWidth = trackRef.current.clientWidth - CURSOR_WIDTH;
+    setContainerWidth(adjustedWidth);
+    setCursorX(((value - min) / (max - min)) * adjustedWidth);
+  };
+
+  const [width, setWidth] = useState(0);
 
   useEffect(() => {
-    const handleResize = () => {
-      if (!trackRef.current) return;
-      const adjustedWidth = trackRef.current.clientWidth - CURSOR_WIDTH;
-      setContainerWidth(adjustedWidth);
-      setCursorX(((value - min) / (max - min)) * adjustedWidth);
-    };
+    if (!trackRef.current) return;
+    const resizeObserver = new ResizeObserver(() => {
+      setWidth(trackRef.current!.clientWidth);
+    });
+    resizeObserver.observe(trackRef.current);
+    return () => resizeObserver.disconnect(); // clean up
+  }, []);
 
+  useEffect(() => {
     handleResize();
 
     window.addEventListener("resize", handleResize);
@@ -45,6 +55,10 @@ export function RangeSlider({
       window.removeEventListener("resize", handleResize);
     };
   }, []);
+
+  useEffect(() => {
+    handleResize();
+  }, [width]);
 
   // Set internal value from cursorX position, max, min and containerWidth
   useEffect(() => {

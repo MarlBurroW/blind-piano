@@ -13,6 +13,7 @@ import {
   useUIControl,
 } from "../hooks/hooks";
 import Avatar from "./Avatar";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 import { Panel } from "./Panel";
 import { PlayerProfileCard } from "./PlayerProfileCard";
 import { Popover } from "./Popover";
@@ -57,7 +58,10 @@ export function MenuBar() {
   }, [gameRoom]);
 
   return (
-    <Panel className="flex justify-between  mb-4">
+    <Panel className="flex justify-between items-center mb-4">
+      <div className="mr-6">
+        <LanguageSwitcher></LanguageSwitcher>
+      </div>
       <div>
         <span className="font-bold mr-4">
           {gameRoom ? gameRoom.state.name : ""}{" "}
@@ -98,6 +102,7 @@ export function MenuBar() {
             </Popover>
           ))}
         </div>
+
         <div className="relative">
           <HiOutlineChatBubbleLeftRight
             className="h-8 w-8 cursor-pointer"

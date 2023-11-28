@@ -1,25 +1,25 @@
+import { Client, Room, ServerError } from "colyseus";
 import http from "http";
-import { Room, Client, ServerError } from "colyseus";
+import kleur from "kleur";
 import { object, string } from "yup";
+
+import { colors } from "../../common/colors";
+import { IIdentity } from "../../common/types";
+import { onAddTrackHandler } from "../handlers/onAddTrackHandler";
+import { onChangeTracksOrder } from "../handlers/onChangeTracksOrder";
+import { onChatMessageHandler } from "../handlers/onChatMessageHandler";
+import { onKickPlayerHandler } from "../handlers/onKickPlayerHandler";
+import { onNoteOffHandler } from "../handlers/onNoteOffHandler";
+import { onNoteOnHandler } from "../handlers/onNoteOnHandler";
+import { onPromoteGameLeaderHandler } from "../handlers/onPromoteGameLeaderHandler";
+import { onRemoveTrackHandler } from "../handlers/onRemoveTrackHandler";
+import { onTypingHandler } from "../handlers/onTypingHandler";
+import { onUpdateIdentityHandler } from "../handlers/onUpdateIdentityHandler";
+import { onUpdateTimeSignature } from "../handlers/onUpdateTimeSignature";
+import { onUpdateTrack } from "../handlers/onUpdateTrack";
 import { Game } from "../schemas/Game";
 import { Player } from "../schemas/Player";
 
-import { IIdentity } from "../../common/types";
-import kleur from "kleur";
-
-import { colors } from "../../common/colors";
-
-import { onChatMessageHandler } from "../handlers/onChatMessageHandler";
-import { onUpdateIdentityHandler } from "../handlers/onUpdateIdentityHandler";
-import { onUpdateTrack } from "../handlers/onUpdateTrack";
-import { onNoteOnHandler } from "../handlers/onNoteOnHandler";
-import { onNoteOffHandler } from "../handlers/onNoteOffHandler";
-import { onKickPlayerHandler } from "../handlers/onKickPlayerHandler";
-import { onPromoteGameLeaderHandler } from "../handlers/onPromoteGameLeaderHandler";
-import { onRemoveTrackHandler } from "../handlers/onRemoveTrackHandler";
-import { onAddTrackHandler } from "../handlers/onAddTrackHandler";
-import { onChangeTracksOrder } from "../handlers/onChangeTracksOrder";
-import { onTypingHandler } from "../handlers/onTypingHandler";
 export class GameRoom extends Room<Game> {
   maxClients = 8;
   maxMessages = 20;
@@ -64,6 +64,8 @@ export class GameRoom extends Room<Game> {
     this.onMessage("add-track", onAddTrackHandler.bind(this));
     this.onMessage("change-tracks-order", onChangeTracksOrder.bind(this));
     this.onMessage("chat-typing", onTypingHandler.bind(this));
+    this,
+      this.onMessage("update-time-signature", onUpdateTimeSignature.bind(this));
     this.onMessage(
       "promote-game-leader",
       onPromoteGameLeaderHandler.bind(this)
@@ -133,7 +135,7 @@ export class GameRoom extends Room<Game> {
       this.electNewLeaderIfNecessary();
 
       // Remove the leaving player from all tracks
-      this.state.tracks.forEach((track, trackId) => {
+      this.state.sequencer.tracks.forEach((track, trackId) => {
         if (track.playerId == player.id) {
           track.playerId = null;
           this.broadcast("track-removed", trackId);
